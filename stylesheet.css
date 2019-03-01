@@ -1,0 +1,45 @@
+/* CSS DOCUMENT */
+
+* {
+    padding: 0;
+    margin: 0 auto;
+}
+
+html,
+body {
+    background-color: #4c0045;
+    font: normal 11pt Raleway, "Century Gothic", Verdana, Arial;
+    color: #DCDCDC;
+}
+
+h1 {
+    margin-top: 30px;
+    font: normal 60pt Lobster, "Century Gothic", Verdana, Arial;
+    color: #f185b3;
+    text-align: center;
+    /* text-shadow: -1px -1px 0px #000000; */
+}
+
+a {
+    color: #0D7377;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #14FFEC;
+}
+
+#wrapper {
+    margin-top: 100px;
+    /* border: 2px solid #3d0043; */
+    border: 2px solid #000000;
+    /* box-shadow: 0px 0px 10px #000000; */
+}
+
+#viewport {
+    background-color: #000000;
+}
+
+#GamePad {
+    margin-top: 10px;
+}

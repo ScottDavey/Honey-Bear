@@ -19,10 +19,11 @@ const GAME_STATES = {
         SCENE: 1,
         BOSS: 2
     }
-};
+}; 
 
 let GAME = undefined;
 let GAME_PAD_DIV = undefined;
+let GAME_PAD = undefined;
 let IS_RUNNING = true;
 let CANVAS = undefined;
 let CONTEXT = undefined;
@@ -38,6 +39,8 @@ function main() {
     const WRAPPER_DIV = document.getElementById('wrapper')
     WRAPPER_DIV.style.width = `${CANVAS_WIDTH}px`;
     WRAPPER_DIV.style.height = `${CANVAS_HEIGHT}px`;
+
+    GAME_PAD_DIV = document.getElementById('GamePad');
 
     // Event Listeners (Keyboad / Mouse)
     window.addEventListener('keyup', function (e) { Input.Keys.onKeyUp(e); }, false);

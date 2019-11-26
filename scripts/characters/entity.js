@@ -19,7 +19,7 @@ class Entity {
         this.moveAcceleration = 4000.0;
         this.maxMoveSpeed = 300.0;
         // Vertical movement
-        this.gravity = 1000.0;
+        this.gravity = 3000.0;
         this.maxFallSpeed = 1000.0;
         this.jumpBurst = -1200.0;
         this.isOnGround = false;

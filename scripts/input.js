@@ -58,37 +58,38 @@ var Input = {
             }
         }
     },
-    GamePad: {
+    GamePad: { 
         init: function () {
-            main.GamePad = navigator.getGamepads()[0];
-            if (main.GamePad !== null) {
-                main.hasGamePad = true;
-                main.gamePadDiv.childNodes[0].src = 'images/GamePad_Connected.png';
+            GAME_PAD = navigator.getGamepads()[0];
+            if (GAME_PAD) {
+                HAS_GAME_PAD = true;
+                GAME_PAD_DIV.childNodes[0].src = 'images/GamePad_Connected.png';
                 console.log('Game Pad is connected');
             }
         },
         deinit: function () {
-            main.GamePad = null;
-            main.hasGamePad = false;
-            main.gamePadDiv.childNodes[0].src = 'images/GamePad_Disconnected.png';
+            GAME_PAD = null;
+            HAS_GAME_PAD = false;
+            GAME_PAD_DIV.childNodes[0].src = 'images/GamePad_Disconnected.png';
             console.log('Game Pad has disconnected');
         },
         Update: function () {
-            if (main.hasGamePad) {
-                main.GamePad = navigator.getGamepads()[0];
+            if (HAS_GAME_PAD) {
+                
+                GAME_PAD = navigator.getGamepads()[0];
 
                 // Refresh GamePad Buttons
-                Input.GamePad.A = main.GamePad.buttons[0];
-                Input.GamePad.B = main.GamePad.buttons[1];
-                Input.GamePad.X = main.GamePad.buttons[2];
-                Input.GamePad.Y = main.GamePad.buttons[3];
-                Input.GamePad.START = main.GamePad.buttons[9];
-                Input.GamePad.UP = main.GamePad.buttons[12];
-                Input.GamePad.DOWN = main.GamePad.buttons[13];
-                Input.GamePad.LEFT = main.GamePad.buttons[14];
-                Input.GamePad.RIGHT = main.GamePad.buttons[15];
-                Input.GamePad.AXES.HORIZONTAL = parseFloat(main.GamePad.axes[0].toFixed(1));
-                Input.GamePad.AXES.VERTICAL = parseFloat(main.GamePad.axes[1].toFixed(1));
+                Input.GamePad.A = GAME_PAD.buttons[0];
+                Input.GamePad.B = GAME_PAD.buttons[1];
+                Input.GamePad.X = GAME_PAD.buttons[2];
+                Input.GamePad.Y = GAME_PAD.buttons[3];
+                Input.GamePad.START = GAME_PAD.buttons[9];
+                Input.GamePad.UP = GAME_PAD.buttons[12];
+                Input.GamePad.DOWN = GAME_PAD.buttons[13];
+                Input.GamePad.LEFT = GAME_PAD.buttons[14];
+                Input.GamePad.RIGHT = GAME_PAD.buttons[15];
+                Input.GamePad.AXES.HORIZONTAL = parseFloat(GAME_PAD.axes[0].toFixed(1));
+                Input.GamePad.AXES.VERTICAL = parseFloat(GAME_PAD.axes[1].toFixed(1));
             }
         },
         A: {},

@@ -5,11 +5,11 @@
 class Nimation {
     constructor(img, pos, frameHeight, frameWidth, totalFrames, animationSeq, speed, isLooping, offset) {
         this.img = img;
+        this.pos = new Vector2(pos.x, pos.y);
         this.frameHeight = frameHeight;
         this.frameWidth = frameWidth;
         this.totalFrames = totalFrames;
         this.sheetWidth = this.totalFrames / this.frameWidth;
-        this.pos = new Vector2(pos.x, pos.y);
         this.isLooping = isLooping;
         this.isDone = false;
         this.clip = { 'left': 0, 'top': (animationSeq * this.frameHeight), 'right': this.frameWidth, 'bottom': this.frameHeight };

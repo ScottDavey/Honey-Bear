@@ -19,7 +19,7 @@ const GAME_STATES = {
         SCENE: 1,
         BOSS: 2
     }
-}; 
+};
 
 let GAME = undefined;
 let GAME_PAD_DIV = undefined;
@@ -42,15 +42,19 @@ function main() {
 
     GAME_PAD_DIV = document.getElementById('GamePad');
 
-    // Event Listeners (Keyboad / Mouse)
-    window.addEventListener('keyup', function (e) { Input.Keys.onKeyUp(e); }, false);
-    window.addEventListener('keydown', function (e) { Input.Keys.onKeyDown(e); }, false);
-    CANVAS.addEventListener('mousemove', function (e) { Input.Mouse.OnMouseMove.SetPosition(e); }, false);
-    CANVAS.addEventListener('mousedown', function (e) { Input.Mouse.OnMouseDown(e); }, false);
-    CANVAS.addEventListener('mouseup', function (e) { Input.Mouse.OnMouseUp(e); }, false);
+    // Event Listeners (Keyboad / Mouse / Gamepad / Touch (phone/tablet))
+    window.addEventListener('keyup', e => { Input.Keys.onKeyUp(e); }, false);
+    window.addEventListener('keydown', e => { Input.Keys.onKeyDown(e); }, false);
+    CANVAS.addEventListener('mousemove', e => { Input.Mouse.OnMouseMove.SetPosition(e); }, false);
+    CANVAS.addEventListener('mousedown', e => { Input.Mouse.OnMouseDown(e); }, false);
+    CANVAS.addEventListener('mouseup', e => { Input.Mouse.OnMouseUp(e); }, false);
 
-    window.addEventListener('gamepadconnected', function (e) { Input.GamePad.init(); console.log('gamepadconnected'); }, false);
-    window.addEventListener('gamepaddisconnected', function (e) { Input.GamePad.deinit(); console.log('gamepaddisconnected'); }, false);
+    window.addEventListener('gamepadconnected', e => { Input.GamePad.init(); console.log('gamepadconnected'); }, false);
+    window.addEventListener('gamepaddisconnected', e => { Input.GamePad.deinit(); console.log('gamepaddisconnected'); }, false);
+
+    window.addEventListener('touchstart', e => { Input.Touch.OnTouchStart(e); }, false);
+    window.addEventListener('touchend', e => { Input.Touch.OnTouchEnd(e); }, false);
+    window.addEventListener('touchmove', e => { Input.Touch.OnTouchMove(e); }, false);
 
     // Get the gamepad started if it hasn't been already
     Input.GamePad.init();

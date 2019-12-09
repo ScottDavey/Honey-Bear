@@ -36,7 +36,10 @@ class Scene {
         );
 
         this.camera = new Camera();
-        this.player = new Player(this, this.level.player.start, this.level.player.size);
+        this.player = new Player(this.level.player.start, this.level.player.size, this);
+        this.bush = new ThornBush(new Vector2(1000, 460), new Vector2(100, 74));
+
+        this.enemyCount = 0;
 
         this.LoadContent();
     }
@@ -64,7 +67,7 @@ class Scene {
         this.LoadCollision();
 
         this.enemies = this.enemyArr.map(enemy => {
-            return new Enemy(this, enemy);
+            return new Enemy(enemy, this);
         });
 
         return true;
@@ -73,20 +76,22 @@ class Scene {
     LoadCollision() {
         this.lines = this.collision.map(collision => {
             return new Line(
-                new Vector2(collision.sx, collision.sy),
-                new Vector2(collision.ex, collision.ey),
-                collision.h,
-                collision.c,
-                collision.n,
-                collision.s
+                new Vector2(collision.sx, collision.sy),    // Start position vector
+                new Vector2(collision.ex, collision.ey),    // End position vector
+                collision.h,                                // Line color
+                collision.c,                                // Collision type (FLOOR, WALL, CEILING)
+                collision.n,                                // Line Normal (which way to push the entity)
+                collision.s,                                // Line Sound (when collided with)
+                collision.sl,                               // Slope (or, the m in y = mx + b)
+                collision.b                                 // Y Intercept (or, the b in y = mx + b)
             );
         });
     }
 
     HasGlobCollidedWithEnvironment(line, globs) {
 
-        const slope = (line.endPos.y - line.startPos.y) / (line.endPos.x - line.startPos.x);
-        const b = line.startPos.y - (slope * line.startPos.x);
+        const slope = line.slope;
+        const b = line.b;
 
         for (const glob of globs) {
 
@@ -135,20 +140,32 @@ class Scene {
         }
     }
 
-    Update() {
-        const currentGameTime = GameTime.getCurrentGameTime();
+    CheckBushCollisionWithPlayer(bush) {
 
-        // Fade IN
-        if (!this.transition.IsComplete()) {
-            this.transition.update(currentGameTime);
-            this.player.LockInput(true);
-        } else if (this.player.IsInputLocked()) {
-            this.player.LockInput(false);
+        const bushPos = bush.GetPos();
+        const bushSize = bush.GetSize();
+        const bushBounds = new Rectangle(bushPos.x, bushPos.y, bushSize.x, bushSize.y);
+        const playerPos = this.player.GetPos();
+        const playerSize = this.player.GetSize();
+        const playerBounds = new Rectangle(playerPos.x, playerPos.y, playerSize.x, playerSize.y);
+
+        const intersectionDepth = bushBounds.GetIntersectionDepth(playerBounds);
+
+        if (intersectionDepth.x !== 0 && intersectionDepth.y !== 0) {
+
+            const absDepthX = Math.abs(intersectionDepth.x);
+            const absDepthY = Math.abs(intersectionDepth.y);
+
+            if (absDepthY < absDepthX || absDepthX < absDepthY) {
+                this.player.DoDamage(bush);
+            }
+
         }
 
+    }
 
-        this.player.Update();
-        const globs = this.player.GetGlobs();
+    Update() {
+        const currentGameTime = GameTime.getCurrentGameTime();
 
         // Camera
         let cameraPosX = this.player.pos.x + this.player.size.x / 2 - CANVAS_WIDTH / 2;
@@ -162,7 +179,7 @@ class Scene {
 
         if (cameraPosY < 0) {
             cameraPosY = 0;
-        } else if (cameraPosY > this.worldHeight - CANVAS_HEIGHT) {
+        } else if (cameraPosY + CANVAS_HEIGHT > this.worldHeight) {
             cameraPosY = this.worldHeight - CANVAS_HEIGHT;
         }
 
@@ -172,33 +189,53 @@ class Scene {
         const cameraLookAt = this.camera.getlookat();
         this.parallax.Update(new Vector2(cameraLookAt[0], cameraLookAt[1]));
 
-        // Enemies
-        for (let e = 0; e < this.enemies.length; e++) {
-            const enemy = this.enemies[e];
-            if (!enemy.GetIsDead()) {
-                this.enemies[e].Update();
-                if (globs.length) this.CheckGlobCollisionWithEntity(enemy, globs);
-            } else {
-                this.enemies.splice(e, 1);
+        // Fade IN
+        if (!this.transition.IsComplete()) {
+            this.transition.update(currentGameTime);
+            this.player.LockInput(true);
+        } else {
+            if (this.player.IsInputLocked()) {
+                this.player.LockInput(false);
             }
-        }
 
-        // Check glob collision with environment
-        for (let l = 0; l < this.lines.length; l++) {
-            this.HasGlobCollidedWithEnvironment(this.lines[l], globs);
-        }
 
-        // Event Collisions with player
-        const playerBounds = new Rectangle(
-            this.player.pos.x,
-            this.player.pos.y,
-            this.player.size.x,
-            this.player.size.y
-        );
+            this.player.Update();
+            const globs = this.player.GetGlobs();
 
-        // Level Complete
-        if (playerBounds.right > this.exitVolume.left && playerBounds.bottom > this.exitVolume.top) {
-            this.isLevelComplete = true;
+            // Enemies
+            for (let e = 0; e < this.enemies.length; e++) {
+                const enemy = this.enemies[e];
+                if (!enemy.GetIsDead()) {
+                    this.enemies[e].Update();
+                    if (globs.length) this.CheckGlobCollisionWithEntity(enemy, globs);
+                } else {
+                    this.enemies.splice(e, 1);
+                }
+            }
+
+            this.enemyCount = (this.enemies) ? this.enemies.length : 0;
+
+            // Check glob collision with environment
+            for (let l = 0; l < this.lines.length; l++) {
+                this.HasGlobCollidedWithEnvironment(this.lines[l], globs);
+            }
+
+            // Event Collisions with player
+            const playerBounds = new Rectangle(
+                this.player.pos.x,
+                this.player.pos.y,
+                this.player.size.x,
+                this.player.size.y
+            );
+
+            this.bush.Update();
+            this.CheckBushCollisionWithPlayer(this.bush);
+
+            // Level Complete
+            if (playerBounds.right > this.exitVolume.left && playerBounds.bottom > this.exitVolume.top) {
+                this.isLevelComplete = true;
+            }
+
         }
 
     }
@@ -220,6 +257,7 @@ class Scene {
         }
 
         this.player.Draw();
+        this.bush.Draw();
 
         this.camera.end();
 
@@ -231,5 +269,8 @@ class Scene {
             }
             this.transition.draw();
         }
+
+        DrawText(`Enemies Left: ${this.enemyCount}`, (CANVAS_WIDTH - 150) - (this.enemyCount / 10 * 5), 20, 'normal 14pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+
     }
 }

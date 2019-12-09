@@ -19,13 +19,13 @@ var Input = {
         ESCAPE: 27,
         ENTER: 13,
         SHIFT: 16,
-        GetKey: function (keyCode) {
+        GetKey(keyCode) {
             return Input.Keys._isPressed[keyCode];
         },
-        onKeyDown: function (e) {
+        onKeyDown(e) {
             Input.Keys._isPressed[e.keyCode] = true;
         },
-        onKeyUp: function (e) {
+        onKeyUp(e) {
             delete Input.Keys._isPressed[e.keyCode];
         }
     },
@@ -35,31 +35,31 @@ var Input = {
         LEFT: 0,
         MIDDLE: 1,
         RIGHT: 2,
-        GetButton: function (button) {
+        GetButton(button) {
             return Input.Mouse._isPressed[button];
         },
-        GetPosition: function () {
+        GetPosition() {
             return Input.Mouse.pos;
         },
-        OnMouseDown: function (e) {
+        OnMouseDown(e) {
             Input.Mouse.pos.x = e.offsetX;
             Input.Mouse.pos.y = e.offsetY;
             Input.Mouse._isPressed[e.button] = true;
         },
-        OnMouseUp: function (e) {
+        OnMouseUp(e) {
             delete Input.Mouse._isPressed[e.button];
         },
         OnMouseMove: {
             pos: new Vector2(0, 0),
-            GetPosition: function () { return Input.Mouse.OnMouseMove.pos; },
-            SetPosition: function (e) {
+            GetPosition() { return Input.Mouse.OnMouseMove.pos; },
+            SetPosition(e) {
                 Input.Mouse.OnMouseMove.pos.x = e.offsetX;
                 Input.Mouse.OnMouseMove.pos.y = e.offsetY;
             }
         }
     },
-    GamePad: { 
-        init: function () {
+    GamePad: {
+        init() {
             GAME_PAD = navigator.getGamepads()[0];
             if (GAME_PAD) {
                 HAS_GAME_PAD = true;
@@ -67,15 +67,15 @@ var Input = {
                 console.log('Game Pad is connected');
             }
         },
-        deinit: function () {
+        deinit() {
             GAME_PAD = null;
             HAS_GAME_PAD = false;
             GAME_PAD_DIV.childNodes[0].src = 'images/GamePad_Disconnected.png';
             console.log('Game Pad has disconnected');
         },
-        Update: function () {
+        Update() {
             if (HAS_GAME_PAD) {
-                
+
                 GAME_PAD = navigator.getGamepads()[0];
 
                 // Refresh GamePad Buttons
@@ -104,6 +104,26 @@ var Input = {
         AXES: {
             VERTICAL: {},
             HORIZONTAL: {}
+        }
+    },
+    Touch: {
+        _isPressed: false,
+        pos: new Vector2(0, 0),
+        IsTouching() {
+            return Input.Touch._isPressed;
+        },
+        GetPosition() {
+            return Input.Touch.pos;
+        },
+        OnTouchStart() {
+            Input.Touch._isPressed = true;
+        },
+        OnTouchEnd() {
+            Input.Touch._isPressed = true;
+        },
+        OnTouchMove(e) {
+            const touch = e.touches[0];
+            Input.Touch.pos = new Vector2(touch.screenX, touch.screenY);
         }
     }
 };

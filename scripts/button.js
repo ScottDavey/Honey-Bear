@@ -41,7 +41,7 @@ class Button {
 
         if (this.isMouseOver(mousePos)) {
             this.fontColor = this.hoverColor;
-            if (!this.isLeftClickLocked && Input.Mouse.GetButton(Input.Mouse.LEFT)) {
+            if (!this.isLeftClickLocked && (Input.Mouse.GetButton(Input.Mouse.LEFT) || Input.Touch.IsTouching())) {
                 this.isLeftClickLocked = true;
                 this.isPushed = true;
             } else {

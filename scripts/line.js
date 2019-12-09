@@ -2,13 +2,15 @@
 *****  LINE CLASS  *****
 ***********************/
 class Line {
-    constructor(startPos, endPos, color = '#00FF88', collision, normal, sound) {
+    constructor(startPos, endPos, color = '#00FF88', collision, normal, sound, slope, b) {
         this.startPos = startPos;
         this.endPos = endPos;
         this.color = color;
         this.collision = collision;
         this.normal = normal;
         this.sound = sound;
+        this.slope = slope;
+        this.b = b;
     }
 
     Draw() {

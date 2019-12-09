@@ -1,11 +1,11 @@
 /******************************************
 **************  ENEMY CLASS  **************
 ******************************************/
-class Enemy extends Entity {
+class Enemy extends Moveable {
 
-    constructor(scene, data = { start: new Vector2(150, 150), size: new Vector2(50, 68), region: { pos: new Vector2(0, 0), size: new Vector2(300, 1000) } }) {
+    constructor(data = { start: new Vector2(150, 150), size: new Vector2(50, 68), region: { pos: new Vector2(0, 0), size: new Vector2(300, 1000) } }, scene) {
         // Call parent constructor
-        super(scene, data.start, data.size);
+        super(data.start, data.size, scene);
 
         // Update some ingerited vars
         this.maxMoveSpeed = 75.0;

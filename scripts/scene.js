@@ -41,6 +41,11 @@ class Scene {
 
         this.enemyCount = 0;
 
+        // Touch controls
+        this.joyStick = new Texture(new Vector2(20, CANVAS_HEIGHT - 100), new Vector2(80, 80), '#99000066', 1, '#990000ff');
+        this.aButton = new Texture(new Vector2(CANVAS_WIDTH - 170, CANVAS_HEIGHT - 80), new Vector2(50, 50), '#99000066', 1, '#990000ff');
+        this.bButton = new Texture(new Vector2(CANVAS_WIDTH - 100, CANVAS_HEIGHT - 120), new Vector2(50, 50), '#99000066', 1, '#990000ff');
+
         this.LoadContent();
     }
 
@@ -241,6 +246,10 @@ class Scene {
     }
 
     Draw() {
+        const cameraPos = this.camera.getlookat();
+        let enemyShowCount = 0;
+        let lineShowCount = 0;
+
         this.camera.begin();
 
         this.parallax.Draw();
@@ -249,17 +258,32 @@ class Scene {
 
         // Enemies
         for (let e = 0; e < this.enemies.length; e++) {
-            this.enemies[e].Draw();
+            const enemyPos = this.enemies[e].GetPos();
+            // Only render the enemy if he's inside the camera's view
+            if (enemyPos.x > cameraPos[0] && enemyPos.x < (cameraPos[0] + CANVAS_WIDTH)) {
+                enemyShowCount++;
+                this.enemies[e].Draw();
+            }
         }
 
         for (let l = 0; l < this.lines.length; l++) {
-            this.lines[l].Draw();
+            const linePos = this.lines[l].GetPos();
+            // Only render if the lines are visible.
+            // ** This is obviously temporary as the line won't be drawn once the artwork is added. ** //
+            if ((linePos.start.x > cameraPos[0] && linePos.start.x < (cameraPos[0] + CANVAS_WIDTH)) || (linePos.end.x > cameraPos[0] && linePos.end.x < (cameraPos[0] + CANVAS_WIDTH))) {
+                lineShowCount++;
+                this.lines[l].Draw();
+            }
         }
 
         this.player.Draw();
         this.bush.Draw();
 
         this.camera.end();
+
+        this.joyStick.Draw();
+        this.aButton.Draw();
+        this.bButton.Draw();
 
         // Fade IN
         if (!this.transition.IsComplete()) {
@@ -270,7 +294,10 @@ class Scene {
             this.transition.draw();
         }
 
-        DrawText(`Enemies Left: ${this.enemyCount}`, (CANVAS_WIDTH - 150) - (this.enemyCount / 10 * 5), 20, 'normal 14pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+        DrawText(`Enemies Showing: ${enemyShowCount} / ${this.enemies.length}`, (CANVAS_WIDTH - 250), 20, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+        DrawText(`Lines Showing: ${lineShowCount} / ${this.lines.length}`, (CANVAS_WIDTH - 250), 35, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+
+
 
     }
 }

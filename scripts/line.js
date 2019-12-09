@@ -13,6 +13,10 @@ class Line {
         this.b = b;
     }
 
+    GetPos() {
+        return { start: this.startPos, end: this.endPos };
+    }
+
     Draw() {
         CONTEXT.save();
         CONTEXT.lineWidth = 1;

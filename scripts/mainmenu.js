@@ -10,7 +10,7 @@ class MainMenu {
         this.isFadingOut = false;
         this.play = false;
 
-        this.playButton = new Button(
+        this.playButton = new TextButton(
             'PLAY',
             new Vector2(CANVAS_WIDTH - (CANVAS_WIDTH * 0.25), (CANVAS_HEIGHT / 2) + 50),
             { family: 'Montserrat-Regular', size: 40 },
@@ -32,7 +32,7 @@ class MainMenu {
 
         this.playButton.Update(mouseMovePos);
 
-        if (this.playButton.GetIsPushed()) {
+        if (this.playButton.IsPushed()) {
             this.isFadingOut = true;
             if (!this.transitionOut) this.transitionOut = new Transition('0, 0, 0', 0.5, 'out');
         }

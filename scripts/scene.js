@@ -35,16 +35,14 @@ class Scene {
             '#fe9000'
         );
 
+        this.AButton = new Button('images/Touch_Button.png', new Vector2(CANVAS_WIDTH - 240, CANVAS_HEIGHT - 120), new Vector2(100, 100));
+        this.BButton = new Button('images/Touch_Button.png', new Vector2(CANVAS_WIDTH - 120, CANVAS_HEIGHT - 140), new Vector2(100, 100));
+
         this.camera = new Camera();
         this.player = new Player(this.level.player.start, this.level.player.size, this);
         this.bush = new ThornBush(new Vector2(1000, 460), new Vector2(100, 74));
 
         this.enemyCount = 0;
-
-        // Touch controls
-        this.joyStick = new Texture(new Vector2(20, CANVAS_HEIGHT - 100), new Vector2(80, 80), '#99000066', 1, '#990000ff');
-        this.aButton = new Texture(new Vector2(CANVAS_WIDTH - 170, CANVAS_HEIGHT - 80), new Vector2(50, 50), '#99000066', 1, '#990000ff');
-        this.bButton = new Texture(new Vector2(CANVAS_WIDTH - 100, CANVAS_HEIGHT - 120), new Vector2(50, 50), '#99000066', 1, '#990000ff');
 
         this.LoadContent();
     }
@@ -241,6 +239,9 @@ class Scene {
                 this.isLevelComplete = true;
             }
 
+            this.AButton.Update();
+            this.BButton.Update();
+
         }
 
     }
@@ -281,9 +282,8 @@ class Scene {
 
         this.camera.end();
 
-        this.joyStick.Draw();
-        this.aButton.Draw();
-        this.bButton.Draw();
+        this.AButton.Draw();
+        this.BButton.Draw();
 
         // Fade IN
         if (!this.transition.IsComplete()) {

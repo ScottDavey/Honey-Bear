@@ -52,9 +52,9 @@ function main() {
     window.addEventListener('gamepadconnected', e => { Input.GamePad.init(); console.log('gamepadconnected'); }, false);
     window.addEventListener('gamepaddisconnected', e => { Input.GamePad.deinit(); console.log('gamepaddisconnected'); }, false);
 
-    window.addEventListener('touchstart', e => { Input.Touch.OnTouchStart(e); }, false);
-    window.addEventListener('touchend', e => { Input.Touch.OnTouchEnd(e); }, false);
-    window.addEventListener('touchmove', e => { Input.Touch.OnTouchMove(e); }, false);
+    CANVAS.addEventListener('touchstart', e => { Input.Touch.OnTouchStart(e); }, false);
+    CANVAS.addEventListener('touchend', e => { Input.Touch.OnTouchEnd(e); }, false);
+    CANVAS.addEventListener('touchmove', e => { Input.Touch.OnTouchMove(e); }, false);
 
     // Get the gamepad started if it hasn't been already
     Input.GamePad.init();

@@ -8,7 +8,7 @@ class Level {
         this.levelStartTime = 0;
         this.levelLoadTime = 5;
         this.state = GAME_STATES.LEVEL.SCENE;
-        this.hub = new Hub(true);
+        // this.hub = new Hub(true);
         this.selectedLevel = 0;
         this.scene = undefined;
         this.sceneIsLoaded = false;
@@ -25,7 +25,7 @@ Level.prototype.Update = function () {
     this.timer += elapsed;
 
     switch (this.state) {
-        case GAME_STATES.LEVEL.HUB:
+        /*case GAME_STATES.LEVEL.HUB:
             if (!this.hub) this.hub = new Hub(false);
             this.hub.Update();
             this.selectedLevel = this.hub.GetSelectedLevel();
@@ -33,7 +33,7 @@ Level.prototype.Update = function () {
                 this.hub = undefined;
                 this.state = GAME_STATES.LEVEL.SCENE;
             }
-            break;
+            break;*/
         case GAME_STATES.LEVEL.SCENE:
 
             // If the scene is undefined, initiate it and capture the level start time

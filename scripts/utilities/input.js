@@ -115,15 +115,19 @@ var Input = {
         GetPosition() {
             return Input.Touch.pos;
         },
-        OnTouchStart() {
+        OnTouchStart(e) {
+            // const touch = e.touches[0];
+            // Input.Touch.pos = new Vector2(touch.screenX, touch.screenY);
+            Input.Touch.pos = Input.Mouse.OnMouseMove.GetPosition();
             Input.Touch._isPressed = true;
         },
         OnTouchEnd() {
-            Input.Touch._isPressed = true;
+            Input.Touch._isPressed = false;
         },
         OnTouchMove(e) {
-            const touch = e.touches[0];
-            Input.Touch.pos = new Vector2(touch.screenX, touch.screenY);
+            // const touch = e.touches[0];
+            // Input.Touch.pos = new Vector2(touch.screenX, touch.screenY);
+            Input.Touch.pos = Input.Mouse.OnMouseMove.GetPosition();
         }
     }
 };

@@ -1,7 +1,7 @@
-/*******************************************
-**************  BUTTON CLASS  **************
-*******************************************/
-class Button {
+/************************************************
+**************  TEXT BUTTON CLASS  **************
+************************************************/
+class TextButton {
 
     constructor(text, pos, font = { family: 'Verdana', size: 12 }, color, hoverColor, BGColor, hoverBGColor) {
         this.text = text;
@@ -20,7 +20,7 @@ class Button {
         this.bounds = new Rectangle(this.pos.x, (this.pos.y - this.size.y), this.size.x, this.size.y);
     }
 
-    GetIsPushed() {
+    IsPushed() {
         return this.isPushed;
     }
 

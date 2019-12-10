@@ -10,6 +10,13 @@ class Image {
         this.img.setAttribute('src', path);
     }
 
+    GetPos() {
+        return this.pos;
+    }
+
+    GetSize() {
+        return this.size;
+    }
 
     SetImage(path) {
         this.img.setAttribute('src', path);

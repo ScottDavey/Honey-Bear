@@ -23,6 +23,9 @@ class Player extends Moveable {
 
         this.isInputLocked = false;
 
+        this.AButton = this.scene.AButton;
+        this.BButton = this.scene.BButton;
+
         // this.circle = new Circle(new Vector2(300, 500), 10, '#990000', 'rgba(130, 0, 0, 0.5)');
 
         // Weapons
@@ -60,7 +63,7 @@ class Player extends Moveable {
             this.dir = 1;
         }
 
-        this.isJumping = Input.Keys.GetKey(Input.Keys.SPACE) || Input.GamePad.A.pressed;
+        this.isJumping = Input.Keys.GetKey(Input.Keys.SPACE) || Input.GamePad.A.pressed || this.AButton.IsPushed();
 
         // Animations
         if (this.velocity.y < 0) {
@@ -74,7 +77,7 @@ class Player extends Moveable {
         }
 
         // Abilities
-        if (Input.Keys.GetKey(Input.Keys.ENTER) || Input.GamePad.X.pressed) {
+        if (Input.Keys.GetKey(Input.Keys.ENTER) || Input.GamePad.X.pressed || this.BButton.IsPushed()) {
             if (!this.isGlobLocked) {
                 const globPosX = (this.dir === 1) ? this.pos.x + this.size.x : this.pos.x;
                 this.globs.push(new HoneyGlob(new Vector2(globPosX, this.pos.y + (this.size.y / 2)), this.dir));
@@ -136,6 +139,7 @@ class Player extends Moveable {
         for (const glob of this.globs) {
             glob.Draw();
         }
+
     }
 
 }

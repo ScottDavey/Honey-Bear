@@ -108,26 +108,45 @@ var Input = {
     },
     Touch: {
         _isPressed: false,
-        pos: new Vector2(0, 0),
+        positions: [],
         IsTouching() {
             return Input.Touch._isPressed;
         },
-        GetPosition() {
-            return Input.Touch.pos;
+        GetPositions() {
+            return Input.Touch.positions;
+        },
+        SetPosition(touches) {
+            Input.Touch.positions = [];
+
+            if (touches.length > 0) {
+                Input.Touch._isPressed = true;
+
+                for (const touch of touches) {
+                    // Not sure why but the position of the sprite on screen seems to be slightly different from the touch position
+                    // We need to offset it accordingly
+                    const xOffset = Math.round(touch.clientX) - 42;
+                    const yOffset = Math.round(touch.clientY) - 14;
+                    Input.Touch.positions.push(new Vector2(xOffset, yOffset));
+                }
+            } else {
+                Input.Touch._isPressed = false;
+            }
         },
         OnTouchStart(e) {
-            // const touch = e.touches[0];
-            // Input.Touch.pos = new Vector2(touch.screenX, touch.screenY);
-            Input.Touch.pos = Input.Mouse.OnMouseMove.GetPosition();
-            Input.Touch._isPressed = true;
+            // On the first touch, set IS_MOBILE to true
+            if (!IS_MOBILE) IS_MOBILE = true;
+
+            const touches = e.touches;
+            Input.Touch.SetPosition(touches);
+            e.preventDefault(); // This prevents bring up the context menu on a long-hold touch
         },
-        OnTouchEnd() {
-            Input.Touch._isPressed = false;
+        OnTouchEnd(e) {
+            const touches = e.touches;
+            Input.Touch.SetPosition(touches);
         },
         OnTouchMove(e) {
-            // const touch = e.touches[0];
-            // Input.Touch.pos = new Vector2(touch.screenX, touch.screenY);
-            Input.Touch.pos = Input.Mouse.OnMouseMove.GetPosition();
+            const touches = e.touches;
+            Input.Touch.SetPosition(touches);
         }
     }
 };

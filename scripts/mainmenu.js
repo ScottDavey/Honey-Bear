@@ -27,10 +27,9 @@ class MainMenu {
     };
 
     Update() {
-        const mouseMovePos = Input.Mouse.OnMouseMove.GetPosition();
         const currentGameTime = GameTime.getCurrentGameTime();
 
-        this.playButton.Update(mouseMovePos);
+        this.playButton.Update();
 
         if (this.playButton.IsPushed()) {
             this.isFadingOut = true;

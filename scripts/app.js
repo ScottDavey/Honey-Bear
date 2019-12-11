@@ -27,6 +27,7 @@ let GAME_PAD = undefined;
 let IS_RUNNING = true;
 let CANVAS = undefined;
 let CONTEXT = undefined;
+let IS_MOBILE = false;
 let HAS_GAME_PAD = false;
 
 function main() {

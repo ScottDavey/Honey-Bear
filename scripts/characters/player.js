@@ -23,6 +23,8 @@ class Player extends Moveable {
 
         this.isInputLocked = false;
 
+        this.leftButton = this.scene.leftButton;
+        this.rightButton = this.scene.rightButton;
         this.AButton = this.scene.AButton;
         this.BButton = this.scene.BButton;
 
@@ -43,7 +45,8 @@ class Player extends Moveable {
             Input.Keys.GetKey(Input.Keys.A) ||
             Input.Keys.GetKey(Input.Keys.LEFT) ||
             Input.GamePad.LEFT.pressed ||
-            Input.GamePad.AXES.HORIZONTAL < 0
+            Input.GamePad.AXES.HORIZONTAL < 0 ||
+            this.leftButton.IsPushed()
         ) {
             this.movement =
                 Input.GamePad.AXES.HORIZONTAL < 0
@@ -54,7 +57,8 @@ class Player extends Moveable {
             Input.Keys.GetKey(Input.Keys.D) ||
             Input.Keys.GetKey(Input.Keys.RIGHT) ||
             Input.GamePad.RIGHT.pressed ||
-            Input.GamePad.AXES.HORIZONTAL > 0
+            Input.GamePad.AXES.HORIZONTAL > 0 ||
+            this.rightButton.IsPushed()
         ) {
             this.movement =
                 Input.GamePad.AXES.HORIZONTAL > 0
@@ -142,4 +146,4 @@ class Player extends Moveable {
 
     }
 
-}
+}   

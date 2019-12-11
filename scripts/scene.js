@@ -35,6 +35,8 @@ class Scene {
             '#fe9000'
         );
 
+        this.leftButton = new Button('images/Touch_Button.png', new Vector2(20, CANVAS_HEIGHT - 120), new Vector2(100, 100));
+        this.rightButton = new Button('images/Touch_Button.png', new Vector2(140, CANVAS_HEIGHT - 120), new Vector2(100, 100));
         this.AButton = new Button('images/Touch_Button.png', new Vector2(CANVAS_WIDTH - 240, CANVAS_HEIGHT - 120), new Vector2(100, 100));
         this.BButton = new Button('images/Touch_Button.png', new Vector2(CANVAS_WIDTH - 120, CANVAS_HEIGHT - 140), new Vector2(100, 100));
 
@@ -239,8 +241,12 @@ class Scene {
                 this.isLevelComplete = true;
             }
 
-            this.AButton.Update();
-            this.BButton.Update();
+            if (IS_MOBILE) {
+                this.leftButton.Update();
+                this.rightButton.Update();
+                this.AButton.Update();
+                this.BButton.Update();
+            }
 
         }
 
@@ -282,8 +288,12 @@ class Scene {
 
         this.camera.end();
 
-        this.AButton.Draw();
-        this.BButton.Draw();
+        if (IS_MOBILE) {
+            this.leftButton.Draw();
+            this.rightButton.Draw();
+            this.AButton.Draw();
+            this.BButton.Draw();
+        }
 
         // Fade IN
         if (!this.transition.IsComplete()) {
@@ -296,6 +306,18 @@ class Scene {
 
         DrawText(`Enemies Showing: ${enemyShowCount} / ${this.enemies.length}`, (CANVAS_WIDTH - 250), 20, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
         DrawText(`Lines Showing: ${lineShowCount} / ${this.lines.length}`, (CANVAS_WIDTH - 250), 35, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+        DrawText(`Is Pushing A: ${this.AButton.IsPushed()}`, (CANVAS_WIDTH - 250), 50, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+        DrawText(`Is Pushing B: ${this.BButton.IsPushed()}`, (CANVAS_WIDTH - 250), 65, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+        DrawText(`Is Pushing L: ${this.leftButton.IsPushed()}`, (CANVAS_WIDTH - 250), 80, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+        DrawText(`Is Pushing R: ${this.rightButton.IsPushed()}`, (CANVAS_WIDTH - 250), 95, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+        DrawText(`Is Touching: ${Input.Touch.IsTouching()}`, (CANVAS_WIDTH - 250), 110, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+        const touches = Input.Touch.GetPositions();
+        for (let t = 0; t < touches.length; t++) {
+            const touch = touches[t];
+            const circ = new Circle(new Vector2(touch.x, touch.y), 10, '#990000ff', '#99000066'); //center, radius, lineColor, fillColor
+            DrawText(`Touches: x${touch.x} y${touch.y}`, (CANVAS_WIDTH - 250), 125 + (t * 15), 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+            circ.Draw();
+        }
 
 
 

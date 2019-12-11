@@ -28,27 +28,44 @@ class TextButton {
         this.fontColor = color;
     }
 
-    isMouseOver(mousePos) {
-        const mouseMoveX = mousePos.x;
-        const mouseMoveY = mousePos.y;
+    isPointerOver(pos) {
+        // Check to see if pointer is hovering/clicking the play button
+        return (pos.x >= this.bounds.left && pos.x <= (this.bounds.left + this.bounds.width) && pos.y >= this.bounds.top && pos.y <= (this.bounds.top + this.bounds.height));
+    }
 
-        // Check to see if mouse is hovering the play button
-        return (mouseMoveX >= this.bounds.left && mouseMoveX <= (this.bounds.left + this.bounds.width) && mouseMoveY >= this.bounds.top && mouseMoveY <= (this.bounds.top + this.bounds.height));
+    // Based on a given pointer (mouse, touch control), check to see if we can perform an action on the button
+    CheckPointerAction(pointerPos, isPointerEngaged) {
+
+        if (!this.isLeftClickLocked) {
+            this.isLeftClickLocked = true;
+            if (this.isPointerOver(pointerPos)) {
+                this.isPushed = true;
+            }
+        }
 
     }
 
-    Update(mousePos) {
+    Update() {
 
-        if (this.isMouseOver(mousePos)) {
+        // Get the coordinates of the various pointers (mouse, touch)
+        const mousePos = Input.Mouse.OnMouseMove.GetPosition();
+        const touchPos = Input.Touch.GetPositions()[0]; // We only care about the first touch
+
+        // Apply hover state (if mouse)
+        if (this.isPointerOver(mousePos)) {
             this.fontColor = this.hoverColor;
-            if (!this.isLeftClickLocked && (Input.Mouse.GetButton(Input.Mouse.LEFT) || Input.Touch.IsTouching())) {
-                this.isLeftClickLocked = true;
-                this.isPushed = true;
-            } else {
-                this.isLeftClickLocked = false;
-            }
         } else {
             this.fontColor = this.originalFontColor;
+        }
+
+        // Handle Inputs
+        if (Input.Touch.IsTouching()) {
+            this.CheckPointerAction(touchPos, true);
+        } else if (Input.Mouse.GetButton(Input.Mouse.LEFT)) {
+            this.CheckPointerAction(mousePos, true);
+        } else {
+            this.isLeftClickLocked = false;
+            this.isPushed = false;
         }
 
     }

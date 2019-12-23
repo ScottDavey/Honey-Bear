@@ -12,12 +12,14 @@ class Player extends Moveable {
         // Nimation: img, pos, frameHeight, frameWidth, totalFrames, animationSeq, speed, isLooping, offset
         this.runRightSprite = new Nimation(spritesheet, new Vector2(this.pos.x, this.pos.y), 74, 100, 6, 0, 0.05, true, new Vector2(26, 7));
         this.runLeftSprite = new Nimation(spritesheet, new Vector2(this.pos.x, this.pos.y), 74, 100, 6, 1, 0.05, true, new Vector2(26, 7));
-        this.idleRightSprite = new Nimation(spritesheet, new Vector2(this.pos.x, this.pos.y), 74, 100, 4, 2, 0.3, true, new Vector2(26, 7));
-        this.idleLeftSprite = new Nimation(spritesheet, new Vector2(this.pos.x, this.pos.y), 74, 100, 4, 3, 0.3, true, new Vector2(26, 7));
+        this.idleRightSprite = new Nimation(spritesheet, new Vector2(this.pos.x, this.pos.y), 74, 100, 4, 2, 0.2, true, new Vector2(26, 7));
+        this.idleLeftSprite = new Nimation(spritesheet, new Vector2(this.pos.x, this.pos.y), 74, 100, 4, 3, 0.2, true, new Vector2(26, 7));
         this.jumpLeftSprite = new Nimation(spritesheet, new Vector2(this.pos.x, this.pos.y), 74, 100, 4, 4, 0.005, false, new Vector2(26, 7));
         this.jumpRightSprite = new Nimation(spritesheet, new Vector2(this.pos.x, this.pos.y), 74, 100, 4, 5, 0.005, false, new Vector2(26, 7));
         this.fallLeftSprite = new Nimation(spritesheet, new Vector2(this.pos.x, this.pos.y), 74, 100, 2, 6, 0.25, true, new Vector2(26, 7));
         this.fallRightSprite = new Nimation(spritesheet, new Vector2(this.pos.x, this.pos.y), 74, 100, 2, 7, 0.25, true, new Vector2(26, 7));
+        this.hurtLeftSprite = new Nimation(spritesheet, new Vector2(this.pos.x, this.pos.y), 74, 100, 3, 8, 0.25, false, new Vector2(26, 7));
+        this.hurtRightSprite = new Nimation(spritesheet, new Vector2(this.pos.x, this.pos.y), 74, 100, 3, 9, 0.25, false, new Vector2(26, 7));
 
         this.sprite = this.idleSprite;
 
@@ -69,17 +71,6 @@ class Player extends Moveable {
 
         this.isJumping = Input.Keys.GetKey(Input.Keys.SPACE) || Input.GamePad.A.pressed || this.AButton.IsPushed();
 
-        // Animations
-        if (this.velocity.y < 0) {
-            this.sprite = (this.dir === 1) ? this.jumpRightSprite : this.jumpLeftSprite;
-        } else if (!this.isOnGround) {
-            this.sprite = (this.dir === 1) ? this.fallRightSprite : this.fallLeftSprite;
-        } else if (this.velocity.x !== 0) {
-            this.sprite = (this.dir === 1) ? this.runRightSprite : this.runLeftSprite;
-        } else {
-            this.sprite = (this.dir === 1) ? this.idleRightSprite : this.idleLeftSprite;
-        }
-
         // Abilities
         if (Input.Keys.GetKey(Input.Keys.ENTER) || Input.GamePad.X.pressed || this.BButton.IsPushed()) {
             if (!this.isGlobLocked) {
@@ -95,6 +86,19 @@ class Player extends Moveable {
             // Unlock all ability keys
             this.isGlobLocked = false;
             this.isAOELocked = false;
+        }
+
+        // Animations
+        if (this.isKnockingBack) {
+            this.sprite = (this.dir === 1) ? this.hurtRightSprite : this.hurtLeftSprite;
+        } else if (this.velocity.y < 0) {
+            this.sprite = (this.dir === 1) ? this.jumpRightSprite : this.jumpLeftSprite;
+        } else if (!this.isOnGround) {
+            this.sprite = (this.dir === 1) ? this.fallRightSprite : this.fallLeftSprite;
+        } else if (this.velocity.x !== 0) {
+            this.sprite = (this.dir === 1) ? this.runRightSprite : this.runLeftSprite;
+        } else {
+            this.sprite = (this.dir === 1) ? this.idleRightSprite : this.idleLeftSprite;
         }
 
     }
@@ -117,6 +121,9 @@ class Player extends Moveable {
 
         if (!this.isInputLocked) {
             this.GetInput();
+        } else {
+            this.movement = 0;
+            this.velocity = new Vector2(0, 0);
         }
 
         // Globs

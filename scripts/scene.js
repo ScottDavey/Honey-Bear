@@ -35,6 +35,11 @@ class Scene {
             '#fe9000'
         );
 
+        // PitFalls
+        this.pitfallsArr = this.level.eventCollision.pitfalls;
+        this.pitfalls = [];
+        this.pitfallTextures = [];
+
         this.leftButton = new Button('images/Touch_Button.png', new Vector2(20, CANVAS_HEIGHT - 120), new Vector2(100, 100));
         this.rightButton = new Button('images/Touch_Button.png', new Vector2(140, CANVAS_HEIGHT - 120), new Vector2(100, 100));
         this.AButton = new Button('images/Touch_Button.png', new Vector2(CANVAS_WIDTH - 240, CANVAS_HEIGHT - 120), new Vector2(100, 100));
@@ -42,9 +47,12 @@ class Scene {
 
         this.camera = new Camera();
         this.player = new Player(this.level.player.start, this.level.player.size, this);
-        this.bush = new ThornBush(new Vector2(1000, 460), new Vector2(100, 74));
+        this.bush = new ThornBush(new Vector2(1000, 460), new Vector2(75, 64));
 
-        this.enemyCount = 0;
+        this.showDebug = false;
+        this.isDebugKeyLocked = false;
+
+        this.isCameraShakeKeyLocked = false;
 
         this.LoadContent();
     }
@@ -75,6 +83,11 @@ class Scene {
             return new Enemy(enemy, this);
         });
 
+        this.pitfalls = this.pitfallsArr.map(pitfall => {
+            this.pitfallTextures.push(new Texture(pitfall.pos, pitfall.size, '#FF990066', 1, '#FF9900FF'));
+            return new Rectangle(pitfall.pos.x, pitfall.pos.y, pitfall.size.x, pitfall.size.y);
+        });
+
         return true;
     }
 
@@ -91,6 +104,10 @@ class Scene {
                 collision.b                                 // Y Intercept (or, the b in y = mx + b)
             );
         });
+    }
+
+    GetPitfalls() {
+        return this.pitfalls;
     }
 
     HasGlobCollidedWithEnvironment(line, globs) {
@@ -130,6 +147,7 @@ class Scene {
         for (const glob of globs) {
             const globBounds = new Rectangle(glob.pos.x, glob.pos.y, glob.size.x, glob.size.y);
             const intersectionDepth = bounds.GetIntersectionDepth(globBounds);
+            const globDir = glob.GetDirection();
 
             if (intersectionDepth.x !== 0 && intersectionDepth.y !== 0) {
 
@@ -138,7 +156,11 @@ class Scene {
 
                 if (absDepthY < absDepthX || absDepthX < absDepthY) {
                     entity.DoDamage(glob);
+                    entity.SetKnockBack(globDir);
                     glob.SetHasHit(true);
+                    if (!entity.GetIsTracking()) {
+                        entity.TrackPlayer(true);
+                    }
                 }
 
             }
@@ -153,6 +175,7 @@ class Scene {
         const playerPos = this.player.GetPos();
         const playerSize = this.player.GetSize();
         const playerBounds = new Rectangle(playerPos.x, playerPos.y, playerSize.x, playerSize.y);
+        const knockBackDir = ((playerBounds.center.x - bushBounds.center.x) < 0) ? -1 : 1;
 
         const intersectionDepth = bushBounds.GetIntersectionDepth(playerBounds);
 
@@ -163,6 +186,8 @@ class Scene {
 
             if (absDepthY < absDepthX || absDepthX < absDepthY) {
                 this.player.DoDamage(bush);
+                this.player.SetKnockBack(knockBackDir);
+                this.camera.shake(0.2);
             }
 
         }
@@ -190,6 +215,15 @@ class Scene {
 
         this.camera.moveTo(cameraPosX, cameraPosY);
 
+        if (Input.Keys.GetKey(Input.Keys.R)) {
+            if (!this.isCameraShakeKeyLocked) {
+                this.isCameraShakeKeyLocked = true;
+                this.camera.shake(0.2);
+            }
+        } else {
+            this.isCameraShakeKeyLocked = false;
+        }
+
         // Based on the camera's position, update the parallax backgrounds
         const cameraLookAt = this.camera.getlookat();
         this.parallax.Update(new Vector2(cameraLookAt[0], cameraLookAt[1]));
@@ -211,14 +245,12 @@ class Scene {
             for (let e = 0; e < this.enemies.length; e++) {
                 const enemy = this.enemies[e];
                 if (!enemy.GetIsDead()) {
-                    this.enemies[e].Update();
+                    this.enemies[e].Update(this.player.GetPosition());
                     if (globs.length) this.CheckGlobCollisionWithEntity(enemy, globs);
                 } else {
                     this.enemies.splice(e, 1);
                 }
             }
-
-            this.enemyCount = (this.enemies) ? this.enemies.length : 0;
 
             // Check glob collision with environment
             for (let l = 0; l < this.lines.length; l++) {
@@ -248,6 +280,18 @@ class Scene {
                 this.BButton.Update();
             }
 
+            /*
+            // Show or Hide Debug Info
+            if (Input.Keys.GetKey(Input.Keys.R)) {
+                if (!this.isDebugKeyLocked) {
+                    this.isDebugKeyLocked = true;
+                    this.showDebug = !this.showDebug;
+                }
+            } else {
+                this.isDebugKeyLocked = false;
+            }
+            */
+
         }
 
     }
@@ -264,12 +308,12 @@ class Scene {
         this.exitTexture.Draw();
 
         // Enemies
-        for (let e = 0; e < this.enemies.length; e++) {
-            const enemyPos = this.enemies[e].GetPos();
+        for (const enemy of this.enemies) {
+            const enemyPos = enemy.GetPos();
             // Only render the enemy if he's inside the camera's view
             if (enemyPos.x > cameraPos[0] && enemyPos.x < (cameraPos[0] + CANVAS_WIDTH)) {
                 enemyShowCount++;
-                this.enemies[e].Draw();
+                enemy.Draw();
             }
         }
 
@@ -288,6 +332,8 @@ class Scene {
 
         this.camera.end();
 
+        DrawText(`Is Knocking Back: ${this.player.isKnockingBack}`, (CANVAS_WIDTH - 250), 20, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+
         if (IS_MOBILE) {
             this.leftButton.Draw();
             this.rightButton.Draw();
@@ -304,19 +350,21 @@ class Scene {
             this.transition.draw();
         }
 
-        DrawText(`Enemies Showing: ${enemyShowCount} / ${this.enemies.length}`, (CANVAS_WIDTH - 250), 20, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
-        DrawText(`Lines Showing: ${lineShowCount} / ${this.lines.length}`, (CANVAS_WIDTH - 250), 35, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
-        DrawText(`Is Pushing A: ${this.AButton.IsPushed()}`, (CANVAS_WIDTH - 250), 50, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
-        DrawText(`Is Pushing B: ${this.BButton.IsPushed()}`, (CANVAS_WIDTH - 250), 65, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
-        DrawText(`Is Pushing L: ${this.leftButton.IsPushed()}`, (CANVAS_WIDTH - 250), 80, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
-        DrawText(`Is Pushing R: ${this.rightButton.IsPushed()}`, (CANVAS_WIDTH - 250), 95, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
-        DrawText(`Is Touching: ${Input.Touch.IsTouching()}`, (CANVAS_WIDTH - 250), 110, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
-        const touches = Input.Touch.GetPositions();
-        for (let t = 0; t < touches.length; t++) {
-            const touch = touches[t];
-            const circ = new Circle(new Vector2(touch.x, touch.y), 10, '#990000ff', '#99000066'); //center, radius, lineColor, fillColor
-            DrawText(`Touches: x${touch.x} y${touch.y}`, (CANVAS_WIDTH - 250), 125 + (t * 15), 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
-            circ.Draw();
+        if (this.showDebug) {
+            DrawText(`Enemies Showing: ${enemyShowCount} / ${this.enemies.length}`, (CANVAS_WIDTH - 250), 20, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+            DrawText(`Lines Showing: ${lineShowCount} / ${this.lines.length}`, (CANVAS_WIDTH - 250), 35, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+            DrawText(`Is Pushing A: ${this.AButton.IsPushed()}`, (CANVAS_WIDTH - 250), 50, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+            DrawText(`Is Pushing B: ${this.BButton.IsPushed()}`, (CANVAS_WIDTH - 250), 65, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+            DrawText(`Is Pushing L: ${this.leftButton.IsPushed()}`, (CANVAS_WIDTH - 250), 80, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+            DrawText(`Is Pushing R: ${this.rightButton.IsPushed()}`, (CANVAS_WIDTH - 250), 95, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+            DrawText(`Is Touching: ${Input.Touch.IsTouching()}`, (CANVAS_WIDTH - 250), 110, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+            const touches = Input.Touch.GetPositions();
+            for (let t = 0; t < touches.length; t++) {
+                const touch = touches[t];
+                const circ = new Circle(new Vector2(touch.x, touch.y), 10, '#990000ff', '#99000066'); //center, radius, lineColor, fillColor
+                DrawText(`Touches: x${touch.x} y${touch.y}`, (CANVAS_WIDTH - 250), 125 + (t * 15), 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+                circ.Draw();
+            }
         }
 
 

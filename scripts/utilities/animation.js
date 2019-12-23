@@ -19,6 +19,10 @@ class Nimation {
         this.offset = offset;
     }
 
+    SetSpeed(speed) {
+        this.speed = speed;
+    }
+
     Animate(frameTime) {
         // Set the previous frame time to the current time (frameTime) if this is the first go around
         this.previousFrameTime = (this.previousFrameTime === 0) ? frameTime : this.previousFrameTime;

@@ -11,8 +11,15 @@ class HoneyGlob {
         this.damage = 10;
 
         this.velocity = new Vector2(0, 0);
+        this.velocity = new Vector2(0, 0);
         this.movementAcceleration = 9000.0;
-        this.maxSpeed = 900.0;
+        this.maxSpeed = 1200.0;
+
+        this.airDrag = 0.9;
+
+        // Vertical
+        this.gravity = 300.0;
+        this.maxFallSpeed = 250.0;
 
         this.hasHit = false;
 
@@ -28,12 +35,20 @@ class HoneyGlob {
         // super(pos, this.size, this.damage, this.sprite);
     }
 
+    GetDirection() {
+        return this.dir;
+    }
+
     GetDamage() {
         return this.damage;
     }
 
     GetHasHit() {
         return this.hasHit;
+    }
+
+    GetPos() {
+        return this.pos;
     }
 
     SetHasHit(hasHit) {
@@ -43,7 +58,9 @@ class HoneyGlob {
     Update() {
         const elapsed = GameTime.getElapsed();
 
-        this.velocity.x += this.dir * this.movementAcceleration * elapsed;
+        // Horizontal Movement
+        this.velocity.x += this.dir * this.movementAcceleration;
+        this.velocity.x *= this.airDrag;
         this.velocity.x = Clamp(
             this.velocity.x,
             -this.maxSpeed,
@@ -52,6 +69,16 @@ class HoneyGlob {
 
         this.pos.x += this.velocity.x * elapsed;
         this.pos.x = Math.round(this.pos.x);
+
+        // Vertical Movement
+        this.velocity.y = Clamp(
+            this.velocity.y + this.gravity * elapsed,
+            -this.maxFallSpeed,
+            this.maxFallSpeed
+        );
+        // this.velocity.y = this.Arc(this.velocity.y);
+        this.pos.y += this.velocity.y * elapsed;
+        this.pos.y = Math.round(this.pos.y);
 
         this.sprite.Update(this.pos);
 

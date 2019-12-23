@@ -18,7 +18,6 @@ var Input = {
         CONTROL: 17,
         ESCAPE: 27,
         ENTER: 13,
-        SHIFT: 16,
         GetKey(keyCode) {
             return Input.Keys._isPressed[keyCode];
         },

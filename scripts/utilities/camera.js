@@ -18,6 +18,9 @@ class Camera {
 			height: 0,
 			scale: [1.0, 1.0]
 		};
+		this.isShaking = false;
+		this.shakeStart = 0;
+		this.shakeMaxTime = 0.5;
 		this.updateViewport();
 	}
 
@@ -61,11 +64,24 @@ class Camera {
 	};
 
 	moveTo(x, y) {
-		// this.lookat[0] = x;
+		const currentGameTime = GameTime.getCurrentGameTime();
+
 		this.lookat[0] += (x - this.lookat[0]) * 0.05;
 		this.lookat[0] = (this.lookat[0] < 0.5) ? 0 : this.lookat[0];
 		this.lookat[1] += (y - this.lookat[1]) * 0.05;
 		this.lookat[1] = (this.lookat[1] < 0.5) ? 0 : this.lookat[1];
+
+		if (this.isShaking) {
+			if ((currentGameTime - this.shakeStart) < this.shakeMaxTime) {
+
+				this.lookat[0] += random(-5, 5);
+				this.lookat[1] += random(-2, 2);
+
+			} else {
+				this.isShaking = false;
+			}
+		}
+
 		this.updateViewport();
 	};
 
@@ -82,5 +98,15 @@ class Camera {
 		obj.y = (y - this.viewport.top) * (this.viewport.scale[1]);
 		return obj;
 	};
+
+	shake(duration = 0.5) {
+
+		if (!this.isShaking) {
+			this.shakeMaxTime = duration;
+			this.isShaking = true;
+			this.shakeStart = GameTime.getCurrentGameTime();
+		}
+
+	}
 
 }

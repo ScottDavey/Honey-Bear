@@ -16,15 +16,43 @@ class Moveable extends Entity {
         this.friction = 0.8;
         this.moveAcceleration = 4000.0;
         this.maxMoveSpeed = 300.0;
+        // Knock Back
+        this.isKnockingBack = false;
+        this.knockBackDir = -1;
+        this.knockBackTime = 0;
+        this.maxKnockBackTime = 0.05;
+        this.knockBackBurst = 500;
+        this.knockBackBurstAdj = { x: this.knockBackBurst * this.dir, y: -550 };
         // Vertical movement
         this.gravity = 3000.0;
         this.maxFallSpeed = 1000.0;
         this.jumpBurst = -900.0;
         this.isOnGround = false;
         this.isJumping = false;
-        this.wasJumping = false;
         this.maxJumpTime = 0.1;
         this.jumpTime = 0;
+    }
+
+    SetMaxMoveSpeed(speed) {
+        this.maxMoveSpeed = speed;
+    }
+
+    SetKnockBack(dir) {
+        this.knockBackDir = dir;
+        this.knockBackBurstAdj.x = this.knockBackBurst * this.knockBackDir;
+        this.isKnockingBack = true;
+    }
+
+    GetPosition() {
+        return this.pos;
+    }
+
+    GetDirection() {
+        return this.dir;
+    }
+
+    GetVelocity() {
+        return this.velocity;
     }
 
     HandleCollision() {
@@ -45,12 +73,6 @@ class Moveable extends Entity {
                 bounds.center.x >= line.startPos.x &&
                 bounds.center.x <= line.endPos.x
             ) {
-                /*
-                const slope =
-                    (line.endPos.y - line.startPos.y) /
-                    (line.endPos.x - line.startPos.x);
-                const b = line.startPos.y - slope * line.startPos.x;
-                */
                 y = slope * bounds.center.x + b;
 
                 if (Math.abs(y - (bounds.center.y + 10)) <= bounds.halfSize.y) {
@@ -95,25 +117,45 @@ class Moveable extends Entity {
             this.jumpTime = 0;
         }
 
-        this.wasJumping = this.isJumping;
-
         return velY;
+    }
+
+    KnockBack(vel) {
+        const elapsed = GameTime.getElapsed();
+
+        if (this.isKnockingBack) {
+
+            if (this.knockBackTime < this.maxKnockBackTime) {
+                vel.x = this.knockBackBurstAdj.x;
+                if (!this.isOnGround) {
+                    vel.y = this.knockBackBurstAdj.y;
+                }
+            } else {
+                this.isKnockingBack = false;
+            }
+            this.knockBackTime += elapsed
+
+        } else {
+            this.knockBackTime = 0;
+        }
+
+        return vel;
+
     }
 
     ApplyPhysics() {
         const elapsed = GameTime.getElapsed();
 
         // Horizontal Movement
-        this.velocity.x += this.movement * this.moveAcceleration * elapsed;
+        this.velocity.x += this.movement * this.moveAcceleration;
         this.velocity.x *= this.friction;
         this.velocity.x = Clamp(
             this.velocity.x,
             -this.maxMoveSpeed,
             this.maxMoveSpeed
         );
+        // Check if being knocked back
         this.velocity.x = (this.velocity.x < 5 && this.velocity.x > -5) ? 0 : this.velocity.x;
-        this.pos.x += this.velocity.x * elapsed;
-        this.pos.x = Math.round(this.pos.x);
 
         // Vertical Movement
         this.velocity.y = Clamp(
@@ -122,6 +164,12 @@ class Moveable extends Entity {
             this.maxFallSpeed
         );
         this.velocity.y = this.Jump(this.velocity.y);
+
+        // Handle KnockBack
+        this.velocity = this.KnockBack(this.velocity);
+
+        this.pos.x += this.velocity.x * elapsed;
+        this.pos.x = Math.round(this.pos.x);
         this.pos.y += this.velocity.y * elapsed;
         this.pos.y = Math.round(this.pos.y);
 

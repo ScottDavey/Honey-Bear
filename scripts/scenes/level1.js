@@ -31,7 +31,12 @@ You must get more.
             { start: new Vector2(350, 100), size: new Vector2(50, 68), region: { pos: new Vector2(0, 0), size: new Vector2(1000, 1000) } },
         ],
         eventCollision: {
-            exit: { pos: new Vector2(7480, 0), size: new Vector2(300, 720) }
+            exit: { pos: new Vector2(7480, 0), size: new Vector2(300, 720) },
+            pitfalls: [
+                { pos: new Vector2(1230, 515), size: new Vector2(155, 400) },
+                { pos: new Vector2(4510, 233), size: new Vector2(115, 400) },
+                { pos: new Vector2(4880, 175), size: new Vector2(150, 400) }
+            ]
         },
         collision: [
             { "sx": 1, "sy": 525, "ex": 1093, "ey": 525, "c": "FLOOR", "n": "-1", "s": "WOOD", "h": "#9F0313", "rx": 0, "ry": 0, "sl": 0, "b": 525 },

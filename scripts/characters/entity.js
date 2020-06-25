@@ -60,13 +60,11 @@ class Entity {
         this.sprite.SetBorder(border, borderSize);
     }
 
-    GetIsDead() {
+    IsDead() {
         return this.isDead;
     }
 
     // BEHAVIOURS
-
-    Attack() { }
 
     DoDamage(weapon) {
         const damage = weapon.GetDamage();

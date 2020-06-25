@@ -21,6 +21,7 @@ class Camera {
 		this.isShaking = false;
 		this.shakeStart = 0;
 		this.shakeMaxTime = 0.5;
+		this.shakeStrength = new Vector2(3, 3);
 		this.updateViewport();
 	}
 
@@ -74,8 +75,8 @@ class Camera {
 		if (this.isShaking) {
 			if ((currentGameTime - this.shakeStart) < this.shakeMaxTime) {
 
-				this.lookat[0] += random(-5, 5);
-				this.lookat[1] += random(-2, 2);
+				this.lookat[0] += random(-this.shakeStrength.x, this.shakeStrength.x);
+				this.lookat[1] += random(-this.shakeStrength.y, this.shakeStrength.y);
 
 			} else {
 				this.isShaking = false;
@@ -99,10 +100,11 @@ class Camera {
 		return obj;
 	};
 
-	shake(duration = 0.5) {
+	shake(duration = 0.5, strength = new Vector2(3, 3)) {
 
 		if (!this.isShaking) {
 			this.shakeMaxTime = duration;
+			this.shakeStrength = strength;
 			this.isShaking = true;
 			this.shakeStart = GameTime.getCurrentGameTime();
 		}

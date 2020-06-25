@@ -3,7 +3,7 @@
  *************************************************/
 
 class Scene {
-    constructor(selectedLevel) {
+    constructor(selectedLevel, playerCheckpoint) {
         this.selectedLevel = selectedLevel;
         this.backToHUB = false;
         this.isLevelComplete = false;
@@ -46,6 +46,9 @@ class Scene {
         this.BButton = new Button('images/Touch_Button.png', new Vector2(CANVAS_WIDTH - 120, CANVAS_HEIGHT - 140), new Vector2(100, 100));
 
         this.camera = new Camera();
+
+        // const playerStart = playerCheckpoint || this.level.player.start;
+        // this.player = new Player(playerCheckpoint, this.level.player.size, this);
         this.player = new Player(this.level.player.start, this.level.player.size, this);
         this.bush = new ThornBush(new Vector2(1000, 460), new Vector2(75, 64));
 
@@ -72,9 +75,11 @@ class Scene {
         this.camera = undefined;
         this.player = undefined;
         this.globs = undefined;
+
+        return true;
     }
 
-    async LoadContent() {
+    LoadContent() {
         this.parallax = new Parallax(this.backgroundImgs);
 
         this.LoadCollision();
@@ -108,6 +113,10 @@ class Scene {
 
     GetPitfalls() {
         return this.pitfalls;
+    }
+
+    IsPlayerDead() {
+        return this.player.IsDead();
     }
 
     HasGlobCollidedWithEnvironment(line, globs) {
@@ -187,7 +196,7 @@ class Scene {
             if (absDepthY < absDepthX || absDepthX < absDepthY) {
                 this.player.DoDamage(bush);
                 this.player.SetKnockBack(knockBackDir);
-                this.camera.shake(0.2);
+                this.camera.shake(0.2, new Vector2(5, 5));
             }
 
         }
@@ -215,15 +224,6 @@ class Scene {
 
         this.camera.moveTo(cameraPosX, cameraPosY);
 
-        if (Input.Keys.GetKey(Input.Keys.R)) {
-            if (!this.isCameraShakeKeyLocked) {
-                this.isCameraShakeKeyLocked = true;
-                this.camera.shake(0.2);
-            }
-        } else {
-            this.isCameraShakeKeyLocked = false;
-        }
-
         // Based on the camera's position, update the parallax backgrounds
         const cameraLookAt = this.camera.getlookat();
         this.parallax.Update(new Vector2(cameraLookAt[0], cameraLookAt[1]));
@@ -244,7 +244,7 @@ class Scene {
             // Enemies
             for (let e = 0; e < this.enemies.length; e++) {
                 const enemy = this.enemies[e];
-                if (!enemy.GetIsDead()) {
+                if (!enemy.IsDead()) {
                     this.enemies[e].Update(this.player.GetPosition());
                     if (globs.length) this.CheckGlobCollisionWithEntity(enemy, globs);
                 } else {
@@ -331,8 +331,6 @@ class Scene {
         this.bush.Draw();
 
         this.camera.end();
-
-        DrawText(`Is Knocking Back: ${this.player.isKnockingBack}`, (CANVAS_WIDTH - 250), 20, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
 
         if (IS_MOBILE) {
             this.leftButton.Draw();

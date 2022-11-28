@@ -113,8 +113,6 @@ class Enemy extends Moveable {
     }
 
     Update(playerPos) {
-        const elapsed = GameTime.getElapsed();
-
         this.sprite = this.idleSprite;
 
         // Jump, randomly

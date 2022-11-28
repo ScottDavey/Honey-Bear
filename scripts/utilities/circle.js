@@ -14,7 +14,11 @@ class Circle {
         this.radius = radius;
     }
 
-    UpdateCenter(center) {
+    // UpdateCenter(center) {
+    //     this.center = center;
+    // }
+
+    Update(center) {
         this.center = center;
     }
 

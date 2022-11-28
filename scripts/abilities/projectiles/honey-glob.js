@@ -13,7 +13,7 @@ class HoneyGlob {
         this.velocity = new Vector2(0, 0);
         this.velocity = new Vector2(0, 0);
         this.movementAcceleration = 9000.0;
-        this.maxSpeed = 1200.0;
+        this.maxSpeed = 600.0;
 
         this.airDrag = 0.9;
 
@@ -23,13 +23,15 @@ class HoneyGlob {
 
         this.hasHit = false;
 
-        this.sprite = new Texture(
-            pos,
-            this.size,
-            '#ebaf4c',
-            1,
-            '#ebaf4c'
-        );
+        // this.sprite = new Texture(
+        //     pos,
+        //     this.size,
+        //     '#ebaf4c',
+        //     1,
+        //     '#ebaf4c'
+        // );
+
+        this.sprite = new Circle(pos, 5, '#ebaf4c', '#ebaf4c');
 
         // Call parent constructor
         // super(pos, this.size, this.damage, this.sprite);

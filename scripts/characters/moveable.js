@@ -43,6 +43,11 @@ class Moveable extends Entity {
         this.isKnockingBack = true;
     }
 
+    SetPosition(newPos) {
+        this.pos.x = newPos.x;
+        this.pos.y = newPos.y;
+    }
+
     GetPosition() {
         return this.pos;
     }

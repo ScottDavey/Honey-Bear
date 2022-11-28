@@ -57,6 +57,8 @@ class Scene {
 
         this.isCameraShakeKeyLocked = false;
 
+        this.isPlayerRandomPositionKeyLocked = false;
+
         this.LoadContent();
     }
 
@@ -237,6 +239,19 @@ class Scene {
                 this.player.LockInput(false);
             }
 
+            if (Input.Keys.GetKey(Input.Keys.M)) {
+                if (!this.isPlayerRandomPositionKeyLocked) {
+                    const randPos = new Vector2();
+                    randPos.x = random(0, this.worldWidth - 300);
+                    randPos.y = random(-this.worldHeight - 500, -this.worldHeight);
+                    this.player.SetRandomPosition(randPos);
+                    this.isPlayerRandomPositionKeyLocked = true;
+                    console.log(this.worldHeight, `YA: ${randPos.x}x ${randPos.y}y`);
+                }
+            } else {
+                this.isPlayerRandomPositionKeyLocked = false;
+            }
+
 
             this.player.Update();
             const globs = this.player.GetGlobs();
@@ -245,7 +260,7 @@ class Scene {
             for (let e = 0; e < this.enemies.length; e++) {
                 const enemy = this.enemies[e];
                 if (!enemy.IsDead()) {
-                    this.enemies[e].Update(this.player.GetPosition());
+                    enemy.Update(this.player.GetPosition());
                     if (globs.length) this.CheckGlobCollisionWithEntity(enemy, globs);
                 } else {
                     this.enemies.splice(e, 1);
@@ -253,8 +268,8 @@ class Scene {
             }
 
             // Check glob collision with environment
-            for (let l = 0; l < this.lines.length; l++) {
-                this.HasGlobCollidedWithEnvironment(this.lines[l], globs);
+            for (const line of this.lines) {
+                this.HasGlobCollidedWithEnvironment(line, globs);
             }
 
             // Event Collisions with player
@@ -280,7 +295,6 @@ class Scene {
                 this.BButton.Update();
             }
 
-            /*
             // Show or Hide Debug Info
             if (Input.Keys.GetKey(Input.Keys.R)) {
                 if (!this.isDebugKeyLocked) {
@@ -290,7 +304,6 @@ class Scene {
             } else {
                 this.isDebugKeyLocked = false;
             }
-            */
 
         }
 
@@ -317,13 +330,13 @@ class Scene {
             }
         }
 
-        for (let l = 0; l < this.lines.length; l++) {
-            const linePos = this.lines[l].GetPos();
+        for (const line of this.lines) {
+            const linePos = line.GetPos();
             // Only render if the lines are visible.
             // ** This is obviously temporary as the line won't be drawn once the artwork is added. ** //
             if ((linePos.start.x > cameraPos[0] && linePos.start.x < (cameraPos[0] + CANVAS_WIDTH)) || (linePos.end.x > cameraPos[0] && linePos.end.x < (cameraPos[0] + CANVAS_WIDTH))) {
                 lineShowCount++;
-                this.lines[l].Draw();
+                line.Draw();
             }
         }
 
@@ -357,8 +370,7 @@ class Scene {
             DrawText(`Is Pushing R: ${this.rightButton.IsPushed()}`, (CANVAS_WIDTH - 250), 95, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
             DrawText(`Is Touching: ${Input.Touch.IsTouching()}`, (CANVAS_WIDTH - 250), 110, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
             const touches = Input.Touch.GetPositions();
-            for (let t = 0; t < touches.length; t++) {
-                const touch = touches[t];
+            for (const touch of touches) {
                 const circ = new Circle(new Vector2(touch.x, touch.y), 10, '#990000ff', '#99000066'); //center, radius, lineColor, fillColor
                 DrawText(`Touches: x${touch.x} y${touch.y}`, (CANVAS_WIDTH - 250), 125 + (t * 15), 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
                 circ.Draw();

@@ -9,6 +9,7 @@ var Input = {
         S: 83,
         D: 68,
         R: 82,
+        M: 77,
         LEFT: 37,
         UP: 38,
         RIGHT: 39,

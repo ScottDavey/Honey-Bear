@@ -107,6 +107,10 @@ class Player extends Moveable {
         return this.globs;
     }
 
+    SetRandomPosition(randPos) {
+        super.SetPosition(randPos);
+    }
+
     // BEHAVIOURS
 
     LockInput(isLocked) {

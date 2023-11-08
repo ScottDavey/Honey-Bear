@@ -37,6 +37,7 @@ class Scene {
 
         // PitFalls
         this.pitfallsArr = this.level.eventCollision.pitfalls;
+        console.log(this.level);
         this.pitfalls = [];
         this.pitfallTextures = [];
 
@@ -246,7 +247,6 @@ class Scene {
                     randPos.y = random(-this.worldHeight - 500, -this.worldHeight);
                     this.player.SetRandomPosition(randPos);
                     this.isPlayerRandomPositionKeyLocked = true;
-                    console.log(this.worldHeight, `YA: ${randPos.x}x ${randPos.y}y`);
                 }
             } else {
                 this.isPlayerRandomPositionKeyLocked = false;

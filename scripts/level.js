@@ -36,18 +36,18 @@ class Level {
                     this.scene.Update();
                 }
 
+                if (this.scene.IsPlayerDead()) {
+                    this.scene = undefined;
+                    this.scene = new Scene(this.selectedLevel);
+                    this.sceneIsLoaded = this.scene.LoadContent();
+                    this.levelStartTime = 0;
+                }
+
                 if (this.scene.isLevelComplete) {
                     this.scene.UnloadContent();
                     this.selectedLevel++;
                     this.scene = undefined;
 
-                    this.levelStartTime = 0;
-                }
-
-                if (this.scene.IsPlayerDead()) {
-                    this.scene = undefined;
-                    this.scene = new Scene(this.selectedLevel);
-                    this.sceneIsLoaded = this.scene.LoadContent();
                     this.levelStartTime = 0;
                 }
 

@@ -5,7 +5,7 @@ class Enemy extends Moveable {
 
     constructor(data = { start: new Vector2(150, 150), size: new Vector2(50, 68), region: { pos: new Vector2(0, 0), size: new Vector2(300, 1000) } }, scene) {
         // Call parent constructor
-        super(data.start, data.size, scene);
+        super(data.start, data.size, scene, false);
 
         // Update some inherited vars
         this.maxMoveSpeed = 75.0;

@@ -4,19 +4,21 @@
 
 class DamageText {
 
-    constructor(value, isCrit, position) {
+    constructor(value, isCrit, position, isPlayer) {
         this.value = value;
+        this.valueFormatted = this.value.toLocaleString();
         this.isCrit = isCrit;
         this.position = new Vector2(position.x, position.y - 20);
+        this.isPlayer = isPlayer;
         this.duration = 2;
         this.changeRate = 1 / (this.duration * 60);
         this.fontSize = this.isCrit ? 17 : 10;
         this.font = `normal ${this.fontSize}pt Ubuntu, Verdana`;
-        this.fontColor = this.isCrit ? '97, 87, 13' : '255, 255, 255';
+        this.fontColor = this.isPlayer ? '128, 0, 0' : (this.isCrit ? '97, 87, 13' : '255, 255, 255');
         this.startTime = GameTime.getCurrentGameTime();
         this.opacity = 1.0;
         this.text = new Text(
-            `${value}`,
+            `${this.valueFormatted}`,
             this.position.x,
             this.position.y,
             this.font,

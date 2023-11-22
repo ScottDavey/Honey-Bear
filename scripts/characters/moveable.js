@@ -3,8 +3,8 @@
 *******************************************/
 
 class Moveable extends Entity {
-    constructor(pos, size, scene) {
-        super(pos, size);
+    constructor(pos, size, scene, isPlayer = false) {
+        super(pos, size, true, isPlayer);
 
         this.scene = scene;
 

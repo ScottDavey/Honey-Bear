@@ -3,9 +3,10 @@
 *******************************************/
 
 class Entity {
-    constructor(pos, size, canBeDamaged = true) {
+    constructor(pos, size, canBeDamaged = true, isPlayer = false) {
 
         // Create some default variables
+        this.isPlayer = isPlayer;
         this.pos = new Vector2(pos.x, pos.y);
         this.size = new Vector2(size.x, size.y);
         this.canBeDamaged = canBeDamaged;
@@ -15,8 +16,8 @@ class Entity {
             this.isDead = false;
             this.isInvincible = false;
             this.invincibilityStart = 0;
-            this.health = 400;
-            this.maxHealth = 400;
+            this.health = 300000;
+            this.maxHealth = 300000;
             this.healthBar = new Texture(
                 new Vector2(this.pos.x, this.pos.y - 15),
                 new Vector2(this.size.x, 10),
@@ -72,7 +73,7 @@ class Entity {
 
         if (this.canBeDamaged) {
             this.health = this.health - damage.amount;
-            this.damageText.push(new DamageText(damage.amount, damage.isCrit, this.pos));
+            this.damageText.push(new DamageText(damage.amount, damage.isCrit, this.pos, this.isPlayer));
             const healthBarSizeX = (this.size.x * (this.health / this.maxHealth) < 0) ? 0 : this.size.x * (this.health / this.maxHealth);
             this.health = (this.health < 0) ? 0 : this.health;
             this.healthBar.SetSize(new Vector2(healthBarSizeX, 10));

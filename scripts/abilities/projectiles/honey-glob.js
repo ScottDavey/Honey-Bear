@@ -8,9 +8,9 @@ class HoneyGlob {
         this.pos = pos;
         this.dir = dir;
         this.size = new Vector2(10, 5);
-        this.damage = random(10, 20);
-        this.critPercent = 20;
-        this.critDamagePercent = 1.5;
+        this.damage = random(3000, 5000);
+        this.critPercent = 50;
+        this.critDamagePercent = 5;
 
         this.velocity = new Vector2(0, 0);
         this.velocity = new Vector2(0, 0);

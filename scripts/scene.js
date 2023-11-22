@@ -79,12 +79,8 @@ class Scene {
         this.backgroundMusic = undefined;
         this.backgroundMusicSources = [
             { path: 'MUSIC_The-Forgotten_Forest.mp3', defaultVolume: 0.2 },
-            { path: 'Caretaker_DRAFT.wav', defaultVolume: 0.4 },
-            { path: 'Kenopsia-DeepSea.wav', defaultVolume: 0.4 },
-            { path: 'Kenopsia-DeepSpace.wav', defaultVolume: 0.4 },
-            { path: 'Kenopsia-Existential.wav', defaultVolume: 0.4 },
-            { path: 'Kenopsia-Falling-NewKick.wav', defaultVolume: 0.4 },
-            { path: 'Kenopsia-SoundsOftheQuantum_Draft.wav', defaultVolume: 0.4 },
+            { path: 'Seneca.mp3', defaultVolume: 0.4 },
+            { path: 'BloodOnBlood.mp3', defaultVolume: 0.4 }
         ];
 
         // TEXT

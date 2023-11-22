@@ -4,7 +4,7 @@
 
 class Player extends Moveable {
     constructor(start, size, scene) {
-        super(start, size, scene);
+        super(start, size, scene, true);
 
         const spritesheet = document.createElement('img');
         spritesheet.setAttribute('src', 'images/spritesheets/Adventurer-1.5/adventurer-spritesheet.png');

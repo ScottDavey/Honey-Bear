@@ -5,7 +5,7 @@ class ThornBush extends Stationary {
 
     constructor(pos, size) {
         super(pos, size, false);
-        this.damage = 10;
+        this.damage = 500;
 
         const spritesheet = document.createElement('img');
         spritesheet.setAttribute('src', 'images/entities/bush.png');
@@ -15,7 +15,7 @@ class ThornBush extends Stationary {
     }
 
     GetDamage() {
-        return this.damage;
+        return { amount: this.damage, isCrit: false };
     }
 
     Update() {

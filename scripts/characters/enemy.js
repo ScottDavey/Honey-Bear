@@ -38,6 +38,10 @@ class Enemy extends Moveable {
 
     }
 
+    GetPosition() {
+        return super.GetPosition();
+    }
+
     GetIsTracking() {
         return this.isTrackingPlayer;
     }
@@ -110,6 +114,10 @@ class Enemy extends Moveable {
             this.runRightSprite.SetSpeed(0.5);
             this.runRightSprite.SetSpeed(0.5);
         }
+    }
+
+    UpdatePosition(pos) {
+        this.pos = new Vector2(pos.x, pos.y);
     }
 
     Update(playerPos) {

@@ -6,20 +6,23 @@ class Game {
 
     constructor() {
         this.fps = 0;
+        this.fpsText = new Text(`FPS: ${this.fps}`, (CANVAS_WIDTH / 2 - 50), 20, 'normal 14pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
         this.state = undefined;
         this.intro = undefined;
         this.mainMenu = undefined;
         this.level = undefined;
         this.gameMenu = undefined;
         this.isPaused = false;
+        this.pausedText = new Text('PAUSED', CANVAS_WIDTH / 2 - 170, CANVAS_HEIGHT / 2 + 20, 'normal 75pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
         this.pausedOverlay = undefined;
         this.isEscapeLocked = false;
         this.escapeLockStart = 0;
+        this.timeText = new Text(`Time: 0:00`, 7, 20, 'normal 14pt Consolas, "Trebuchet MS", Verdana', '#FFFFFF');
     }
 
     initialize() {
         this.state = GAME_STATES.PRIMARY.INTRO;
-        this.intro = new Introduction();
+        this.intro = new Introduction();    
     };
 
     update() {
@@ -100,7 +103,8 @@ class Game {
             case GAME_STATES.PRIMARY.PLAYING:
                 if (typeof this.level !== 'undefined') {
                     this.level.Draw();
-                    DrawText('Time: ' + SecondsToTime(this.level.GetTimer()), 7, 20, 'normal 14pt Consolas, "Trebuchet MS", Verdana', '#FFFFFF');
+                    this.timeText.UpdateString(`Time: ${SecondsToTime(this.level.GetTimer())}`);
+                    this.timeText.Draw();
                 }
 
                 state = 'PLAYING';
@@ -112,11 +116,12 @@ class Game {
 
         if (this.isPaused) {
             this.pausedOverlay.Draw()
-            DrawText('PAUSED', CANVAS_WIDTH / 2 - 170, CANVAS_HEIGHT / 2 + 20, 'normal 75pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+            this.pausedText.Draw();
         }
 
         // FPS
-        DrawText('FPS: ' + this.fps, (CANVAS_WIDTH / 2 - 50), 20, 'normal 14pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+        this.fpsText.UpdateString(`FPS: ${this.fps}`);
+        this.fpsText.Draw();
 
     };
 

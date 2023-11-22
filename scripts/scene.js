@@ -9,7 +9,14 @@ class Scene {
         this.isLevelComplete = false;
         this.level = stages[selectedLevel];
         this.transition = new Transition('0, 0, 0', 3, 'in');
-        this.introText = this.level.introText;
+        this.exitTransition = undefined;
+        this.introTextBackground = new Texture(
+            new Vector2(0, (CANVAS_HEIGHT / 2 - 75)),
+            new Vector2(CANVAS_WIDTH, 150),
+            '#5831a0AA',
+            1,
+            '#FFC436'
+        );
         this.worldWidth = this.level.worldWidth;
         this.worldHeight = this.level.worldHeight;
         this.backgroundImgs = this.level.backgrounds;
@@ -19,17 +26,18 @@ class Scene {
         this.enemyArr = this.level.enemies;
         this.enemies = [];
         this.eventCollision = this.level.eventCollision;
+        this.isLevelEndSequence = false;
         this.exit = this.eventCollision.exit;
         this.exitVolume = new Rectangle(
-            this.exit.pos.x,
-            this.exit.pos.y,
-            this.exit.size.x,
-            this.exit.size.y
+            this.exit.pos[0],
+            this.exit.pos[1],
+            this.exit.size[0],
+            this.exit.size[1]
         );
         // pos, size, fillColor, lineWidth, lineColor
         this.exitTexture = new Texture(
-            this.exit.pos,
-            this.exit.size,
+            new Vector2(this.exit.pos[0], this.exit.pos[1]),
+            new Vector2(this.exit.size[0], this.exit.size[1]),
             'rgba(0, 0, 0, 0.5)',
             1,
             '#fe9000'
@@ -37,9 +45,12 @@ class Scene {
 
         // PitFalls
         this.pitfallsArr = this.level.eventCollision.pitfalls;
-        console.log(this.level);
         this.pitfalls = [];
         this.pitfallTextures = [];
+
+        // Events
+        this.eventsArr = this.level.eventCollision.generic;
+        this.events = [];
 
         this.leftButton = new Button('images/Touch_Button.png', new Vector2(20, CANVAS_HEIGHT - 120), new Vector2(100, 100));
         this.rightButton = new Button('images/Touch_Button.png', new Vector2(140, CANVAS_HEIGHT - 120), new Vector2(100, 100));
@@ -50,7 +61,12 @@ class Scene {
 
         // const playerStart = playerCheckpoint || this.level.player.start;
         // this.player = new Player(playerCheckpoint, this.level.player.size, this);
-        this.player = new Player(this.level.player.start, this.level.player.size, this);
+        this.player = new Player(
+            new Vector2(this.level.player.start[0], this.level.player.start[1]),
+            new Vector2(this.level.player.size[0], this.level.player.size[1]),
+            this
+        );
+
         this.bush = new ThornBush(new Vector2(1000, 460), new Vector2(75, 64));
 
         this.showDebug = false;
@@ -60,7 +76,29 @@ class Scene {
 
         this.isPlayerRandomPositionKeyLocked = false;
 
-        this.LoadContent();
+        this.backgroundMusic = undefined;
+        this.backgroundMusicSources = [
+            { path: 'MUSIC_The-Forgotten_Forest.mp3', defaultVolume: 0.2 },
+            { path: 'Caretaker_DRAFT.wav', defaultVolume: 0.4 },
+            { path: 'Kenopsia-DeepSea.wav', defaultVolume: 0.4 },
+            { path: 'Kenopsia-DeepSpace.wav', defaultVolume: 0.4 },
+            { path: 'Kenopsia-Existential.wav', defaultVolume: 0.4 },
+            { path: 'Kenopsia-Falling-NewKick.wav', defaultVolume: 0.4 },
+            { path: 'Kenopsia-SoundsOftheQuantum_Draft.wav', defaultVolume: 0.4 },
+        ];
+
+        // TEXT
+        const introTextSource = this.level.introText;
+        const centeredText = CenterText(introTextSource, 17, new Vector2(CANVAS_WIDTH, CANVAS_HEIGHT));
+        this.introText = new Text(introTextSource, centeredText.x, centeredText.y, 'normal 30px "Poiret One", sans-serif', '#FFFFFF');
+        this.enemiesShowingText = new Text(`Enemies Showing: 0 / 0`, (CANVAS_WIDTH - 250), 20, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+        this.linesShowingText = new Text(`Lines Showing: 0 / 0`, (CANVAS_WIDTH - 250), 35, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+        this.isPushingAText = new Text(`Is Pushing A: FALSE`, (CANVAS_WIDTH - 250), 50, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+        this.isPushingBText = new Text(`Is Pushing B: FALSE`, (CANVAS_WIDTH - 250), 65, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+        this.isPushingLText = new Text(`Is Pushing L: FALSE`, (CANVAS_WIDTH - 250), 80, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+        this.isPushingRText = new Text(`Is Pushing R: FALSE`, (CANVAS_WIDTH - 250), 95, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+        this.isTouchingText = new Text(`Is Touching: FALSE`, (CANVAS_WIDTH - 250), 110, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+        this.touchesText = new Text(`Touches: x0 y0`, (CANVAS_WIDTH - 250), 125 + (7 * 15), 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
     }
 
     UnloadContent() {
@@ -83,19 +121,51 @@ class Scene {
     }
 
     LoadContent() {
-        this.parallax = new Parallax(this.backgroundImgs);
+        this.parallax = new Parallax(this.backgroundImgs, this.worldWidth);
 
         this.LoadCollision();
 
-        this.enemies = this.enemyArr.map(enemy => {
-            return new Enemy(enemy, this);
-        });
-
         this.pitfalls = this.pitfallsArr.map(pitfall => {
-            this.pitfallTextures.push(new Texture(pitfall.pos, pitfall.size, '#FF990066', 1, '#FF9900FF'));
-            return new Rectangle(pitfall.pos.x, pitfall.pos.y, pitfall.size.x, pitfall.size.y);
+            this.pitfallTextures.push(
+                new Texture(
+                    new Vector2(pitfall.pos[0], pitfall.pos[1]),
+                    new Vector2(pitfall.size[0], pitfall.size[1]),
+                    '#FF990066',
+                    1,
+                    '#FF9900FF'
+                )
+            );
+            return new Rectangle(pitfall.pos[0], pitfall.pos[1], pitfall.size[0], pitfall.size[1]);
         });
 
+        this.enemies = this.enemyArr.map(enemy => {
+            //{ start: new Vector2(150, 150), size: new Vector2(50, 68), region: { pos: new Vector2(0, 0), size: new Vector2(300, 1000) } }
+            return new Enemy(
+                {
+                    start: new Vector2(enemy.start[0], enemy.start[1]),
+                    size: new Vector2(enemy.size[0], enemy.size[1]),
+                    region: {
+                        pos: new Vector2(enemy.region.pos[0], enemy.region.pos[1]),
+                        size: new Vector2(enemy.region.size[0], enemy.region.size[1]),
+                    },
+                },
+                this
+            );
+        });
+
+        this.events = this.eventsArr.map(event => new Rectangle(event.pos[0], event.pos[1], event.size[0], event.size[1]));
+
+        const backgroundMusicChoice = this.backgroundMusicSources[random(0, this.backgroundMusicSources.length - 1)];
+        this.backgroundMusic = new Sound(
+            `sounds/music/${backgroundMusicChoice.path}`,
+            true,
+            true,
+            false,
+            backgroundMusicChoice.defaultVolume,
+            1.5
+        );
+        this.backgroundMusic.Play();
+        
         return true;
     }
 
@@ -116,6 +186,10 @@ class Scene {
 
     GetPitfalls() {
         return this.pitfalls;
+    }
+
+    GetEvents() {
+        return this.events;
     }
 
     IsPlayerDead() {
@@ -206,6 +280,10 @@ class Scene {
 
     }
 
+    CheckPlayerEventCollision(event) {
+        
+    }
+
     Update() {
         const currentGameTime = GameTime.getCurrentGameTime();
 
@@ -231,80 +309,110 @@ class Scene {
         const cameraLookAt = this.camera.getlookat();
         this.parallax.Update(new Vector2(cameraLookAt[0], cameraLookAt[1]));
 
-        // Fade IN
+        /****************************
+        *****  FADE IN (exits)  *****
+        ****************************/
         if (!this.transition.IsComplete()) {
             this.transition.update(currentGameTime);
             this.player.LockInput(true);
+            return;
+        }
+
+        /**********************
+        *****  GAME PLAY  *****
+        **********************/
+
+        if (this.player.IsInputLocked() && !this.isLevelEndSequence) {
+            this.player.LockInput(false);
+        }
+
+        if (Input.Keys.GetKey(Input.Keys.M)) {
+            if (!this.isPlayerRandomPositionKeyLocked) {
+                const randPos = new Vector2();
+                randPos.x = random(0, this.worldWidth - 300);
+                randPos.y = random(-this.worldHeight - 500, -this.worldHeight);
+                this.player.SetRandomPosition(randPos);
+                this.isPlayerRandomPositionKeyLocked = true;
+            }
         } else {
-            if (this.player.IsInputLocked()) {
-                this.player.LockInput(false);
-            }
+            this.isPlayerRandomPositionKeyLocked = false;
+        }
 
-            if (Input.Keys.GetKey(Input.Keys.M)) {
-                if (!this.isPlayerRandomPositionKeyLocked) {
-                    const randPos = new Vector2();
-                    randPos.x = random(0, this.worldWidth - 300);
-                    randPos.y = random(-this.worldHeight - 500, -this.worldHeight);
-                    this.player.SetRandomPosition(randPos);
-                    this.isPlayerRandomPositionKeyLocked = true;
+
+        this.player.Update();
+        const globs = this.player.GetGlobs();
+
+        // Enemies
+        for (let e = 0; e < this.enemies.length; e++) {
+            const enemy = this.enemies[e];
+            if (!enemy.IsDead()) {
+                enemy.Update(this.player.GetPosition());
+                // If the enemy falls for some reason, throw him back up
+                if (enemy.GetPosition().y > (this.worldHeight + 100)) {
+                    enemy.UpdatePosition(new Vector2(enemy.GetPosition().x, -300));
                 }
+                if (globs.length) this.CheckGlobCollisionWithEntity(enemy, globs);
             } else {
-                this.isPlayerRandomPositionKeyLocked = false;
+                this.enemies.splice(e, 1);
+            }
+        }
+
+        // Check glob collision with environment
+        for (const line of this.lines) {
+            this.HasGlobCollidedWithEnvironment(line, globs);
+        }
+
+        // Event Collisions with player
+        const playerBounds = new Rectangle(
+            this.player.pos.x,
+            this.player.pos.y,
+            this.player.size.x,
+            this.player.size.y
+        );
+
+        this.bush.Update();
+        this.CheckBushCollisionWithPlayer(this.bush);
+
+        // Level Complete
+        if (playerBounds.right > this.exitVolume.left && playerBounds.bottom > this.exitVolume.top) {
+            this.isLevelEndSequence = true;
+            
+            if (!this.exitTransition) {
+                const exitTransitionPosition = new Vector2(
+                    this.player.GetPosition().x - CANVAS_WIDTH / 2,
+                    0
+                );
+                this.exitTransition = new Transition('0, 0, 0', 1.5, 'out', exitTransitionPosition);
             }
 
-
-            this.player.Update();
-            const globs = this.player.GetGlobs();
-
-            // Enemies
-            for (let e = 0; e < this.enemies.length; e++) {
-                const enemy = this.enemies[e];
-                if (!enemy.IsDead()) {
-                    enemy.Update(this.player.GetPosition());
-                    if (globs.length) this.CheckGlobCollisionWithEntity(enemy, globs);
-                } else {
-                    this.enemies.splice(e, 1);
-                }
+            if (!this.exitTransition.IsComplete()) {
+                this.exitTransition.update(currentGameTime);
             }
 
-            // Check glob collision with environment
-            for (const line of this.lines) {
-                this.HasGlobCollidedWithEnvironment(line, globs);
-            }
-
-            // Event Collisions with player
-            const playerBounds = new Rectangle(
-                this.player.pos.x,
-                this.player.pos.y,
-                this.player.size.x,
-                this.player.size.y
-            );
-
-            this.bush.Update();
-            this.CheckBushCollisionWithPlayer(this.bush);
-
-            // Level Complete
-            if (playerBounds.right > this.exitVolume.left && playerBounds.bottom > this.exitVolume.top) {
+            this.player.LockInput(true);
+            
+            if (this.backgroundMusic.FadeOut(currentGameTime)) {
+                this.backgroundMusic.Stop();
+                this.backgroundMusic = undefined;
                 this.isLevelComplete = true;
             }
+        }
 
-            if (IS_MOBILE) {
-                this.leftButton.Update();
-                this.rightButton.Update();
-                this.AButton.Update();
-                this.BButton.Update();
+        if (IS_MOBILE) {
+            this.leftButton.Update();
+            this.rightButton.Update();
+            this.AButton.Update();
+            this.BButton.Update();
+        }
+
+        // Show or Hide Debug Info
+        if (Input.Keys.GetKey(Input.Keys.R)) {
+            if (!this.isDebugKeyLocked) {
+                this.isDebugKeyLocked = true;
+                this.showDebug = !this.showDebug;
             }
-
-            // Show or Hide Debug Info
-            if (Input.Keys.GetKey(Input.Keys.R)) {
-                if (!this.isDebugKeyLocked) {
-                    this.isDebugKeyLocked = true;
-                    this.showDebug = !this.showDebug;
-                }
-            } else {
-                this.isDebugKeyLocked = false;
-            }
-
+        } else {
+            this.isDebugKeyLocked = false;
         }
 
     }
@@ -318,7 +426,9 @@ class Scene {
 
         this.parallax.Draw();
 
-        this.exitTexture.Draw();
+        if (+this.selectedLevel > 0) {
+            this.exitTexture.Draw();
+        }
 
         // Enemies
         for (const enemy of this.enemies) {
@@ -330,14 +440,18 @@ class Scene {
             }
         }
 
-        for (const line of this.lines) {
-            const linePos = line.GetPos();
-            // Only render if the lines are visible.
-            // ** This is obviously temporary as the line won't be drawn once the artwork is added. ** //
-            if ((linePos.start.x > cameraPos[0] && linePos.start.x < (cameraPos[0] + CANVAS_WIDTH)) || (linePos.end.x > cameraPos[0] && linePos.end.x < (cameraPos[0] + CANVAS_WIDTH))) {
-                lineShowCount++;
-                line.Draw();
+        if (+this.selectedLevel > 0) {
+            
+            for (const line of this.lines) {
+                const linePos = line.GetPos();
+                // Only render if the lines are visible.
+                // ** This is obviously temporary as the line won't be drawn once the artwork is added. ** //
+                if ((linePos.start.x > cameraPos[0] && linePos.start.x < (cameraPos[0] + CANVAS_WIDTH)) || (linePos.end.x > cameraPos[0] && linePos.end.x < (cameraPos[0] + CANVAS_WIDTH))) {
+                    lineShowCount++;
+                    line.Draw();
+                }
             }
+
         }
 
         this.player.Draw();
@@ -354,25 +468,39 @@ class Scene {
 
         // Fade IN
         if (!this.transition.IsComplete()) {
-            if (this.introText) {
-                const centeredText = CenterText(this.introText, 14, new Vector2(CANVAS_WIDTH, CANVAS_HEIGHT));
-                DrawText(this.introText, centeredText.x, centeredText.y, 'normal 20px "Montserrat-Regular", sans-serif', '#222222');
+            if (this.introText.GetString()) {
+                this.introTextBackground.Draw();
+                this.introText.Draw();
             }
             this.transition.draw();
         }
 
+        // FADE OUT
+        if (this.exitTransition && !this.exitTransition.IsComplete()) {
+            this.exitTransition.draw();
+        }
+
         if (this.showDebug) {
-            DrawText(`Enemies Showing: ${enemyShowCount} / ${this.enemies.length}`, (CANVAS_WIDTH - 250), 20, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
-            DrawText(`Lines Showing: ${lineShowCount} / ${this.lines.length}`, (CANVAS_WIDTH - 250), 35, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
-            DrawText(`Is Pushing A: ${this.AButton.IsPushed()}`, (CANVAS_WIDTH - 250), 50, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
-            DrawText(`Is Pushing B: ${this.BButton.IsPushed()}`, (CANVAS_WIDTH - 250), 65, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
-            DrawText(`Is Pushing L: ${this.leftButton.IsPushed()}`, (CANVAS_WIDTH - 250), 80, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
-            DrawText(`Is Pushing R: ${this.rightButton.IsPushed()}`, (CANVAS_WIDTH - 250), 95, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
-            DrawText(`Is Touching: ${Input.Touch.IsTouching()}`, (CANVAS_WIDTH - 250), 110, 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+            this.enemiesShowingText.UpdateString(`Enemies Showing: ${enemyShowCount} / ${this.enemies.length}`);
+            this.linesShowingText.UpdateString(`Lines Showing: ${lineShowCount} / ${this.lines.length}`);
+            this.isPushingAText.UpdateString(`Is Pushing A: ${this.AButton.IsPushed()}`);
+            this.isPushingBText.UpdateString(`Is Pushing B: ${this.BButton.IsPushed()}`);
+            this.isPushingLText.UpdateString(`Is Pushing L: ${this.leftButton.IsPushed()}`);
+            this.isPushingRText.UpdateString(`Is Pushing R: ${this.rightButton.IsPushed()}`);
+            this.isTouchingText.UpdateString(`Is Touching: ${Input.Touch.IsTouching()}`);
+
+            this.enemiesShowingText.Draw();
+            this.linesShowingText.Draw();
+            this.isPushingAText.Draw();
+            this.isPushingBText.Draw();
+            this.isPushingLText.Draw();
+            this.isPushingRText.Draw();
+            this.isTouchingText.Draw();
             const touches = Input.Touch.GetPositions();
             for (const touch of touches) {
                 const circ = new Circle(new Vector2(touch.x, touch.y), 10, '#990000ff', '#99000066'); //center, radius, lineColor, fillColor
-                DrawText(`Touches: x${touch.x} y${touch.y}`, (CANVAS_WIDTH - 250), 125 + (t * 15), 'normal 8pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+                this.touchesText.UpdateString(`Touches: x${touch.x} y${touch.y}`);
+                this.touchesText.Draw();
                 circ.Draw();
             }
         }

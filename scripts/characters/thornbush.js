@@ -8,7 +8,7 @@ class ThornBush extends Stationary {
         this.damage = 10;
 
         const spritesheet = document.createElement('img');
-        spritesheet.setAttribute('src', 'images/bush.png');
+        spritesheet.setAttribute('src', 'images/entities/bush.png');
 
         // Nimation: img, pos, frameHeight, frameWidth, totalFrames, animationSeq, speed, isLooping, offset
         this.sprite = new Nimation(spritesheet, new Vector2(pos.x, pos.y), 74, 100, 1, 0, 0.5, true, new Vector2(20, 10));

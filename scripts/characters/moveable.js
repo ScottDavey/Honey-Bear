@@ -61,6 +61,7 @@ class Moveable extends Entity {
     }
 
     HandleCollision() {
+        const isMovingUp = this.velocity.y > 0;
         let y, bounds;
 
         bounds = new Rectangle(this.pos.x, this.pos.y, this.size.x, this.size.y);
@@ -74,7 +75,7 @@ class Moveable extends Entity {
             const b = line.b;
 
             if (
-                (line.collision == "FLOOR" || line.collision == "CEILING") &&
+                ((line.collision == "FLOOR" && isMovingUp) || line.collision == "CEILING") &&
                 bounds.center.x >= line.startPos.x &&
                 bounds.center.x <= line.endPos.x
             ) {

@@ -7,8 +7,9 @@ class Introduction {
     constructor() {
         this.transitionIn = new Transition('0, 0, 0', 3, 'in');
         this.transitionOut = undefined; // Will be initialized later, once transitionIn is complete
-        this.introText = 'A Game by Kennedy Amanda Davey';
-        this.centeredText = CenterText(this.introText, 36, new Vector2(CANVAS_WIDTH, CANVAS_HEIGHT));
+        const introTextString = 'A Game by Kennedy Amanda Davey';
+        const centeredText = CenterText(introTextString, 36, new Vector2(CANVAS_WIDTH, CANVAS_HEIGHT));
+        this.introText = new Text(introTextString, centeredText.x, centeredText.y, 'normal 45px "Poiret One", sans-serif', '#FFFFFF');
     }
 
     GetDone() {
@@ -32,7 +33,7 @@ class Introduction {
     };
 
     Draw() {
-        DrawText(this.introText, this.centeredText.x, this.centeredText.y, 'normal 45px "Poiret One", sans-serif', '#FFFFFF');
+        this.introText.Draw();
 
         if (!this.transitionIn.IsComplete()) this.transitionIn.draw();
         if (this.transitionIn.IsComplete() && this.transitionOut) this.transitionOut.draw();

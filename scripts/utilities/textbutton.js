@@ -16,6 +16,7 @@ class TextButton {
         this.hoverBGColor = hoverBGColor;
         this.isLeftClickLocked = false;
         this.isPushed = false;
+        this.buttonText = new Text(this.text, this.pos.x, this.pos.y, `normal ${this.fontSize}px ${this.fontFamily}, sans-serif`, this.fontColor);
 
         this.bounds = new Rectangle(this.pos.x, (this.pos.y - this.size.y), this.size.x, this.size.y);
     }
@@ -26,6 +27,7 @@ class TextButton {
 
     SetFontColor(color) {
         this.fontColor = color;
+        this.buttonText.UpdateColor(this.fontColor);
     }
 
     isPointerOver(pos) {
@@ -53,9 +55,9 @@ class TextButton {
 
         // Apply hover state (if mouse)
         if (this.isPointerOver(mousePos)) {
-            this.fontColor = this.hoverColor;
+            this.SetFontColor(this.hoverColor);
         } else {
-            this.fontColor = this.originalFontColor;
+            this.SetFontColor(this.originalFontColor);
         }
 
         // Handle Inputs
@@ -71,7 +73,7 @@ class TextButton {
     }
 
     Draw() {
-        DrawText(this.text, this.pos.x, this.pos.y, `normal ${this.fontSize}px ${this.fontFamily}, sans-serif`, this.fontColor);
+        this.buttonText.Draw();
     }
 
 }

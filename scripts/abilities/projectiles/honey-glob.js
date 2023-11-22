@@ -8,7 +8,9 @@ class HoneyGlob {
         this.pos = pos;
         this.dir = dir;
         this.size = new Vector2(10, 5);
-        this.damage = 10;
+        this.damage = random(10, 20);
+        this.critPercent = 20;
+        this.critDamagePercent = 1.5;
 
         this.velocity = new Vector2(0, 0);
         this.velocity = new Vector2(0, 0);
@@ -23,14 +25,6 @@ class HoneyGlob {
 
         this.hasHit = false;
 
-        // this.sprite = new Texture(
-        //     pos,
-        //     this.size,
-        //     '#ebaf4c',
-        //     1,
-        //     '#ebaf4c'
-        // );
-
         this.sprite = new Circle(pos, 5, '#ebaf4c', '#ebaf4c');
 
         // Call parent constructor
@@ -42,7 +36,10 @@ class HoneyGlob {
     }
 
     GetDamage() {
-        return this.damage;
+        const isCrit = (random(0, 100) <= this.critPercent);
+        const critPercent = isCrit ? this.critDamagePercent : 1;
+        const amount = this.damage * critPercent;
+        return { amount, isCrit };
     }
 
     GetHasHit() {

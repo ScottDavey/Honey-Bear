@@ -107,17 +107,42 @@ const GameTime = {
     }
 };
 
-/*****************************
-***** DRAW TEXT FUNCTION *****
-*****************************/
-const DrawText = function (string, x, y, font, color) {
-    CONTEXT.save();
-    CONTEXT.font = font;
-    CONTEXT.fillStyle = color;
-    CONTEXT.fillText(string, x, y);
-    CONTEXT.textBaseline = 'middle';
-    CONTEXT.textAlign = "center";
-    CONTEXT.restore();
+/**************************
+***** DRAW TEXT CLASS *****
+**************************/
+class Text {
+    constructor (string, x, y, font, color) {
+        this.string = string;
+        this.position = new Vector2(x, y);
+        this.font = font;
+        this.color = color;
+    }
+
+    GetString() {
+        return this.string;
+    }
+
+    UpdatePos(pos) {
+        this.position = pos;
+    }
+
+    UpdateColor(color) {
+        this.color = color;
+    }
+
+    UpdateString(string) {
+        this.string = string;
+    }
+    
+    Draw() {
+        CONTEXT.save();
+        CONTEXT.font = this.font;
+        CONTEXT.fillStyle = this.color;
+        CONTEXT.fillText(this.string, this.position.x, this.position.y);
+        CONTEXT.textBaseline = 'middle';
+        CONTEXT.textAlign = "center";
+        CONTEXT.restore();
+    }
 };
 
 const CenterText = function (string, fontSize, containerSize) {

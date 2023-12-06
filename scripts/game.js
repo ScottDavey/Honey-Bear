@@ -5,8 +5,7 @@
 class Game {
 
     constructor() {
-        this.fps = 0;
-        this.fpsText = new Text(`FPS: ${this.fps}`, (CANVAS_WIDTH / 2 - 50), 20, 'normal 14pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+        this.fpsText = new Text(`FPS: ${FPS.GetFPS()}`, (CANVAS_WIDTH / 2 - 50), 20, 'normal 14pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
         this.state = undefined;
         this.intro = undefined;
         this.mainMenu = undefined;
@@ -31,12 +30,14 @@ class Game {
         GameTime.update();
         const elapsed = GameTime.getElapsed();  // currently unused
 
+        this.fpsText.UpdateString(`FPS: ${FPS.GetFPS()}`);
 
-        this.fps = fps.getFPS();
-        if (HAS_GAME_PAD) Input.GamePad.Update();
+        if (HAS_GAME_PAD) {
+            Input.GamePad.Update();
+        }
 
         // When we switch tabs the frame rate drops enough for the collision to stop working. We'll pause the game until the framerate comes back up
-        if (this.fps > 30) {
+        if (FPS.GetFPS() > 30) {
 
             // Update Primary State first
             switch (this.state) {
@@ -69,9 +70,7 @@ class Game {
                         this.escapeLockStart = currentGameTime;
                     }
 
-                    if (this.isPaused) {
-                        console.log('PAUSED');
-                    } else {
+                    if (!this.isPaused) {
                         if (typeof this.level === 'undefined') this.level = new Level();
                         this.level.Update();
                     }
@@ -120,7 +119,6 @@ class Game {
         }
 
         // FPS
-        this.fpsText.UpdateString(`FPS: ${this.fps}`);
         this.fpsText.Draw();
 
     };

@@ -1,6 +1,6 @@
 // GLOBAL VARIABLES
 const CANVAS_WIDTH = 1300;
-const CANVAS_HEIGHT = 540;
+const CANVAS_HEIGHT = 500;
 const GAME_STATES = {
     PRIMARY: {
         INTRO: 0,
@@ -21,6 +21,7 @@ const GAME_STATES = {
     }
 };
 
+let FPS = new FPSClass();
 let GAME = undefined;
 let GAME_PAD_DIV = undefined;
 let GAME_PAD = undefined;
@@ -66,6 +67,8 @@ function main() {
 }
 
 function run() {
+    FPS.Update();
+
     if (IS_RUNNING) {
         GAME.update();
         GAME.draw();

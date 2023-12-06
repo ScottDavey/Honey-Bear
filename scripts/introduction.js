@@ -10,6 +10,7 @@ class Introduction {
         const introTextString = 'A Game by Kennedy Amanda Davey';
         const centeredText = CenterText(introTextString, 36, new Vector2(CANVAS_WIDTH, CANVAS_HEIGHT));
         this.introText = new Text(introTextString, centeredText.x, centeredText.y, 'normal 45px "Poiret One", sans-serif', '#FFFFFF');
+        this.done = false;
     }
 
     GetDone() {

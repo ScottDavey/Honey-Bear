@@ -2,7 +2,7 @@
  *****  LEVEL: The Level Class  *****
  ***********************************/
 
-class Level {
+ class Level {
     constructor() {
         this.timer = 0;
         this.levelStartTime = 0;
@@ -11,6 +11,7 @@ class Level {
         this.selectedLevel = 0;
         this.scene = undefined;
         this.sceneIsLoaded = false;
+        this.player = new Player(new Vector2(0, 0), new Vector2(0, 0));
     }
 
     GetTimer() {
@@ -27,7 +28,7 @@ class Level {
 
                 // If the scene is undefined, initiate it and capture the level start time
                 if (!this.scene) {
-                    this.scene = new Scene(this.selectedLevel);
+                    this.scene = new Scene(this.selectedLevel, this.player);
                     this.sceneIsLoaded = this.scene.LoadContent();
                     this.levelStartTime = this.timer;
                 }
@@ -38,7 +39,7 @@ class Level {
 
                 if (this.scene.IsPlayerDead()) {
                     this.scene = undefined;
-                    this.scene = new Scene(this.selectedLevel);
+                    this.scene = new Scene(this.selectedLevel, this.player);
                     this.sceneIsLoaded = this.scene.LoadContent();
                     this.levelStartTime = 0;
                 }

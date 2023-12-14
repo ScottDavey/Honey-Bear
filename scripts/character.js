@@ -8,18 +8,15 @@ class Character {
         this.size = size;
         this.isPlayer = isPlayer;
         this.sprite = undefined;
+        this.bounds = new Rectangle(this.position.x, this.position.y, this.size.x, this.size.y);
 
         // VITALITY
-        this.health = 300000;
-        this.maxHealth = 300000;
-        this.healthBar = new StatusBar(
-            new Vector2(this.position.x, this.position.y),
-            new Vector2(this.size.x, 3),
-            this.maxHealth,
-            '#f8b61d',
-            15
-        );
+        this.health = 500;
+        this.maxHealth = 500;
         this.isDead = false;
+        this.deathStartTime = 0;
+        this.deathMaxTime = 3;
+        this.isDeathDone = false;
         this.damageText = [];
 
         // HORIZONTAL MOVEMENT
@@ -44,10 +41,14 @@ class Character {
         this.isKnockingBack = false;
         this.knockBackDir = -1;
         this.knockBackTime = 0;
-        this.maxKnockBackTime = 0.05;
+        this.maxKnockBackTime = 0.3;
         this.knockBackBurst = 500;
-        this.knockBackBurstAdj = { x: this.knockBackBurst * this.dir, y: -550 };
+        this.knockBackBurstAdj = new Vector2(this.knockBackBurst * this.dir, -500);
 
+        // STUN
+        this.isStunned = false;
+        this.stunStartTime = 0;
+        this.stunDuration = 1;
     }
 
     // GETTERS AND SETTERS
@@ -62,7 +63,7 @@ class Character {
 
     SetSize(size) {
         this.size = size;
-        this.healthBar.SetSize(new Vector2(size.x, 3));
+        // this.healthBar.SetSize(new Vector2(size.x, 3));
     }
 
     SetMaxMoveSpeed(speed) {
@@ -73,14 +74,27 @@ class Character {
         this.dir = dir;
     }
 
-    SetKnockBackDir(dir) {
+    SetKnockBack(dir, burst = this.knockBackBurst) {
         this.knockBackDir = dir;
-        this.knockBackBurstAdj.x = this.knockBackBurst * this.knockBackDir;
+        this.knockBackBurstAdj = new Vector2(burst * this.knockBackDir, this.knockBackBurstAdj.y);
         this.isKnockingBack = true;
     }
 
-    SetIsDead() {
-        this.isDead = true;
+    SetIsDead(isDead = true) {
+        this.isDead = isDead;
+    }
+
+    SetIsDeathDone(isDone) {
+        this.isDeathDone = isDone;
+    }
+
+    SetIsStunned(stunned) {
+        // Set stun start time if it's not set already
+        if (stunned && !this.isStunned) {
+            this.stunStartTime = GameTime.getCurrentGameTime();
+        }
+
+        this.isStunned = stunned;
     }
 
     GetPosition() {
@@ -103,16 +117,45 @@ class Character {
         return this.isDead;
     }
 
+    GetIsDeathDone() {
+        return this.isDeathDone;
+    }
+
     GetSprite() {
         return this.sprite;
     }
 
+    GetBounds() {
+        return this.bounds;
+    }
+
+    GetCurrentHealth() {
+        return this.health;
+    }
+
+    GetMaxHealth() {
+        return this.maxHealth;
+    }
+
+    GetDeathMaxTime() {
+        return this.deathMaxTime;
+    }
+
+    GetIsStunned() {
+        return this.isStunned;
+    }
+
     // BEHAVIOURS
+
+    ResetHealth() {
+        this.health = this.maxHealth;
+        // this.healthBar.SetCurrentValue(this.health); 
+    }
 
     DoDamage(initialDamage) {
         this.health -= initialDamage.amount;        
         this.health = (this.health < 0) ? 0 : this.health;        
-        this.healthBar.SetCurrentValue(this.health);
+        // this.healthBar.SetCurrentValue(this.health);
 
         this.damageText.push(
             new DamageText(
@@ -125,6 +168,16 @@ class Character {
 
         if (this.health <= 0) {
             this.SetIsDead();
+            this.deathStartTime = GameTime.getCurrentGameTime();
+        }
+    }
+
+    HandleDeath() {
+        const currentGameTime = GameTime.getCurrentGameTime();
+        const elapsed = currentGameTime - this.deathStartTime;
+
+        if (elapsed >= this.deathMaxTime) {
+            this.isDeathDone = true;
         }
     }
 
@@ -205,14 +258,21 @@ class Character {
 
         this.ApplyPhysics();
 
+        this.bounds.Update(this.position, this.size);
+
         // Start some movement variables
         this.movement = 0;
         this.isJumping = false;
 
         // Sprite
         if (this.sprite) {
-            this.sprite.Update(new Vector2(this.position.x, this.position.y));
-            this.healthBar.Update(new Vector2(this.position.x, this.position.y - 20));
+            
+            this.sprite.Update(new Vector2(this.position.x, this.position.y));            
+            
+            // Stunning!
+            if (this.isStunned && (currentGameTime - this.stunStartTime) >= this.stunDuration) {
+                this.isStunned = false;
+            }
             
             // Damage Text
             for (let d = 0; d < this.damageText.length; d ++) {
@@ -224,13 +284,16 @@ class Character {
                     this.damageText.splice(d, 1);
                 }
             }
+
+            if (this.isDead && !this.isDeathDone) {
+                this.HandleDeath();
+            }
         }
     }
 
     Draw() {
         if (this.sprite) {
             this.sprite.Draw();
-            this.healthBar.Draw();
 
             for (const dt of this.damageText) {
                 dt.Draw();

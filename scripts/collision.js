@@ -28,7 +28,7 @@ class Collision {
 
     CheckLineCollisionEntity(entity) {
         const isMovingUp = entity.velocity.y < 0;
-        const bounds = new Rectangle(entity.position.x, entity.position.y, entity.size.x, entity.size.y);
+        const bounds = entity.GetBounds();
 
         entity.isOnGround = false;
         entity.isHittingWall = false;
@@ -65,7 +65,7 @@ class Collision {
                 if (line.collision === 'FLOOR' && !isMovingUp) {
 
                     // If the bottom of the player is less than 10 pixels below the line, shoot him back up
-                    if (Math.abs(y - bounds.bottom) <= 10) {
+                    if (Math.abs(y - bounds.bottom) <= 15) {
                         y = Math.floor(y);
                         entity.position.y = y - bounds.height;
                         entity.velocity.y = 0
@@ -116,6 +116,41 @@ class Collision {
 
     CheckBoxCollision(box1, box2) {
         
+        const intersectionDepth = box1.GetIntersectionDepth(box2);
+
+        if (intersectionDepth.x !== 0 && intersectionDepth.y !== 0) {
+            const absDepthX = Math.abs(intersectionDepth.x);
+            const absDepthY = Math.abs(intersectionDepth.y);
+
+            if (absDepthY < absDepthX || absDepthX < absDepthY) {
+                return true;
+            }
+        }
+
+        return false;
+
+    }
+
+    CheckBoxToRadius(box, circle) {
+        const distanceX = box.center.x - circle.GetCenter().x;
+        const distanceY = box.center.y - circle.GetCenter().y;
+        const minDistanceX = box.halfSize.x + circle.GetRadius();
+        const minDistanceY = box.halfSize.y + circle.GetRadius();
+
+        // If we are not intersecting, return false
+        if (Math.abs(distanceX) >= minDistanceX || Math.abs(distanceY) >= minDistanceY) {
+            return false;
+        }
+
+        const depthX = distanceX > 0 ? minDistanceX - distanceX : -minDistanceX - distanceX;
+        const depthY = distanceY > 0 ? minDistanceY - distanceY : -minDistanceY - distanceY;
+
+        if (Math.abs(depthY) < Math.abs(depthX) || Math.abs(depthX) < Math.abs(depthY)) {
+            return true;
+        }
+
+        return false;
+
     }
 
     DrawCollisionLines(cameraPos) {

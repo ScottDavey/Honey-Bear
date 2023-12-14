@@ -4,18 +4,18 @@
 
 // class HoneyGlob extends Projectile {
     class HoneyGlob {
-        constructor(pos, dir) {
+        constructor(pos, dir, playerVelocityX) {
             this.position = pos;
             this.dir = dir;
-            this.size = new Vector2(5, 5);
-            this.damage = random(3000, 5000);
+            this.size = new Vector2(4, 4);
+            this.damage = random(50, 100);
             this.critPercent = 50;
-            this.critDamagePercent = 5;
+            this.critDamagePercent = 3;
     
-            this.velocity = new Vector2(0, 0);
-            this.velocity = new Vector2(0, 0);
+            this.velocity = new Vector2(0, -100);
             this.movementAcceleration = 9000.0;
-            this.maxSpeed = 600.0;
+            this.playerVelocityX = Math.abs(playerVelocityX);
+            this.maxSpeed = 400.0 + (this.playerVelocityX || 0);
     
             this.airDrag = 0.09;
     
@@ -27,7 +27,7 @@
     
             this.sprite = new Circle(pos, 4, '#ebaf4c', '#ebaf4c');
     
-            this.rect = new Rectangle(this.position.x, this.position.y, this.size.x, this.size.y);
+            this.rect = new Rectangle(this.position.x + 2, this.position.y + 2, this.size.x - 2, this.size.y - 2);
         }
     
         GetDirection() {
@@ -86,7 +86,7 @@
             this.position.y += this.velocity.y * elapsed;
             this.position.y = Math.round(this.position.y);
     
-            this.sprite.Update(this.position);
+            this.sprite.SetCenter(this.position);
             this.rect.Update(this.position, this.size);
         }
     

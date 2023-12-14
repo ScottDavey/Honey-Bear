@@ -13,8 +13,10 @@ class DamageText {
         this.duration = 2;
         this.changeRate = 1 / (this.duration * 60);
         this.fontSize = this.isCrit ? 17 : 10;
-        this.font = `normal ${this.fontSize}pt Ubuntu, Verdana`;
-        this.fontColor = this.isPlayer ? '128, 0, 0' : (this.isCrit ? '97, 87, 13' : '255, 255, 255');
+        this.fontWeight = this.isCrit ? 'bold' : 'normal';
+        this.fontFamily = this.isCrit ? '"Gasoek One"' : 'Anton';
+        this.font = `normal ${this.fontSize}pt ${this.fontFamily}, Verdana`;
+        this.fontColor = this.isPlayer ? '128, 0, 0' : (this.isCrit ? '247, 181, 28' : '255, 255, 255');
         this.startTime = GameTime.getCurrentGameTime();
         this.opacity = 1.0;
         this.text = new Text(

@@ -10,15 +10,19 @@ class Circle {
         this.fillColor = fillColor;
     }
 
-    UpdateRadius(radius) {
+    GetCenter() {
+        return this.center;
+    }
+
+    GetRadius() {
+        return this.radius;
+    }
+
+    SetRadius(radius) {
         this.radius = radius;
     }
 
-    // UpdateCenter(center) {
-    //     this.center = center;
-    // }
-
-    Update(center) {
+    SetCenter(center) {
         this.center = center;
     }
 

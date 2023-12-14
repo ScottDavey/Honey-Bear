@@ -7,6 +7,7 @@
         this.selectedLevel = selectedLevel;
         this.player = player;
         this.isPlayerRandomPositionKeyLocked = false;
+        this.isPlayerDamageKeyLocked = false;
 
         this.level = stages[this.selectedLevel];
         this.isLevelComplete = false;
@@ -15,26 +16,30 @@
         this.worldHeight = this.level.worldHeight;
         this.collision = new Collision(this.level.collision);
         this.eventCollision = this.level.eventCollision;
-        this.exitData = this.eventCollision.exit;
-        this.exitVolume = new Rectangle(
-            this.exitData.pos[0],
-            this.exitData.pos[1],
-            this.exitData.size[0],
-            this.exitData.size[1]
+        this.exit = new Rectangle(
+            this.eventCollision.exit.pos[0],
+            this.eventCollision.exit.pos[1],
+            this.eventCollision.exit.size[0],
+            this.eventCollision.exit.size[1]
         );
-
-        this.transition = new Transition('0, 0, 0', 3, 'in');
         this.exitTransition = undefined;
+        this.exitLogBack = new Sprite('images/level_assets/FOREST_ExitLog_BACK.png', new Vector2(3801, 464), new Vector2(199, 94));
+        this.exitLogFront = new Sprite('images/level_assets/FOREST_ExitLog_FRONT.png', new Vector2(3801, 464), new Vector2(199, 94));
+        this.isLevelEndSequence = false;
+        this.intoTransition = new Transition('0, 0, 0', 3, 'in');
         const introTextSource = this.level.introText;
-        const centeredText = CenterText(introTextSource, 17, new Vector2(CANVAS_WIDTH, CANVAS_HEIGHT));
-        this.introText = new Text(introTextSource, centeredText.x, centeredText.y, 'normal 30px "Poiret One", sans-serif', '#FFFFFF');
+        const centeredText = CenterText(introTextSource, 50, new Vector2(CANVAS_WIDTH, CANVAS_HEIGHT));
+        this.introText = new Text(introTextSource, centeredText.x, centeredText.y, 'normal 50pt "Poiret One", sans-serif', '#FFFFFF');
         this.introTextBackground = new Texture(
-            new Vector2(0, CANVAS_HEIGHT / 2 - 75),
-            new Vector2(CANVAS_WIDTH, 150),
+            new Vector2(0, CANVAS_HEIGHT / 2 - 50),
+            new Vector2(CANVAS_WIDTH, 100),
             '#5831a0AA',
             1,
             '#FFC436'
         );
+        
+        this.pitFallData = this.level.eventCollision.pitfalls;
+        this.pitfalls = [];
         
         this.camera = new Camera();
         this.parallax = new Parallax(this.level.backgrounds, this.worldWidth);
@@ -43,15 +48,78 @@
             new Vector2(this.level.player.start[0], this.level.player.start[1]),
             new Vector2(this.level.player.size[0], this.level.player.size[1])
         );
+        this.playerHealthBar = new StatusBar(
+            new Vector2(10, 35),
+            new Vector2(200, 30),
+            this.player.GetMaxHealth(),
+            '#f8b61d',
+            1
+        );
+        // Ability Icons / Cooldowns
+        this.globAbilityIcon = new Sprite('images/level_assets/AbilityIcon_Glob.png', new Vector2(10, 70), new Vector2(31, 31));
+        this.globAbilityCooldownOverlay = new Texture(new Vector2(10, 70), new Vector2(31, 31), '#00000088', 1, '#00000088');
+        this.globAbilityCooldown = new Text('', 20, 90, 'normal 12pt Jura, Verdana', '#FFFFFF');
+        this.blastAbilityIcon = new Sprite('images/level_assets/AbilityIcon_Blast.png', new Vector2(46, 70), new Vector2(31, 31));
+        this.BlastAbilityCooldownOverlay = new Texture(new Vector2(46, 70), new Vector2(31, 31), '#00000088', 1, '#00000088');
+        this.blastAbilityCooldown = new Text('', 56, 90, 'normal 12pt Jura, Verdana', '#FFFFFF');
+        
+        this.bears = [];
+
+        // MUSIC
+        this.backgroundMusic = undefined;
+        this.backgroundMusicSources = [
+            { path: 'Seneca.mp3', defaultVolume: 0.4 },
+            { path: 'MUSIC_The-Forgotten_Forest.mp3', defaultVolume: 0.2 },
+            { path: 'BloodOnBlood.mp3', defaultVolume: 0.4 },
+            { path: 'Halloween.mp3', defaultVolume: 0.4 },
+            { path: 'MUSIC_The-Forgotten_Forest.mp3', defaultVolume: 0.2 }
+        ];
+
+        this.caveFront = new Sprite('images/backgrounds/FOREST_CAVE-FRONT.png', new Vector2(0, 0), new Vector2(123, 648));
+        this.twilightExit = new Texture(
+            new Vector2(5877, 458),
+            new Vector2(123, 170),
+            '#141414',
+            1,
+            '#141414'
+        );
     }
 
     LoadContent() {
-        // Do nothing
+        // LOAD BEARS
+        this.bears = this.level.enemies.map(bear => {
+            return new Bear(
+                new Vector2(bear.start[0], bear.start[1]),
+                new Vector2(bear.size[0], bear.size[1])
+            );
+        });
+
+        // PITFALLS
+        this.pitfalls = this.pitFallData.map(pitfall => {
+            return new Rectangle(pitfall.pos[0], pitfall.pos[1], pitfall.size[0], pitfall.size[1]);
+        });
+
+        // LOAD SONG
+        const backgroundMusicChoice = this.backgroundMusicSources[this.selectedLevel];
+        this.backgroundMusic = new Sound(
+            `sounds/music/${backgroundMusicChoice.path}`,
+            true,
+            true,
+            false,
+            backgroundMusicChoice.defaultVolume,
+            1.5
+        );
+        this.backgroundMusic.Play();
+
         return true;
     }
 
+    UnloadContent() {
+        return;
+    }
+
     IsPlayerDead() {
-        return this.player.GetIsDead();
+        return (this.player.GetIsDead() && this.player.GetIsDeathDone());
     }
 
     // BEHAVIOURS
@@ -63,6 +131,8 @@
         for (let g = 0; g < globs.length; g++) {
             const glob = globs[g];
             const globBounds = glob.GetRect();
+            const globDamage = glob.GetDamage();
+            const isCrit = globDamage.isCrit;
             
             // Check against environment
             if (this.collision.CheckLineCollisionRect(globBounds) ||
@@ -70,10 +140,82 @@
                 glob.position.x > this.worldWidth ||
                 glob.position.y > this.worldHeight
             ) {
-                globs.splice(g, 1);
+                glob.SetHasHit(true);
+                continue;
+            }
+
+            // Check against emenies
+            for (let b = 0; b < this.bears.length; b++) {
+                const bear = this.bears[b];
+                const bearBounds = bear.GetBounds();
+
+                if (!bear.GetIsDead() && this.collision.CheckBoxCollision(globBounds, bearBounds)) {
+                    bear.DoDamage(globDamage);
+                    this.camera.shake(isCrit ? 0.3 : 0.1);
+                    glob.SetHasHit(true);
+
+                    if (!bear.GetIsTracking()) {
+                        bear.TrackPlayer(true);
+                        continue;
+                    }
+                }
             }
         }
 
+    }
+
+    CheckHoneyBlastCollision() {
+        const blast = this.player.GetHoneyBlast();
+
+        // If there's an active honey blast...
+        if (blast) {
+            const blastDamage = blast.GetDamage();
+            const isCrit = blastDamage.isCrit;
+
+            // Loop over Bears to see if it's hit any
+            for (let b = 0; b < this.bears.length; b++) {
+                const bear = this.bears[b];
+                const bearBounds = bear.GetBounds();
+                const bearKnockbackDir = (bearBounds.center.x > this.player.GetBounds().center.x) ? 1 : -1;
+
+                if (!bear.GetIsDead() && !bear.GetIsStunned() && this.collision.CheckBoxToRadius(bearBounds, blast.GetCircle())) {
+                    bear.DoDamage(blastDamage);
+                    bear.SetKnockBack(bearKnockbackDir, 1000);
+                    this.camera.shake(isCrit ? 0.3 : 0.1);
+    
+                    if (!bear.GetIsTracking()) {
+                        bear.TrackPlayer(true);
+                    }
+                }
+            }
+        }
+    }
+
+    CheckEntityPitfallCollision() {
+
+        // Loop over Pitfalls
+        for (const pitfall of this.pitfalls) {
+
+            // Check Bears
+            for (const bear of this.bears) {
+                const bearBounds = bear.GetBounds();
+
+                if (this.collision.CheckBoxCollision(bearBounds, pitfall)) {
+                    bear.SwitchDirections();
+                }
+            }
+
+        }
+
+    }
+
+    FadeOutMusic() {
+        const currentGameTime = GameTime.getCurrentGameTime();
+
+        if (this.backgroundMusic.FadeOut(currentGameTime)) {
+            this.backgroundMusic.Stop();
+            this.backgroundMusic = undefined;
+        }
     }
 
     UpdateCamera() {
@@ -109,19 +251,26 @@
         /****************************
         *****  FADE IN (exits)  *****
         ****************************/
-        if (!this.transition.IsComplete()) {
-            this.transition.update(currentGameTime);
+        if (!this.intoTransition.IsComplete()) {
+            this.intoTransition.update(currentGameTime);
             this.player.SetInputLock(true);
             return;
         }
 
-        if (this.player.GetInputLock() && !this.isLevelEndSequence) {
-            this.player.SetInputLock(false);
+        /************************
+        *****  PLAYER DEAD  *****
+        ************************/
+        if (this.player.GetIsDead()) {
+            this.player.SetInputLock(true);
         }
 
         /**********************
         *****  GAME PLAY  *****
         **********************/
+
+        if (this.player.GetInputLock() && !this.isLevelEndSequence && !this.player.GetIsDead()) {
+            this.player.SetInputLock(false);
+        }
 
         if (Input.Keys.GetKey(Input.Keys.M)) {
             if (!this.isPlayerRandomPositionKeyLocked) {
@@ -135,10 +284,73 @@
             this.isPlayerRandomPositionKeyLocked = false;
         }
 
+        
+        if (Input.Keys.GetKey(Input.Keys.R)) {
+            if (!this.isPlayerDamageKeyLocked) {
+                this.player.DoDamage({ amount: 100, isCrit: true });
+                this.isPlayerDamageKeyLocked = true;
+            }
+        } else {
+            this.isPlayerDamageKeyLocked = false
+        }
+
         this.player.Update();
+        
+        if (this.player.GetIsDead() && !this.player.GetIsDeathDone()) {
+            this.backgroundMusic.SetFadeOutDuration(this.player.GetDeathMaxTime() * 2);
+            this.FadeOutMusic();
+        }
+
+        this.playerHealthBar.Update(this.player.GetCurrentHealth());
         this.collision.CheckLineCollisionEntity(this.player);
         // Check player projectiles (Honey Globs)
         this.CheckHoneyGlobCollisions();
+        this.CheckHoneyBlastCollision();
+        // Update Cooldown Text
+        this.globAbilityCooldown.UpdateString(`${this.player.GetHoneyGlobCooldown() || ''}`);
+        this.blastAbilityCooldown.UpdateString(`${this.player.GetHoneyBlastCooldown() || ''}`);
+
+        // Check for Pitfalls
+        this.CheckEntityPitfallCollision();
+
+        // BEARS
+        for (let b = 0; b < this.bears.length; b++) {
+            const bear = this.bears[b];
+
+            if (bear.GetIsDead() && bear.GetIsDeathDone()) {
+                this.bears.splice(b, 1);
+                continue;
+            }
+
+            bear.Update(this.player.GetPosition());
+            this.collision.CheckLineCollisionEntity(bear);
+
+            // If the Bear falls, throw it back up
+            if (bear.GetPosition().y > (this.worldHeight + 100)) {
+                bear.SetPosition(new Vector2(bear.GetPosition().x, -300));
+            }
+        }
+
+        // EXIT
+        if (this.collision.CheckBoxCollision(this.player.GetBounds(), this.exit)) {
+            this.isLevelEndSequence = true;
+            this.player.SetInputLock(true);
+
+            if (!this.exitTransition) {
+                const exitTransitionPosition = new Vector2(
+                    this.player.GetPosition.x - CANVAS_WIDTH / 2,
+                    0
+                );
+                this.exitTransition = new Transition('0, 0, 0', 1.5, 'out', exitTransitionPosition);
+            }
+
+            if (!this.exitTransition.IsComplete()) {
+                this.exitTransition.update(currentGameTime);
+                this.FadeOutMusic();
+            } else {
+                this.isLevelComplete = true;
+            }
+        }
         
     }
 
@@ -149,21 +361,49 @@
 
         this.parallax.Draw();
 
-        if (+this.selectedLevel > 0) {
+        if (+this.selectedLevel > 1) {
             this.collision.DrawCollisionLines(cameraPos);
         }
 
+        if (+this.selectedLevel === 0) {
+            this.exitLogBack.Draw();
+        }
+
+        for (const bear of this.bears) {
+            bear.Draw();
+        }
+
         this.player.Draw();
+        
+        if (+this.selectedLevel === 0) {
+            this.caveFront.Draw();
+            this.exitLogFront.Draw();
+        } else if (+this.selectedLevel === 1) {
+            this.twilightExit.Draw();
+        }
 
         this.camera.end();
 
+        this.playerHealthBar.Draw();
+        this.globAbilityIcon.Draw();
+        if (+this.player.GetHoneyGlobCooldown() > 0) {
+            this.globAbilityCooldownOverlay.Draw();
+            this.globAbilityCooldown.Draw();
+        }
+        
+        this.blastAbilityIcon.Draw();
+        if (+this.player.GetHoneyBlastCooldown() > 0) {
+            this.BlastAbilityCooldownOverlay.Draw();
+            this.blastAbilityCooldown.Draw();
+        }
+
         // Fade IN
-        if (!this.transition.IsComplete()) {
+        if (!this.intoTransition.IsComplete()) {
             if (this.introText.GetString()) {
                 this.introTextBackground.Draw();
                 this.introText.Draw();
             }
-            this.transition.draw();
+            this.intoTransition.draw();
         }
 
         // FADE OUT

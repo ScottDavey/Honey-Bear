@@ -5,7 +5,7 @@
 class Game {
 
     constructor() {
-        this.fpsText = new Text(`FPS: ${FPS.GetFPS()}`, (CANVAS_WIDTH / 2 - 50), 20, 'normal 14pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+        this.fpsText = new Text(`FPS: ${FPS.GetFPS()}`, (CANVAS_WIDTH / 2 - 50), 20, 'normal 10pt Quicksand, Consolas, Trebuchet MS, Verdana', '#FFFFFF');
         this.state = undefined;
         this.intro = undefined;
         this.mainMenu = undefined;
@@ -16,7 +16,7 @@ class Game {
         this.pausedOverlay = undefined;
         this.isEscapeLocked = false;
         this.escapeLockStart = 0;
-        this.timeText = new Text(`Time: 0:00`, 7, 20, 'normal 14pt Consolas, "Trebuchet MS", Verdana', '#FFFFFF');
+        this.timeText = new Text(`Time: 0:00`, CANVAS_WIDTH - 100, 20, 'normal 12pt Consolas, Jura, "Trebuchet MS", Verdana', '#FFFFFF');
     }
 
     initialize() {

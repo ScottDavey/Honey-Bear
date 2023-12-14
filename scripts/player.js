@@ -7,71 +7,55 @@ class Player extends Character {
         super(position, size, true);
 
         this.isInvincible = false;
-        this.invincibilityStart = 0;
+        this.invincibilityDuration = 2;
+        this.invincibilityTimer = undefined;
 
         // Nimation: img, pos, frameHeight, frameWidth, totalFrames, animationSeq, speed, isLooping, offset
         const spritesheet = 'images/spritesheets/Adventurer-1.5/adventurer-spritesheet.png';
         const honeyBearSpriteSheet = 'images/spritesheets/HoneyBear.png';
         this.defaultRunAnimationSpeed = 0.08;
-        this.runRightSprite = new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 70, 45, 6, 0, this.defaultRunAnimationSpeed, true, new Vector2(0, 0));
-        this.runLeftSprite = new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 70, 45, 6, 1, this.defaultRunAnimationSpeed, true, new Vector2(0, 0));
-        this.idleRightSprite = new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 70, 45, 4, 2, 0.25, true, new Vector2(0, 0));
-        this.idleLeftSprite = new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 70, 45, 4, 3, 0.25, true, new Vector2(0, 0));
-        this.jumpRightSprite = new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 70, 45, 2, 4, 0.2, false, new Vector2(0, 0));
-        this.jumpLeftSprite = new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 70, 45, 2, 5, 0.2, false, new Vector2(0, 0));
-        this.fallRightSprite = new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 70, 45, 1, 6, 0.08, false, new Vector2(0, 0));
-        this.fallLeftSprite = new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 70, 45, 1, 7, 0.08, false, new Vector2(0, 0));
-        this.idleThrowRightSprite = new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 70, 45, 6, 8, 0.02, false, new Vector2(0, 0));
-        this.idleThrowLeftSprite = new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 70, 45, 6, 9, 0.02, false, new Vector2(0, 0));
-        this.runThrowRightSprite = new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 70, 45, 6, 10, this.defaultRunAnimationSpeed, false, new Vector2(0, 0));
-        this.runThrowLeftSprite = new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 70, 45, 6, 11, this.defaultRunAnimationSpeed, false, new Vector2(0, 0));
-        
-        this.hurtLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 3, 8, 0.25, false, new Vector2(26, 13));
-        this.hurtRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 3, 9, 0.25, false, new Vector2(26, 13));
-
-        this.sprite = this.idleSprite;
+        this.animations = {
+            runRightSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 70, 45, 6, 0, this.defaultRunAnimationSpeed, true, new Vector2(0, 0)),
+            runLeftSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 70, 45, 6, 1, this.defaultRunAnimationSpeed, true, new Vector2(0, 0)),
+            idleRightSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 70, 45, 4, 2, 0.25, true, new Vector2(0, 0)),
+            idleLeftSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 70, 45, 4, 3, 0.25, true, new Vector2(0, 0)),
+            jumpRightSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 70, 45, 2, 4, 0.2, false, new Vector2(0, 0)),
+            jumpLeftSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 70, 45, 2, 5, 0.2, false, new Vector2(0, 0)),
+            fallRightSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 70, 45, 1, 6, 0.08, false, new Vector2(0, 0)),
+            fallLeftSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 70, 45, 1, 7, 0.08, false, new Vector2(0, 0)),
+            idleThrowRightSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 70, 45, 6, 8, 0.02, false, new Vector2(0, 0)),
+            idleThrowLeftSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 70, 45, 6, 9, 0.02, false, new Vector2(0, 0)),
+            runThrowRightSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 70, 45, 6, 10, this.defaultRunAnimationSpeed, false, new Vector2(0, 0)),
+            runThrowLeftSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 70, 45, 6, 11, this.defaultRunAnimationSpeed, false, new Vector2(0, 0)),
+            deadRightSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 70, 45, 6, 12, 0.1, false, new Vector2(0, 0)),
+            deadLeftSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 70, 45, 6, 13, 0.08, false, new Vector2(0, 0)),
+            hurtLeftSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 3, 8, 0.25, false, new Vector2(26, 13)),
+            hurtRightSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 3, 9, 0.25, false, new Vector2(26, 13)),
+        };
+        this.sprite = this.animations.idleSprite;
 
         this.isInputLocked = false;
         this.throwStartTime = 0;
-        this.globMaxTime = 0.12;
-        this.isGlobLocked = false;
+        this.globAnimationMaxTime = 0.12;
         this.globs = [];
+        this.globCooldown = undefined;
+        this.globCooldownDuration = 1;
+        this.blast = undefined;
+        this.blastCooldown = undefined;
+        this.blastCooldownDuration = 5;
     }
 
     Initialize(position, size) {
+        this.ResetHealth();
         this.SetPosition(position);
         this.SetSize(size);
+        this.SetIsDead(false);
+        this.SetIsDeathDone(false);
+        this.animations.deadLeftSprite.Reset();
+        this.animations.deadRightSprite.Reset();
     }
 
     // GETTERS AND SETTERS
-
-    SetSprite(sprite) {
-        super.SetSprite(sprite);
-    }
-
-    SetPosition(position) {
-        super.SetPosition(position);
-    }
-
-    SetSize(size) {
-        super.SetSize(size);
-    }
-
-    SetMaxMoveSpeed(speed) {
-        super.SetMaxMoveSpeed(speed);
-    }
-
-    SetDirection(dir) {
-        super.SetDirection(dir);
-    }
-
-    SetKnockBackDir(dir) {
-        super.SetKnockBackDir(dir);
-    }
-
-    SetIsDead() {
-        super.SetIsDead();
-    }
 
     SetRandomPosition(randomPos) {
         this.SetPosition(randomPos);
@@ -81,32 +65,22 @@ class Player extends Character {
         this.isInputLocked = isInputLocked;
     }
 
-    GetPosition() {
-        super.GetPosition();
-    }
-
-    GetSize() {
-        super.GetSize();
-    }
-
-    GetDirection() {
-        super.GetDirection();
-    }
-
-    GetVelocity() {
-        super.GetVelocity();
-    }
-
-    GetIsDead() {
-        super.GetIsDead();
-    }
-
-    GetSprite() {
-        super.GetSprite();
-    }
-
     GetHoneyGlobs() {
         return this.globs;
+    }
+
+    GetHoneyGlobCooldown() {
+        const remainder = this.globCooldown ? this.globCooldown.GetRemainder() : 0;
+        return remainder;
+    }
+
+    GetHoneyBlast() {
+        return this.blast;
+    }
+
+    GetHoneyBlastCooldown() {
+        const remainder = this.blastCooldown ? this.blastCooldown.GetRemainder() : 0;
+        return remainder;
     }
 
     GetInput() {
@@ -141,21 +115,22 @@ class Player extends Character {
 
         // Abilities
         if (Input.Keys.GetKey(Input.Keys.ENTER) || Input.GamePad.X.pressed) {
-            if (!this.isGlobLocked) {
+            if (!this.globCooldown || this.globCooldown.IsComplete()) {
                 this.throwStartTime = currentGameTime;
                 this.isThrowing = true;
                 this.isGlobLocked = true;
                 const globPosX = (this.dir === 1) ? this.position.x + this.size.x - 10 : this.position.x;
-                this.globs.push(new HoneyGlob(new Vector2(globPosX, this.position.y + (this.size.y / 2)), this.dir));
+                this.globs.push(new HoneyGlob(new Vector2(globPosX, this.position.y + (this.size.y / 2)), this.dir, this.velocity.x));
+                this.globCooldown = new Timer(currentGameTime, this.globCooldownDuration);
             }
-        } else if (Input.Keys.GetKey(Input.Keys.SHIFT) || Input.GamePad.Y.pressed) {
-            if (!this.isAOELocked) {
-                this.isAOELocked = true;
+        }
+        
+        if (Input.Keys.GetKey(Input.Keys.SHIFT) || Input.GamePad.Y.pressed) {
+            if (!this.blastCooldown || this.blastCooldown.IsComplete()) {
+                this.blast = new HoneyBlast(this.GetBounds());
+                this.isBlastLocked = true;
+                this.blastCooldown = new Timer(currentGameTime, this.blastCooldownDuration);
             }
-        } else {
-            // Unlock all ability keys
-            this.isGlobLocked = false;
-            this.isAOELocked = false;
         }
     }
 
@@ -166,76 +141,60 @@ class Player extends Character {
     // BEHAVIOURS
 
     DoDamage(damage) {
-        // This is where we'd figure out what weapon is being used
-        // and apply any damage multipliers
-        super.DoDamage(damage);
-    }
 
-    // UPDATE and DRAW
-
-    Update() {
-        const currentGameTime = GameTime.getCurrentGameTime();
-        let isRunning = false;
-
-        if (!this.isInputLocked) {
-            this.GetInput();
-        } else {
-            this.movement = 0;
-            this.velocity = new Vector2(0, 0);
-        }
-
-        if (this.isThrowing) {
-            const throwElapsedTime = currentGameTime - this.throwStartTime;
-
-            // Handle Glob Throw Animation
-            if (throwElapsedTime >= this.globMaxTime) {
-                this.isThrowing = false;
-                this.throwStartTime = 0;
-                this.idleThrowLeftSprite.Reset();
-                this.idleThrowRightSprite.Reset();
-                this.runThrowLeftSprite.Reset();
-                this.runThrowRightSprite.Reset();
-            } else if (throwElapsedTime >= 0.05 && !this.isGlobLocked) {
-                // Dp mptj
+        if (!this.isInvincible || !this.invincibilityTimer) {
+            super.DoDamage(damage);
+            // Apply invincibility
+            this.isInvincible = true;
+            this.invincibilityTimer = new Timer(GameTime.getCurrentGameTime(), this.invincibilityDuration);
+            
+            if (!this.GetIsDead()) {
+                this.SetSpriteOpacity(0.5);
             }
         }
+        
+    }
 
-        // Animations
-        if (this.isKnockingBack) {
-            this.SetSprite((this.dir === 1) ? this.hurtRightSprite : this.hurtLeftSprite);
+    SetSpriteOpacity(opacity) {
+        // Run through each animation sprite to set its opacity
+        for (const sprite in this.animations) {
+            this.animations[sprite].SetImageOpacity(opacity);
+        }
+    }
+
+    HandleAnimations() {
+        let isRunning = false;
+
+        if (this.GetIsDead()) {
+            this.SetSprite((this.dir === 1) ? this.animations.deadRightSprite : this.animations.deadLeftSprite);
+        } else if (this.isKnockingBack) {
+            this.SetSprite((this.dir === 1) ? this.animations.hurtRightSprite : this.animations.hurtLeftSprite);
         } else if (this.velocity.y < 0) {
             if (this.isThrowing) {
-                this.SetSprite((this.dir === 1) ? this.idleThrowRightSprite : this.idleThrowLeftSprite);
+                this.SetSprite((this.dir === 1) ? this.animations.idleThrowRightSprite : this.animations.idleThrowLeftSprite);
             } else {
-                this.SetSprite((this.dir === 1) ? this.jumpRightSprite : this.jumpLeftSprite);
+                this.SetSprite((this.dir === 1) ? this.animations.jumpRightSprite : this.animations.jumpLeftSprite);
             }
         } else if (!this.isOnGround) {
             if (this.isThrowing) {
-                this.SetSprite((this.dir === 1) ? this.idleThrowRightSprite : this.idleThrowLeftSprite);
+                this.SetSprite((this.dir === 1) ? this.animations.idleThrowRightSprite : this.animations.idleThrowLeftSprite);
             } else {
-                this.SetSprite((this.dir === 1) ? this.fallRightSprite : this.fallLeftSprite);
+                this.SetSprite((this.dir === 1) ? this.animations.fallRightSprite : this.animations.fallLeftSprite);
             }
         } else if (this.velocity.x !== 0) {
             if (this.isThrowing) {
-                this.SetSprite((this.dir === 1) ? this.runThrowRightSprite : this.runThrowLeftSprite);
+                this.SetSprite((this.dir === 1) ? this.animations.runThrowRightSprite : this.animations.runThrowLeftSprite);
             } else {
-                this.SetSprite((this.dir === 1) ? this.runRightSprite : this.runLeftSprite);
+                this.SetSprite((this.dir === 1) ? this.animations.runRightSprite : this.animations.runLeftSprite);
             }
             isRunning = true;
         } else {
             if (this.isThrowing) {
-                this.SetSprite((this.dir === 1) ? this.idleThrowRightSprite : this.idleThrowLeftSprite);
+                this.SetSprite((this.dir === 1) ? this.animations.idleThrowRightSprite : this.animations.idleThrowLeftSprite);
             } else {
-                this.SetSprite((this.dir === 1) ? this.idleRightSprite : this.idleLeftSprite);
+                this.SetSprite((this.dir === 1) ? this.animations.idleRightSprite : this.animations.idleLeftSprite);
             }
         }
-
-        // GLOBS
-        for (const glob of this.globs) {
-            glob.Update();
-        }
-        
-        super.Update();
 
         // If we're running, set the run animation speed by the velocity
         if (isRunning) {
@@ -255,10 +214,82 @@ class Player extends Character {
         }
     }
 
+    // UPDATE and DRAW
+
+    Update() {
+        const currentGameTime = GameTime.getCurrentGameTime();
+
+        if (!this.isInputLocked) {
+            this.GetInput();
+        } else {
+            this.movement = 0;
+            this.velocity = new Vector2(0, 0);
+        }
+
+        if (this.isThrowing) {
+            const throwElapsedTime = currentGameTime - this.throwStartTime;
+
+            // Handle Glob Throw Animation
+            if (throwElapsedTime >= this.globAnimationMaxTime) {
+                this.isThrowing = false;
+                this.throwStartTime = 0;
+                this.animations.idleThrowLeftSprite.Reset();
+                this.animations.idleThrowRightSprite.Reset();
+                this.animations.runThrowLeftSprite.Reset();
+                this.animations.runThrowRightSprite.Reset();
+            } else if (throwElapsedTime >= 0.05 && !this.isGlobLocked) {
+                // Dp mptj
+            }
+        }
+
+        // HONEY BLAST
+        if (this.blast) {
+            if (!this.blast.IsComplete()) {
+                this.blast.Update(this.bounds.center);
+            } else {
+                this.blast = undefined;
+            }
+        }
+
+        this.HandleAnimations();
+
+        // Handle Invincibility
+        if (this.isInvincible && this.invincibilityTimer && this.invincibilityTimer.IsComplete()) {
+            this.isInvincible = false;
+            this.SetSpriteOpacity(1);
+        }
+
+        // GLOBS
+        for (let g = 0; g < this.globs.length; g++) {
+            const glob = this.globs[g];
+
+            if (!glob.GetHasHit()) {
+                glob.Update();
+            } else {
+                this.globs.splice(g, 1);
+            }
+        }
+
+        // Handle Cooldowns
+        if (this.globCooldown && this.globCooldown.IsComplete()) {
+            this.globCooldown = undefined;
+        }
+        
+        if (this.blastCooldown && this.blastCooldown.IsComplete()) {
+            this.blastCooldown = undefined;
+        }
+        
+        super.Update();
+    }
+
     Draw() {
 
         for (const glob of this.globs) {
             glob.Draw();
+        }
+
+        if (this.blast) {
+            this.blast.Draw();
         }
 
         super.Draw();

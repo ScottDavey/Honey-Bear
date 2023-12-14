@@ -116,6 +116,28 @@ const GameTime = {
 /**************************
 ***** DRAW TEXT CLASS *****
 **************************/
+class Timer {
+    constructor(startTime, duration) {
+        this.startTime = startTime;
+        this.duration = duration;
+    }
+
+    GetRemainder() {
+        const currentGameTime = GameTime.getCurrentGameTime();
+
+        return Math.ceil(this.duration - (currentGameTime - this.startTime));
+    }
+
+    IsComplete() {
+        const currentGameTime = GameTime.getCurrentGameTime();
+
+        return (currentGameTime - this.startTime >= this.duration);
+    }
+}
+
+/**************************
+***** DRAW TEXT CLASS *****
+**************************/
 class Text {
     constructor (string, x, y, font, color) {
         this.string = string;

@@ -9,6 +9,7 @@ class Sprite {
         this.size = size;
         this.img = document.createElement('img');
         this.img.setAttribute('src', path);
+        this.opacity = 1;
     }
 
 
@@ -17,12 +18,8 @@ class Sprite {
         this.img.setAttribute('src', path);
     };
 
-    FlipImage(dir) {
-        if (dir < 0) {
-            this.img.style.transform = 'scaleX(-1)';
-        } else {
-            this.img.style.transform = 'scaleX(1)';
-        }
+    SetImageOpacity(opacity) {
+        this.opacity = opacity;
     }
 
     Update(pos) {
@@ -34,6 +31,8 @@ class Sprite {
     };
 
     DrawSpriteSheet(clip, frame, position) {
+        CONTEXT.globalAlpha = this.opacity;
+
         CONTEXT.drawImage(
             this.img,
             clip.left,
@@ -45,6 +44,9 @@ class Sprite {
             frame.width,
             frame.height
         );
+
+        // Reset so it doesn't affect any other images in the canvas.
+        CONTEXT.globalAlpha = 1;
     }
 
 }

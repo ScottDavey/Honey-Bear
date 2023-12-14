@@ -24,6 +24,10 @@ class Nimation {
         this.speed = speed;
     }
 
+    SetImageOpacity(opacity) {
+        this.sprite.SetImageOpacity(opacity);
+    }
+
     Animate(frameTime) {
         // Set the previous frame time to the current time (frameTime) if this is the first go around
         this.previousFrameTime = (this.previousFrameTime === 0) ? frameTime : this.previousFrameTime;

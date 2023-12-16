@@ -39,6 +39,7 @@ class Sound {
     }
 
     IsPlaying() {
+        console.log(this.audEl.paused);
         return !this.audEl.paused;
     }
 

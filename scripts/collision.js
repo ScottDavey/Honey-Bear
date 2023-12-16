@@ -70,6 +70,7 @@ class Collision {
                         entity.position.y = y - bounds.height;
                         entity.velocity.y = 0
                         entity.isOnGround = true;
+                        entity.groundType = line.sound;
                     }
 
                 }
@@ -157,7 +158,7 @@ class Collision {
         for (const line of this.lines) {
             const linePos = line.GetPos();
             // Only render if the lines are visible.
-            if ((linePos.start.x > cameraPos[0] && linePos.start.x < (cameraPos[0] + CANVAS_WIDTH)) || (linePos.end.x > cameraPos[0] && linePos.end.x < (cameraPos[0] + CANVAS_WIDTH))) {
+            if ((linePos.start.x > cameraPos.x && linePos.start.x < (cameraPos.x + CANVAS_WIDTH)) || (linePos.end.x > cameraPos.x && linePos.end.x < (cameraPos.x + CANVAS_WIDTH))) {
                 line.Draw();
             }
         }

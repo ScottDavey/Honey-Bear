@@ -6,9 +6,19 @@ class Character {
     constructor(position, size, isPlayer = false) {
         this.position = position;
         this.size = size;
+        this.headSize = new Vector2(this.size.x, this.size.y * 0.3);
         this.isPlayer = isPlayer;
         this.sprite = undefined;
         this.bounds = new Rectangle(this.position.x, this.position.y, this.size.x, this.size.y);
+        this.headBounds = new Rectangle(this.position.x, this.position.y, this.headSize.x, this.headSize.y);
+        // temp
+        this.headTexture = new Texture(
+            new Vector2(this.headBounds.x, this.headBounds.y),
+            new Vector2(this.headBounds.width, this.headBounds.height),
+            '#ff880077',
+            1,
+            '#ff8800'
+        );
 
         // VITALITY
         this.health = 500;
@@ -26,13 +36,14 @@ class Character {
         this.movement = 0;
         this.friction = 0.85;
         this.moveAcceleration = 4000;
-        this.maxMoveSpeed = 300;
+        this.maxMoveSpeed = 200;
         
         // VERTICAL MOVEMENT
         this.gravity = 3000;
         this.maxFallSpeed = 1000;
         this.jumpBurst = -900;
         this.isOnGround = false;
+        this.groundType = undefined;
         this.isJumping = false;
         this.maxJumpTime = 0.1;
         this.jumpTime = 0;
@@ -49,6 +60,11 @@ class Character {
         this.isStunned = false;
         this.stunStartTime = 0;
         this.stunDuration = 1;
+
+        // Sound Effects
+        this.walkSounds = {
+            GRASS: new Sound('sounds/effects/WALK_Grass.OGG', true, true, false, 0.1, 0),
+        };
     }
 
     // GETTERS AND SETTERS
@@ -127,6 +143,10 @@ class Character {
 
     GetBounds() {
         return this.bounds;
+    }
+
+    GetHeadBounds() {
+        return this.headBounds;
     }
 
     GetCurrentHealth() {
@@ -251,6 +271,21 @@ class Character {
 
     }
 
+    HandleSoundEffects() {
+        if (this.isPlayer) {
+            const walkSound = this.walkSounds[this.groundType];
+
+            // WALK
+            if (walkSound) {
+                if (this.isOnGround && Math.abs(this.velocity.x) > 0) {
+                    this.walkSounds[this.groundType].Play();
+                } else {
+                    this.walkSounds[this.groundType].Stop();
+                }
+            }   
+        }
+    }
+
     // UPDATE and DRAW
 
     Update() {
@@ -259,6 +294,8 @@ class Character {
         this.ApplyPhysics();
 
         this.bounds.Update(this.position, this.size);
+        this.headBounds.Update(this.position, this.headSize);
+        this.headTexture.Update(new Vector2(this.headBounds.x, this.headBounds.y));
 
         // Start some movement variables
         this.movement = 0;
@@ -288,12 +325,15 @@ class Character {
             if (this.isDead && !this.isDeathDone) {
                 this.HandleDeath();
             }
+
+            this.HandleSoundEffects();
         }
     }
 
     Draw() {
         if (this.sprite) {
             this.sprite.Draw();
+            this.headTexture.Draw();
 
             for (const dt of this.damageText) {
                 dt.Draw();

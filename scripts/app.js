@@ -74,4 +74,9 @@ function run() {
         GAME.draw();
     }
     requestAnimationFrame(run);
+    // if (IS_RUNNING) {
+    //     GAME.update();
+    //     GAME.draw();
+    //     setTimeout(run, 0.5);
+    // }
 }

@@ -75,6 +75,8 @@
             { path: 'MUSIC_The-Forgotten_Forest.mp3', defaultVolume: 0.2 }
         ];
 
+        this.birds = undefined;
+
         this.caveFront = new Sprite('images/backgrounds/FOREST_CAVE-FRONT.png', new Vector2(0, 0), new Vector2(123, 648));
         this.twilightExit = new Texture(
             new Vector2(5877, 458),
@@ -111,6 +113,11 @@
         );
         this.backgroundMusic.Play();
 
+        if (+this.selectedLevel === 0) {
+            this.birds = new Sound('sounds/effects/birds.ogg', true, true, false, 0.2, 1.5);
+            this.birds.Play();
+        }
+
         return true;
     }
 
@@ -131,8 +138,10 @@
         for (let g = 0; g < globs.length; g++) {
             const glob = globs[g];
             const globBounds = glob.GetRect();
-            const globDamage = glob.GetDamage();
-            const isCrit = globDamage.isCrit;
+            const globDamage = {
+                amount: glob.GetDamage(),
+                isCrit: false
+            };
             
             // Check against environment
             if (this.collision.CheckLineCollisionRect(globBounds) ||
@@ -148,15 +157,29 @@
             for (let b = 0; b < this.bears.length; b++) {
                 const bear = this.bears[b];
                 const bearBounds = bear.GetBounds();
+                const bearHeadBounds = bear.GetHeadBounds();
 
-                if (!bear.GetIsDead() && this.collision.CheckBoxCollision(globBounds, bearBounds)) {
-                    bear.DoDamage(globDamage);
-                    this.camera.shake(isCrit ? 0.3 : 0.1);
-                    glob.SetHasHit(true);
+                if (!bear.GetIsDead()) {
 
-                    if (!bear.GetIsTracking()) {
-                        bear.TrackPlayer(true);
-                        continue;
+                    const isHeadShot = this.collision.CheckBoxCollision(globBounds, bearHeadBounds);
+                    const isBodyShot = this.collision.CheckBoxCollision(globBounds, bearBounds);
+
+                    // If it's a head shot, add crit damage
+                    if (isHeadShot) {
+                        console.log('HEAD SHOT!');
+                        globDamage.amount = glob.GetCritDamage();
+                        globDamage.isCrit = true;
+                    }
+                    
+                    if (isHeadShot || isBodyShot) {
+                        bear.DoDamage(globDamage);
+                        this.camera.shake(globDamage.isCrit ? 0.3 : 0.1);
+                        glob.SetHasHit(true);
+
+                        if (!bear.GetIsTracking()) {
+                            bear.TrackPlayer(true);
+                            continue;
+                        }
                     }
                 }
             }
@@ -240,7 +263,7 @@
 
         // Based on the camera's position, update the parallax backgrounds
         const cameraLookAt = this.camera.getlookat();
-        this.parallax.Update(new Vector2(cameraLookAt[0], cameraLookAt[1]));
+        this.parallax.Update(new Vector2(cameraLookAt.x, cameraLookAt.y));
     }
     
     Update() {

@@ -7,6 +7,9 @@ class Bear extends Character {
         super(position, size, false);
 
         this.isTrackingPlayer = false;
+        this.isAttacking = false;
+        this.attackTimer = undefined;
+        this.meleeAttackDamage = 75;
 
         this.maxMoveSpeed = 75.0;
         this.isMoving = true;
@@ -41,7 +44,15 @@ class Bear extends Character {
         return this.isTrackingPlayer;
     }
 
+    GetMeleeAttackDamage() {
+        return random(this.meleeAttackDamage, this.meleeAttackDamage * 2);
+    }
+
     // BEHAVIOURS
+
+    IsAttacking() {
+        return this.isAttacking;
+    }
 
     SwitchDirections() {
         this.dir = (this.dir === 1) ? -1 : 1;
@@ -59,6 +70,20 @@ class Bear extends Character {
             this.runRightSprite.SetSpeed(0.5);
             this.runLeftSprite.SetSpeed(0.5);
         }
+    }
+
+    MeleeAttack() {
+        
+        if (!this.isAttacking && !this.attackTimer) {
+            this.isAttacking = true;
+            this.attackTimer = new Timer(GameTime.getCurrentGameTime(), 1);
+            
+            // TODO: Animation
+        } else if (this.attackTimer.IsComplete()) {
+            this.isAttacking = false;
+            this.attackTimer = undefined;
+        }
+
     }
 
     HandleAnimations() {
@@ -80,27 +105,33 @@ class Bear extends Character {
 
         if (!this.isDead) {
 
+            const playerPos = new Vector2(playerPosition.x, playerPosition.y);
+            const posDiff = new Vector2(Math.abs(this.position.x - playerPos.x), Math.abs(this.position.y - playerPos.y));
+
             // Is tracking the player
             if (this.isTrackingPlayer) {
 
-                // Move towards the player's x position. If we're hitting a wall, execute a jump.
-                const posX = this.position.x;
-                const playerPosX = playerPosition.x;
-                const posXDiff = posX - playerPosX;
+                const isCloseToPlayer = (posDiff.x < 75 && posDiff.y < 75);
 
-                if (posXDiff < 0 && this.dir === -1 || posXDiff > 0 && this.dir === 1) {
+                if ((this.position.x - playerPos.x) < 0 && this.dir === -1 || (this.position.x - playerPos.x) > 0 && this.dir === 1) {
                     this.SwitchDirections();
                 }
 
                 this.isMoving = true;
 
                 // If the enemy is right on top of the player, stop moving
-                if (this.isMoving && posXDiff > -75 && posXDiff < 75) {
-                    this.isMoving = false;
+                if (isCloseToPlayer) {
+                    this.MeleeAttack();
+
+                    if (this.isMoving) {
+                        this.isMoving = false;
+                    }
+                } else {
+                    this.isAttacking = false;
                 }
 
                 // If we've outrun the enemy, tell them to stop tracking
-                if (posXDiff < -1500 || posXDiff > 1500) {
+                if (posDiff.x < -1500 || posDiff.x > 1500) {
                     this.TrackPlayer(false);
                 }
 
@@ -110,6 +141,11 @@ class Bear extends Character {
 
                 // We could see if the enemy is outside of their region and, if so, send them back.
                 // Obviously this depends on how far they travelled and whether or not it's even possible to get back.
+
+                // If 
+                if (Math.abs(posDiff.x < 300 && Math.abs(posDiff.y < 300))) {
+                    this.TrackPlayer(true);
+                }
 
                 // If we're not tracking the player and we're hitting a wall, switch directions
                 if (this.isHittingWall) this.SwitchDirections();
@@ -129,6 +165,8 @@ class Bear extends Character {
                 this.movement = this.dir;
             }
 
+        } else {
+            this.isAttacking = false;
         }
 
         this.HandleAnimations();

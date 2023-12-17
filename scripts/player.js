@@ -142,7 +142,7 @@ class Player extends Character {
 
     DoDamage(damage) {
 
-        if (!this.isInvincible || !this.invincibilityTimer) {
+        if (!this.isInvincible && !this.isDead) {
             super.DoDamage(damage);
             // Apply invincibility
             this.isInvincible = true;

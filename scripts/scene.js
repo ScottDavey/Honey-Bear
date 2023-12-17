@@ -318,11 +318,6 @@
         }
 
         this.player.Update();
-        
-        if (this.player.GetIsDead() && !this.player.GetIsDeathDone()) {
-            this.backgroundMusic.SetFadeOutDuration(this.player.GetDeathMaxTime() * 2);
-            this.FadeOutMusic();
-        }
 
         this.playerHealthBar.Update(this.player.GetCurrentHealth());
         this.collision.CheckLineCollisionEntity(this.player);
@@ -336,6 +331,11 @@
         // Check for Pitfalls
         this.CheckEntityPitfallCollision();
 
+        if (this.player.GetIsDead() && !this.player.GetIsDeathDone()) {
+            this.backgroundMusic.SetFadeOutDuration(this.player.GetDeathMaxTime() * 2);
+            this.FadeOutMusic();
+        }
+
         // BEARS
         for (let b = 0; b < this.bears.length; b++) {
             const bear = this.bears[b];
@@ -347,6 +347,10 @@
 
             bear.Update(this.player.GetPosition());
             this.collision.CheckLineCollisionEntity(bear);
+
+            if (bear.IsAttacking() && !this.player.GetIsDead()) {
+                this.player.DoDamage({ amount: bear.GetMeleeAttackDamage(), isCrit: false });
+            }
 
             // If the Bear falls, throw it back up
             if (bear.GetPosition().y > (this.worldHeight + 100)) {

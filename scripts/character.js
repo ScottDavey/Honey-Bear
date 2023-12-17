@@ -11,14 +11,6 @@ class Character {
         this.sprite = undefined;
         this.bounds = new Rectangle(this.position.x, this.position.y, this.size.x, this.size.y);
         this.headBounds = new Rectangle(this.position.x, this.position.y, this.headSize.x, this.headSize.y);
-        // temp
-        this.headTexture = new Texture(
-            new Vector2(this.headBounds.x, this.headBounds.y),
-            new Vector2(this.headBounds.width, this.headBounds.height),
-            '#ff880077',
-            1,
-            '#ff8800'
-        );
 
         // VITALITY
         this.health = 500;
@@ -295,7 +287,6 @@ class Character {
 
         this.bounds.Update(this.position, this.size);
         this.headBounds.Update(this.position, this.headSize);
-        this.headTexture.Update(new Vector2(this.headBounds.x, this.headBounds.y));
 
         // Start some movement variables
         this.movement = 0;
@@ -333,7 +324,6 @@ class Character {
     Draw() {
         if (this.sprite) {
             this.sprite.Draw();
-            this.headTexture.Draw();
 
             for (const dt of this.damageText) {
                 dt.Draw();

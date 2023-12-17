@@ -7,7 +7,6 @@
         this.selectedLevel = selectedLevel;
         this.player = player;
         this.isPlayerRandomPositionKeyLocked = false;
-        this.isPlayerDamageKeyLocked = false;
 
         this.level = stages[this.selectedLevel];
         this.isLevelComplete = false;
@@ -75,7 +74,9 @@
             { path: 'MUSIC_The-Forgotten_Forest.mp3', defaultVolume: 0.2 }
         ];
 
+        // Sounds Effects
         this.birds = undefined;
+        this.honeyGlobHitSound = new Sound('sounds/effects/splat.ogg', false, true, false, 0.2, 0);
 
         this.caveFront = new Sprite('images/backgrounds/FOREST_CAVE-FRONT.png', new Vector2(0, 0), new Vector2(123, 648));
         this.twilightExit = new Texture(
@@ -166,13 +167,13 @@
 
                     // If it's a head shot, add crit damage
                     if (isHeadShot) {
-                        console.log('HEAD SHOT!');
                         globDamage.amount = glob.GetCritDamage();
                         globDamage.isCrit = true;
                     }
                     
                     if (isHeadShot || isBodyShot) {
                         bear.DoDamage(globDamage);
+                        this.honeyGlobHitSound.Play();
                         this.camera.shake(globDamage.isCrit ? 0.3 : 0.1);
                         glob.SetHasHit(true);
 
@@ -232,12 +233,17 @@
 
     }
 
-    FadeOutMusic() {
+    FadeOutSound() {
         const currentGameTime = GameTime.getCurrentGameTime();
 
         if (this.backgroundMusic.FadeOut(currentGameTime)) {
             this.backgroundMusic.Stop();
             this.backgroundMusic = undefined;
+        }
+
+        if (this.birds && this.birds.FadeOut(currentGameTime)) {
+            this.birds.Stop();
+            this.birds = undefined;
         }
     }
 
@@ -307,16 +313,6 @@
             this.isPlayerRandomPositionKeyLocked = false;
         }
 
-        
-        if (Input.Keys.GetKey(Input.Keys.R)) {
-            if (!this.isPlayerDamageKeyLocked) {
-                this.player.DoDamage({ amount: 100, isCrit: true });
-                this.isPlayerDamageKeyLocked = true;
-            }
-        } else {
-            this.isPlayerDamageKeyLocked = false
-        }
-
         this.player.Update();
 
         this.playerHealthBar.Update(this.player.GetCurrentHealth());
@@ -333,7 +329,7 @@
 
         if (this.player.GetIsDead() && !this.player.GetIsDeathDone()) {
             this.backgroundMusic.SetFadeOutDuration(this.player.GetDeathMaxTime() * 2);
-            this.FadeOutMusic();
+            this.FadeOutSound();
         }
 
         // BEARS
@@ -373,7 +369,7 @@
 
             if (!this.exitTransition.IsComplete()) {
                 this.exitTransition.update(currentGameTime);
-                this.FadeOutMusic();
+                this.FadeOutSound();
             } else {
                 this.isLevelComplete = true;
             }

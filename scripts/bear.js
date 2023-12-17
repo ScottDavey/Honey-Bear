@@ -10,6 +10,8 @@ class Bear extends Character {
         this.isAttacking = false;
         this.attackTimer = undefined;
         this.meleeAttackDamage = 75;
+        this.meleeCooldown = undefined;
+        this.meleeCooldownDuration = 5;
 
         this.maxMoveSpeed = 75.0;
         this.isMoving = true;
@@ -73,15 +75,15 @@ class Bear extends Character {
     }
 
     MeleeAttack() {
-        
-        if (!this.isAttacking && !this.attackTimer) {
+
+        this.isAttacking = false;
+
+        if (!this.meleeCooldown || this.meleeCooldown.IsComplete()) {
+            this.meleeCooldown = new Timer(GameTime.getCurrentGameTime(), 3);
+        }
+
+        if (this.meleeCooldown && this.meleeCooldown.GetRemainder(1) === 2.5) {
             this.isAttacking = true;
-            this.attackTimer = new Timer(GameTime.getCurrentGameTime(), 1);
-            
-            // TODO: Animation
-        } else if (this.attackTimer.IsComplete()) {
-            this.isAttacking = false;
-            this.attackTimer = undefined;
         }
 
     }
@@ -120,12 +122,13 @@ class Bear extends Character {
                 this.isMoving = true;
 
                 // If the enemy is right on top of the player, stop moving
+                if (posDiff.x < 75 && this.isMoving) {
+                    this.isMoving = false;
+                }
+
+                // Attach if tracking and in striking distance
                 if (isCloseToPlayer) {
                     this.MeleeAttack();
-
-                    if (this.isMoving) {
-                        this.isMoving = false;
-                    }
                 } else {
                     this.isAttacking = false;
                 }

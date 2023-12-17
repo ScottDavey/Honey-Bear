@@ -122,10 +122,10 @@ class Timer {
         this.duration = duration;
     }
 
-    GetRemainder() {
+    GetRemainder(precision = 0) {
         const currentGameTime = GameTime.getCurrentGameTime();
 
-        return Math.ceil(this.duration - (currentGameTime - this.startTime));
+        return +((this.duration - (currentGameTime - this.startTime)).toFixed(precision));
     }
 
     IsComplete() {

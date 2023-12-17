@@ -36,6 +36,7 @@ class Player extends Character {
 
         this.isInputLocked = false;
         this.throwStartTime = 0;
+        this.throwSound = new Sound('sounds/effects/throw.ogg', false, true, false, 0.2, 0);
         this.globAnimationMaxTime = 0.12;
         this.globs = [];
         this.globCooldown = undefined;
@@ -115,6 +116,7 @@ class Player extends Character {
 
         // Abilities
         if (Input.Keys.GetKey(Input.Keys.ENTER) || Input.GamePad.X.pressed) {
+
             if (!this.globCooldown || this.globCooldown.IsComplete()) {
                 this.throwStartTime = currentGameTime;
                 this.isThrowing = true;
@@ -122,15 +124,19 @@ class Player extends Character {
                 const globPosX = (this.dir === 1) ? this.position.x + this.size.x - 10 : this.position.x;
                 this.globs.push(new HoneyGlob(new Vector2(globPosX, this.position.y + (this.size.y / 2)), this.dir, this.velocity.x));
                 this.globCooldown = new Timer(currentGameTime, this.globCooldownDuration);
+                this.throwSound.Play();
             }
+
         }
         
         if (Input.Keys.GetKey(Input.Keys.SHIFT) || Input.GamePad.Y.pressed) {
+
             if (!this.blastCooldown || this.blastCooldown.IsComplete()) {
                 this.blast = new HoneyBlast(this.GetBounds());
                 this.isBlastLocked = true;
                 this.blastCooldown = new Timer(currentGameTime, this.blastCooldownDuration);
             }
+            
         }
     }
 

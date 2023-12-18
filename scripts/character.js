@@ -28,7 +28,7 @@ class Character {
         this.movement = 0;
         this.friction = 0.85;
         this.moveAcceleration = 4000;
-        this.maxMoveSpeed = 200;
+        this.maxMoveSpeed = 250;
         
         // VERTICAL MOVEMENT
         this.gravity = 3000;

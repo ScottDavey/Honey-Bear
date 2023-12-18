@@ -13,7 +13,7 @@ class Player extends Character {
         // Nimation: img, pos, frameHeight, frameWidth, totalFrames, animationSeq, speed, isLooping, offset
         const spritesheet = 'images/spritesheets/Adventurer-1.5/adventurer-spritesheet.png';
         const honeyBearSpriteSheet = 'images/spritesheets/HoneyBear.png';
-        this.defaultRunAnimationSpeed = 0.08;
+        this.defaultRunAnimationSpeed = 0.05;
         this.animations = {
             runRightSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 0, this.defaultRunAnimationSpeed, true, new Vector2(0, 0)),
             runLeftSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 1, this.defaultRunAnimationSpeed, true, new Vector2(0, 0)),

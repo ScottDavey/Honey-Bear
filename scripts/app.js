@@ -39,8 +39,8 @@ function main() {
     CONTEXT = CANVAS.getContext('2d');
 
     const WRAPPER_DIV = document.getElementById('wrapper')
-    WRAPPER_DIV.style.width = `${CANVAS_WIDTH}px`;
-    WRAPPER_DIV.style.height = `${CANVAS_HEIGHT}px`;
+    WRAPPER_DIV.style.width = `${CANVAS_WIDTH + 4}px`;
+    // WRAPPER_DIV.style.height = `${CANVAS_HEIGHT}px`;
 
     GAME_PAD_DIV = document.getElementById('GamePad');
 

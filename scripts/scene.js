@@ -1,6 +1,6 @@
 /*************************************************
- *****  SCENE: Sets the stage for each level  *****
- *************************************************/
+*****  SCENE: Sets the stage for each level  *****
+*************************************************/
 
  class Scene {
     constructor(selectedLevel, player) {
@@ -64,6 +64,9 @@
         
         this.bears = [];
 
+        // Collectibles
+        this.beeHives = [];
+
         // MUSIC
         this.backgroundMusic = undefined;
         this.backgroundMusicSources = [
@@ -96,6 +99,12 @@
                 new Vector2(bear.size[0], bear.size[1])
             );
         });
+
+        for (let h = 1; h < 6; h++) {
+            this.beeHives.push(
+                new BeeHive(new Vector2(h * 450, 425))
+            );
+        }
 
         // PITFALLS
         this.pitfalls = this.pitFallData.map(pitfall => {
@@ -354,6 +363,10 @@
             }
         }
 
+        for (const beeHive of this.beeHives) {
+            beeHive.Update(this.player.GetBounds().center);
+        }
+
         // EXIT
         if (this.collision.CheckBoxCollision(this.player.GetBounds(), this.exit)) {
             this.isLevelEndSequence = true;
@@ -394,6 +407,10 @@
 
         for (const bear of this.bears) {
             bear.Draw();
+        }
+
+        for (const beeHive of this.beeHives) {
+            beeHive.Draw();
         }
 
         this.player.Draw();

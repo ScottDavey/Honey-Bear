@@ -144,6 +144,7 @@ class Text {
         this.position = new Vector2(x, y);
         this.font = font;
         this.color = color;
+        this.width = 0;
     }
 
     GetString() {
@@ -169,6 +170,7 @@ class Text {
         CONTEXT.fillText(this.string, this.position.x, this.position.y);
         CONTEXT.textBaseline = 'middle';
         CONTEXT.textAlign = "center";
+        this.width = CONTEXT.measureText(this.string).width;
         CONTEXT.restore();
     }
 };
@@ -179,4 +181,14 @@ function CenterText(string, fontSize, containerSize) {
     const y = (containerSize.y / 2) + (fontSize / 2);
     return new Vector2(x, y);
 
+}
+
+function CenterTextFromPoint(string, fontSize, center) {
+    const stringWidth = string.length * fontSize;
+    const stringHeight = fontSize;
+    
+    const x = center.x - stringWidth;
+    const y = center.y - stringHeight;
+
+    return new Vector2(x, y);
 }

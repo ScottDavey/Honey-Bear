@@ -12,6 +12,13 @@ class Sprite {
         this.opacity = 1;
     }
 
+    GetPosition() {
+        return this.pos;
+    }
+
+    GetSize() {
+        return this.size;
+    }
 
     SetImage(path) {
         this.path = path;

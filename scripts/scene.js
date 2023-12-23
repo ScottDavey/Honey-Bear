@@ -26,9 +26,15 @@
         this.exitLogFront = new Sprite('images/level_assets/FOREST_ExitLog_FRONT.png', new Vector2(3801, 464), new Vector2(199, 94));
         this.isLevelEndSequence = false;
         this.intoTransition = new Transition('0, 0, 0', 3, 'in');
-        const introTextSource = this.level.introText;
-        const centeredText = CenterText(introTextSource, 50, new Vector2(CANVAS_WIDTH, CANVAS_HEIGHT));
-        this.introText = new Text(introTextSource, centeredText.x, centeredText.y, 'normal 50pt "Poiret One", sans-serif', '#FFFFFF');
+        this.introText = new TextC(
+            this.level.introText,
+            new Vector2(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2),
+            'Poiret One, Verdana',
+            'normal',
+            60,
+            '#FFFFFF',
+            'center'
+        );
         this.introTextBackground = new Texture(
             new Vector2(0, CANVAS_HEIGHT / 2 - 50),
             new Vector2(CANVAS_WIDTH, 100),
@@ -52,15 +58,58 @@
             new Vector2(200, 30),
             this.player.GetMaxHealth(),
             '#f8b61d',
-            1
+            1,
+            '#5831a0',
+            true
         );
+
+        this.showDeathText = false;
+        this.deathTextBackground = new Texture(
+            new Vector2(0, (CANVAS_HEIGHT / 2) - 150),
+            new Vector2(CANVAS_WIDTH, 100),
+            '#000000AA',
+            1,
+            '#990000'
+        );
+        this.deathText = new TextC(
+            'YOU DIED',
+            new Vector2(CANVAS_WIDTH / 2, (CANVAS_HEIGHT / 2) - 100),
+            'Joesfin Sans, Verdana',
+            'normal',
+            36,
+            '#990000',
+            'center'
+        );
+
         // Ability Icons / Cooldowns
         this.globAbilityIcon = new Sprite('images/level_assets/AbilityIcon_Glob.png', new Vector2(10, 70), new Vector2(31, 31));
         this.globAbilityCooldownOverlay = new Texture(new Vector2(10, 70), new Vector2(31, 31), '#00000088', 1, '#00000088');
-        this.globAbilityCooldown = new Text('', 20, 90, 'normal 12pt Jura, Verdana', '#FFFFFF');
+        this.globAbilityCooldown = new TextC(
+            '0',
+            new Vector2(
+                this.globAbilityIcon.GetPosition().x + (this.globAbilityIcon.GetSize().x / 2),
+                this.globAbilityIcon.GetPosition().y + (this.globAbilityIcon.GetSize().y / 2)
+            ),
+            'Jura, Verdana',
+            'normal',
+            12,
+            '#FFFFFF',
+            'center'
+        );
         this.blastAbilityIcon = new Sprite('images/level_assets/AbilityIcon_Blast.png', new Vector2(46, 70), new Vector2(31, 31));
         this.BlastAbilityCooldownOverlay = new Texture(new Vector2(46, 70), new Vector2(31, 31), '#00000088', 1, '#00000088');
-        this.blastAbilityCooldown = new Text('', 56, 90, 'normal 12pt Jura, Verdana', '#FFFFFF');
+        this.blastAbilityCooldown = new TextC(
+            '0',
+            new Vector2(
+                this.blastAbilityIcon.GetPosition().x + (this.blastAbilityIcon.GetSize().x / 2),
+                this.blastAbilityIcon.GetPosition().y + (this.blastAbilityIcon.GetSize().y / 2)
+            ),
+            'Jura, Verdana',
+            'normal',
+            12,
+            '#FFFFFF',
+            'center'
+        );
         
         this.bears = [];
 
@@ -91,6 +140,23 @@
         );
     }
 
+    Restart() {
+        
+        for (const bear of this.bears) {
+            bear.Reset();
+        }
+
+        for (const hive of this.beeHives) {
+            hive.ResetBees();
+        }
+
+        this.player.Initialize(
+            new Vector2(this.level.player.start[0], this.level.player.start[1]),
+            new Vector2(this.level.player.size[0], this.level.player.size[1])
+        );
+        this.showDeathText = false;
+    }
+
     LoadContent() {
         // LOAD BEARS
         this.bears = this.level.enemies.map(bear => {
@@ -100,10 +166,11 @@
             );
         });
 
-        for (let h = 1; h < 6; h++) {
-            this.beeHives.push(
-                new BeeHive(new Vector2(h * 450, 425))
-            );
+        for (let h = 1; h < 5; h++) {
+            const position = new Vector2(h * 800, 420);
+            const collisionPositionY = this.collision.GetLineYCollisionFromPosition(position);
+            
+            this.beeHives.push(new BeeHive(position, collisionPositionY));
         }
 
         // PITFALLS
@@ -119,9 +186,9 @@
             true,
             false,
             backgroundMusicChoice.defaultVolume,
-            1.5
+            1.0
         );
-        this.backgroundMusic.Play();
+        // this.backgroundMusic.Play();
 
         if (+this.selectedLevel === 0) {
             this.birds = new Sound('sounds/effects/birds.ogg', true, true, false, 0.2, 1.5);
@@ -202,6 +269,7 @@
 
         // If there's an active honey blast...
         if (blast) {
+            const blastCircle = blast.GetCircle();
             const blastDamage = blast.GetDamage();
             const isCrit = blastDamage.isCrit;
 
@@ -211,7 +279,7 @@
                 const bearBounds = bear.GetBounds();
                 const bearKnockbackDir = (bearBounds.center.x > this.player.GetBounds().center.x) ? 1 : -1;
 
-                if (!bear.GetIsDead() && !bear.GetIsStunned() && this.collision.CheckBoxToRadius(bearBounds, blast.GetCircle())) {
+                if (!bear.GetIsDead() && !bear.GetIsStunned() && this.collision.CheckBoxToRadius(bearBounds, blastCircle)) {
                     bear.DoDamage(blastDamage);
                     bear.SetKnockBack(bearKnockbackDir, 1000);
                     this.camera.shake(isCrit ? 0.3 : 0.1);
@@ -219,6 +287,20 @@
                     if (!bear.GetIsTracking()) {
                         bear.TrackPlayer(true);
                     }
+                }
+            }
+
+            // Loop over Bee Hives, then Bees
+                // can only kill them if they're aggressive
+            for (const hive of this.beeHives) {
+                for (const bee of hive.GetBees()) {
+
+                    const beeBounds = bee.GetBounds();
+
+                    if (bee.GetIsAggressive() && !bee.GetIsDead() && this.collision.CheckBoxToRadius(beeBounds, blastCircle)) {
+                        bee.DoDamage(blastDamage);
+                    }
+
                 }
             }
         }
@@ -245,7 +327,7 @@
     FadeOutSound() {
         const currentGameTime = GameTime.getCurrentGameTime();
 
-        if (this.backgroundMusic.FadeOut(currentGameTime)) {
+        if (this.backgroundMusic && this.backgroundMusic.FadeOut(currentGameTime)) {
             this.backgroundMusic.Stop();
             this.backgroundMusic = undefined;
         }
@@ -280,6 +362,16 @@
         const cameraLookAt = this.camera.getlookat();
         this.parallax.Update(new Vector2(cameraLookAt.x, cameraLookAt.y));
     }
+
+    CheckBeeAggression(bees) {
+
+        for (const bee of bees) {
+
+            if (bee.IsStinging() && !this.player.GetIsDead()) {
+                this.player.DoDamage(bee.GetDamage(), true);
+            }
+        }
+    }
     
     Update() {
         const currentGameTime = GameTime.getCurrentGameTime();
@@ -300,6 +392,11 @@
         ************************/
         if (this.player.GetIsDead()) {
             this.player.SetInputLock(true);
+            this.showDeathText = true;
+
+            if (this.player.GetIsDeathDone()) {
+                this.Restart();    
+            }
         }
 
         /**********************
@@ -330,16 +427,11 @@
         this.CheckHoneyGlobCollisions();
         this.CheckHoneyBlastCollision();
         // Update Cooldown Text
-        this.globAbilityCooldown.UpdateString(`${this.player.GetHoneyGlobCooldown() || ''}`);
-        this.blastAbilityCooldown.UpdateString(`${this.player.GetHoneyBlastCooldown() || ''}`);
+        this.globAbilityCooldown.SetString(`${this.player.GetHoneyGlobCooldown() || ''}`);
+        this.blastAbilityCooldown.SetString(`${this.player.GetHoneyBlastCooldown() || ''}`);
 
         // Check for Pitfalls
         this.CheckEntityPitfallCollision();
-
-        if (this.player.GetIsDead() && !this.player.GetIsDeathDone()) {
-            this.backgroundMusic.SetFadeOutDuration(this.player.GetDeathMaxTime() * 2);
-            this.FadeOutSound();
-        }
 
         // BEARS
         for (let b = 0; b < this.bears.length; b++) {
@@ -363,8 +455,20 @@
             }
         }
 
+        // BEE HIVES
         for (const beeHive of this.beeHives) {
             beeHive.Update(this.player.GetBounds().center);
+
+            this.player.SetInputLock(false);
+
+            beeHive.Interact(Input.Keys.GetKey(Input.Keys.E) || Input.GamePad.Y.pressed);
+            
+            if (beeHive.IsCollecting()) {
+                this.player.Heal(beeHive.GetHoneyPrize());
+            }
+
+            // Check if Bees are aggressive and within range. If so, do damage to the player
+            this.CheckBeeAggression(beeHive.GetBees());
         }
 
         // EXIT
@@ -404,16 +508,26 @@
         if (+this.selectedLevel === 0) {
             this.exitLogBack.Draw();
         }
+        
+        // Bee Hive - before rummaged draw order
+        for (const beeHive of this.beeHives) {
+            if (beeHive.GetDrawOrder() === 0) {
+                beeHive.Draw();
+            }
+        }
 
         for (const bear of this.bears) {
             bear.Draw();
         }
 
-        for (const beeHive of this.beeHives) {
-            beeHive.Draw();
-        }
-
         this.player.Draw();
+
+        // Bee Hive - after rummaged draw order
+        for (const beeHive of this.beeHives) {
+            if (beeHive.GetDrawOrder() === 1) {
+                beeHive.Draw();
+            }
+        }
         
         if (+this.selectedLevel === 0) {
             this.caveFront.Draw();
@@ -449,6 +563,12 @@
         // FADE OUT
         if (this.exitTransition && !this.exitTransition.IsComplete()) {
             this.exitTransition.draw();
+        }
+
+        // DEATH
+        if (this.showDeathText) {
+            this.deathTextBackground.Draw();
+            this.deathText.Draw();
         }
     }
 

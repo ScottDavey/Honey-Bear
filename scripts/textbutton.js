@@ -16,9 +16,19 @@ class TextButton {
         this.hoverBGColor = hoverBGColor;
         this.isLeftClickLocked = false;
         this.isPushed = false;
-        this.buttonText = new Text(this.text, this.pos.x, this.pos.y, `normal ${this.fontSize}px ${this.fontFamily}, sans-serif`, this.fontColor);
+        this.buttonText = new TextC(
+            this.text,
+            new Vector2(this.pos.x, this.pos.y),
+            this.fontFamily,
+            'normal',
+            this.fontSize,
+            this.fontColor,
+            'left'
+        );
 
-        this.bounds = new Rectangle(this.pos.x, (this.pos.y - this.size.y), this.size.x, this.size.y);
+        this.collision = new Collision();
+
+        this.bounds = new Rectangle(this.pos.x, this.pos.y - (this.fontSize / 2), this.size.x, this.size.y);
     }
 
     IsPushed() {
@@ -27,12 +37,12 @@ class TextButton {
 
     SetFontColor(color) {
         this.fontColor = color;
-        this.buttonText.UpdateColor(this.fontColor);
+        this.buttonText.SetColor(this.fontColor);
     }
 
     isPointerOver(pos) {
-        // Check to see if pointer is hovering/clicking the play button
-        return (pos.x >= this.bounds.left && pos.x <= (this.bounds.left + this.bounds.width) && pos.y >= this.bounds.top && pos.y <= (this.bounds.top + this.bounds.height));
+        const pointerRect = new Rectangle((pos.x - 2), (pos.y - 2), 4, 4);
+        return this.collision.CheckBoxCollision(pointerRect, this.bounds);
     }
 
     // Based on a given pointer (mouse, touch control), check to see if we can perform an action on the button

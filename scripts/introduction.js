@@ -7,9 +7,15 @@ class Introduction {
     constructor() {
         this.transitionIn = new Transition('0, 0, 0', 3, 'in');
         this.transitionOut = undefined; // Will be initialized later, once transitionIn is complete
-        const introTextString = 'A Game by Kennedy Amanda Davey';
-        const centeredText = CenterText(introTextString, 36, new Vector2(CANVAS_WIDTH, CANVAS_HEIGHT));
-        this.introText = new Text(introTextString, centeredText.x, centeredText.y, 'normal 45px "Poiret One", sans-serif', '#FFFFFF');
+        this.introText = new TextC(
+            'A Game by Kennedy Amanda Davey',
+            new Vector2(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2),
+            '"Poiret One", sans-serif',
+            'normal',
+            45,
+            '#FFFFFF',
+            'center'
+        );
         this.done = false;
     }
 

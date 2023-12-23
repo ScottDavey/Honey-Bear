@@ -5,6 +5,7 @@
 class Character {
     constructor(position, size, isPlayer = false) {
         this.position = position;
+        this.levelStartPosition = new Vector2(this.position.x, this.position.y);
         this.size = size;
         this.headSize = new Vector2(this.size.x, this.size.y * 0.3);
         this.isPlayer = isPlayer;
@@ -19,7 +20,7 @@ class Character {
         this.deathStartTime = 0;
         this.deathMaxTime = 3;
         this.isDeathDone = false;
-        this.damageText = [];
+        this.statusText = [];
 
         // HORIZONTAL MOVEMENT
         this.dir = 1;
@@ -108,6 +109,10 @@ class Character {
     GetPosition() {
         return this.position;
     }
+    
+    GetLevelStartPosition() {
+        return this.levelStartPosition;
+    }
 
     GetSize() {
         return this.size;
@@ -161,16 +166,15 @@ class Character {
 
     ResetHealth() {
         this.health = this.maxHealth;
-        // this.healthBar.SetCurrentValue(this.health); 
     }
 
     DoDamage(initialDamage) {
-        this.health -= initialDamage.amount;        
-        this.health = (this.health < 0) ? 0 : this.health;        
-        // this.healthBar.SetCurrentValue(this.health);
+        this.health -= initialDamage.amount;
+        this.health = (this.health < 0) ? 0 : this.health;
 
-        this.damageText.push(
-            new DamageText(
+        this.statusText.push(
+            new StatusText(
+                'DAMAGE',
                 initialDamage.amount,
                 initialDamage.isCrit,
                 this.position,
@@ -303,13 +307,13 @@ class Character {
             }
             
             // Damage Text
-            for (let d = 0; d < this.damageText.length; d ++) {
-                const dt = this.damageText[d];
+            for (let d = 0; d < this.statusText.length; d ++) {
+                const dt = this.statusText[d];
     
                 if (!dt.IsComplete()) {
                     dt.Update(currentGameTime);
                 } else {
-                    this.damageText.splice(d, 1);
+                    this.statusText.splice(d, 1);
                 }
             }
 
@@ -325,7 +329,7 @@ class Character {
         if (this.sprite) {
             this.sprite.Draw();
 
-            for (const dt of this.damageText) {
+            for (const dt of this.statusText) {
                 dt.Draw();
             }
         }

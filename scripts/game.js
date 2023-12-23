@@ -5,18 +5,42 @@
 class Game {
 
     constructor() {
-        this.fpsText = new Text(`FPS: ${FPS.GetFPS()}`, (CANVAS_WIDTH / 2 - 50), 20, 'normal 10pt Quicksand, Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+        this.fpsText = new TextC(
+            `FPS: ${FPS.GetFPS()}`,
+            new Vector2(CANVAS_WIDTH / 2, 10),
+            'Quicksand, Consolas',
+            'normal',
+            12,
+            '#FFFFFF',
+            'center'
+        );
         this.state = undefined;
         this.intro = undefined;
         this.mainMenu = undefined;
         this.level = undefined;
         this.gameMenu = undefined;
         this.isPaused = false;
-        this.pausedText = new Text('PAUSED', CANVAS_WIDTH / 2 - 170, CANVAS_HEIGHT / 2 + 20, 'normal 75pt Consolas, Trebuchet MS, Verdana', '#FFFFFF');
+        this.pausedText = new TextC(
+            'PAUSED',
+            new Vector2(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2),
+            'Jura, Consolas, Verdana',
+            'normal',
+            75,
+            '#FFFFFF',
+            'center'
+        );
         this.pausedOverlay = undefined;
         this.isEscapeLocked = false;
         this.escapeLockStart = 0;
-        this.timeText = new Text(`Time: 0:00`, CANVAS_WIDTH - 100, 20, 'normal 12pt Consolas, Jura, "Trebuchet MS", Verdana', '#FFFFFF');
+        this.timeText = new TextC(
+            `Time: 0:00`,
+            new Vector2(CANVAS_WIDTH - 75, 10),
+            'Jura, COnsolas, Verdanda',
+            'normal',
+            12,
+            '#FFFFFF',
+            'left'
+        );
     }
 
     initialize() {
@@ -30,7 +54,7 @@ class Game {
         GameTime.update();
         const elapsed = GameTime.getElapsed();  // currently unused
 
-        this.fpsText.UpdateString(`FPS: ${FPS.GetFPS()}`);
+        this.fpsText.SetString(`FPS: ${FPS.GetFPS()}`);
 
         if (HAS_GAME_PAD) {
             Input.GamePad.Update();
@@ -102,7 +126,7 @@ class Game {
             case GAME_STATES.PRIMARY.PLAYING:
                 if (typeof this.level !== 'undefined') {
                     this.level.Draw();
-                    this.timeText.UpdateString(`Time: ${SecondsToTime(this.level.GetTimer())}`);
+                    this.timeText.SetString(`Time: ${SecondsToTime(this.level.GetTimer())}`);
                     this.timeText.Draw();
                 }
 

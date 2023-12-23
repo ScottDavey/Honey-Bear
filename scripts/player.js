@@ -13,7 +13,7 @@ class Player extends Character {
         // Nimation: img, pos, frameHeight, frameWidth, totalFrames, animationSeq, speed, isLooping, offset
         const spritesheet = 'images/spritesheets/Adventurer-1.5/adventurer-spritesheet.png';
         const honeyBearSpriteSheet = 'images/spritesheets/HoneyBear.png';
-        this.defaultRunAnimationSpeed = 0.05;
+        this.defaultRunAnimationSpeed = 0.09;
         this.animations = {
             runRightSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 0, this.defaultRunAnimationSpeed, true, new Vector2(0, 0)),
             runLeftSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 1, this.defaultRunAnimationSpeed, true, new Vector2(0, 0)),
@@ -129,7 +129,7 @@ class Player extends Character {
 
         }
         
-        if (Input.Keys.GetKey(Input.Keys.SHIFT) || Input.GamePad.Y.pressed) {
+        if (Input.Keys.GetKey(Input.Keys.SHIFT) || Input.GamePad.B.pressed) {
 
             if (!this.blastCooldown || this.blastCooldown.IsComplete()) {
                 this.blast = new HoneyBlast(this.GetBounds());
@@ -146,19 +146,29 @@ class Player extends Character {
 
     // BEHAVIOURS
 
-    DoDamage(damage) {
+    DoDamage(damage, ignoreInvincibility = false) {
 
         if (!this.isInvincible && !this.isDead) {
             super.DoDamage(damage);
-            // Apply invincibility
-            this.isInvincible = true;
-            this.invincibilityTimer = new Timer(GameTime.getCurrentGameTime(), this.invincibilityDuration);
             
-            if (!this.GetIsDead()) {
-                this.SetSpriteOpacity(0.5);
+            if (!ignoreInvincibility) {
+                // Apply invincibility
+                this.isInvincible = true;
+                this.invincibilityTimer = new Timer(GameTime.getCurrentGameTime(), this.invincibilityDuration);
+                
+                if (!this.GetIsDead()) {
+                    this.SetSpriteOpacity(0.5);
+                }
             }
         }
         
+    }
+
+    Heal(amount) {
+        this.health += amount;
+        this.health = this.health > this.maxHealth ? this.maxHealth : this.health;
+        
+        this.statusText.push(new StatusText('HEAL', amount, false, this.position, true));
     }
 
     SetSpriteOpacity(opacity) {
@@ -296,6 +306,10 @@ class Player extends Character {
 
         if (this.blast) {
             this.blast.Draw();
+        }
+
+        if (this.healthTextTimer && !this.healthTextTimer.IsComplete()) {
+            this.healthText.Draw();
         }
 
         super.Draw();

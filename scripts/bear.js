@@ -29,6 +29,14 @@ class Bear extends Character {
         this.sprite = this.idleSprite;
     }
 
+    Reset() {
+        this.position = new Vector2(this.levelStartPosition.x, this.levelStartPosition.y);
+        this.isMoving = true;
+        this.isAttacking = false;
+        this.meleeCooldown = undefined;
+        this.TrackPlayer(false);
+    }
+
     // GETTERS AND SETTERS
 
     SetSize(size) {

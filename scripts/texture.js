@@ -26,12 +26,21 @@ class Texture {
         this.lineWidth = (typeof size === 'undefined') ? this.lineWidth : size;
     };
 
+    GetPosition() {
+        return this.pos;
+    }
+
     GetSize() {
         return this.size;
     }
 
+    GetRect() {
+        return this.rect;
+    }
+
     Update(pos) {
         this.pos = pos;
+        this.rect.Update(this.pos, this.size);
     };
 
     Draw() {

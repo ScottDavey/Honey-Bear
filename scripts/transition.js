@@ -20,7 +20,7 @@ class Transition {
             1,
             `rgba(${this.color}, ${this.fadeOpacity})`
         );
-        this.startTime = GameTime.getCurrentGameTime();
+        this.timer = new Timer(GameTime.getCurrentGameTime(), this.duration);
         this.isComplete = false;
     }
 
@@ -30,16 +30,11 @@ class Transition {
 
     update(currentGameTime) {
 
-        const elapsedTime = (currentGameTime - this.startTime);
-
         this.fadeOpacity = (this.direction === 'in') ? this.fadeOpacity - this.fadeRate : this.fadeOpacity + this.fadeRate;
-        // this.fadeOpacity = (this.fadeOpacity < 0) ? 0 : this.fadeOpacity;);
 
         this.fadeTexture.SetColor(`rgba(${this.color}, ${this.fadeOpacity})`);
-
-        if (elapsedTime >= this.duration) {
-            this.isComplete = true;
-        }
+            
+        this.isComplete = this.timer.IsComplete();
 
     }
 

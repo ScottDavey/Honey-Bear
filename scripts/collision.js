@@ -4,10 +4,10 @@
 
 class Collision {
 
-    constructor(collisionData) {
+    constructor(collisionData = []) {
         this.collisionData = collisionData;
         this.lines = [];
-
+        
         this.Initialize();
     }
 
@@ -24,6 +24,32 @@ class Collision {
                 collision.b                                 // Y Intercept (or, the b in y = mx + b)
             );
         });
+    }
+
+    GetLineYCollisionFromPosition(position) {
+        const possibleLines = this.lines.filter(line => {
+            return (position.x > line.startPos.x && position.x < line.endPos.x && line.collision === 'FLOOR');
+        });
+
+        // Get the y-Intercept of each line
+        const yIntercepts = possibleLines.map(line => { return (line.slope * position.x + line.b); });
+        
+        // Default to the first yIntercept.
+        let yPosition = yIntercepts[0];
+        
+        // If there's more than 1 line, loop over the yIntercepts and choose the closest one
+        if (yIntercepts.length > 1) {
+            for (const y of yIntercepts) {
+                // If the y of the line intercept is beneath the given position,
+                //  and if the y is less than the previously selected y position
+                if (y > position.y && y < yPosition) {
+                    yPosition = y;
+                }
+            }
+        }
+        
+        return yPosition;
+
     }
 
     CheckLineCollisionEntity(entity) {

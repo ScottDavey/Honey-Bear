@@ -13,7 +13,15 @@
         this.sceneIsLoaded = false;
         this.player = new Player(new Vector2(0, 0), new Vector2(0, 0));
         this.levelName = stages[this.selectedLevel].levelName;
-        this.selectedLevelText = new Text(`LEVEL ${this.selectedLevel + 1} - ${this.levelName}`, 10, 28, 'normal 12pt Jura, "Times New Roman"', '#FFFFFF');
+        this.selectedLevelText = new TextC(
+            `LEVEL ${this.selectedLevel + 1} - ${this.levelName}`,
+            new Vector2(10, 28),
+            'Jura, Verdana',
+            'normal',
+            14,
+            '#FFFFFF',
+            'left'
+        );
     }
 
     GetTimer() {
@@ -39,18 +47,10 @@
                     this.scene.Update();
                 }
 
-                if (this.scene.IsPlayerDead()) {
-                    this.scene = undefined;
-                    this.player.SetPosition(-10);
-                    this.scene = new Scene(this.selectedLevel, this.player);
-                    this.sceneIsLoaded = this.scene.LoadContent();
-                    this.levelStartTime = 0;
-                }
-
                 if (this.scene.isLevelComplete) {
                     this.scene.UnloadContent();
                     this.selectedLevel = this.selectedLevel + 1 || 0;
-                    this.selectedLevelText.UpdateString(`LEVEL ${this.selectedLevel + 1} - ${stages[this.selectedLevel].levelName}`);
+                    this.selectedLevelText.SetString(`LEVEL ${this.selectedLevel + 1} - ${stages[this.selectedLevel].levelName}`);
                     this.scene = undefined;
 
                     this.levelStartTime = 0;

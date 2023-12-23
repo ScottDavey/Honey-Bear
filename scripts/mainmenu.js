@@ -13,7 +13,7 @@ class MainMenu {
         this.playButton = new TextButton(
             'PLAY',
             new Vector2(CANVAS_WIDTH - (CANVAS_WIDTH * 0.25), (CANVAS_HEIGHT / 2) + 50),
-            { family: 'Montserrat-Regular', size: 40 },
+            { family: 'Raleway, Verdana', size: 40 },
             '#FFFFFF',
             '#F4C430',
             'transparent',

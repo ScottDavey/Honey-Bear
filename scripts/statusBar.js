@@ -4,19 +4,21 @@
 
 class StatusBar {
 
-    constructor(position, size, maxValue, color, borderSize = 1) {
+    constructor(position, size, maxValue, color, borderSize = 1, borderColor = '#5831a0', hasText = false) {
         this.position = position;
         this.borderSize = borderSize;
+        this.borderColor = borderColor;
         this.size = size;
         this.maxValue = maxValue;
         this.currentValue = this.maxValue;
         this.color = color;
+        this.hasText = hasText;
         this.backgroundTexture = new Texture(
             this.position,
             this.size,
             '#00000077',
             this.borderSize,
-            '#5831a0'
+            this.borderColor
         );
         this.statusTexture = new Texture(
             new Vector2(this.position.x + this.borderSize, this.position.y + this.borderSize),
@@ -26,13 +28,14 @@ class StatusBar {
             '#00000000'
         );
         const statusText = `${this.currentValue} / ${this.maxValue}`;
-        const centeredText = CenterText(statusText, 7, this.size);
-        this.statusText = new Text(
+        this.statusText = new TextC(
             statusText,
-            centeredText.x,
-            centeredText.y + this.position.y + 1,
-            'bold 10pt Jura, Verdana, sans-serif',
-            '#5831a0'
+            new Vector2(this.position.x + (this.size.x / 2), this.position.y + (this.size.y / 2)),
+            'Jura, Verdana',
+            'bold',
+            12,
+            '#5831a0',
+            'center'
         );
     }
 
@@ -55,13 +58,6 @@ class StatusBar {
         this.color = color;
         this.statusTexture.SetColor(color);
     }
-
-    // SetCurrentValue(val) {
-    //     this.currentValue = (+val <= 0) ? 0 : val;
-    //     const currentBGTextureSize = this.backgroundTexture.GetSize();
-    //     const statusBarSizeX = +this.currentValue === 0 ? 0 : currentBGTextureSize.x * (this.currentValue / this.maxValue);
-    //     this.statusTexture.SetSize(new Vector2(statusBarSizeX, currentBGTextureSize.y));
-    // }
 
     SetMaxValue(val) {
         this.maxValue = val;
@@ -87,12 +83,6 @@ class StatusBar {
         return this.color;
     }
 
-    // Update(entityPosition) {
-    //     this.SetPosition(
-    //         new Vector2(entityPosition.x, entityPosition.y - this.yOffset)
-    //     );
-    // }
-
     Update(val) {
         const maxSizeX = this.size.x - (this.borderSize * 2);
         this.currentValue = (+val <= 0) ? 0 : val;
@@ -102,16 +92,20 @@ class StatusBar {
                 this.statusTexture.GetSize().y
             )
         );
-        const newStatusText = `${this.currentValue} / ${this.maxValue}`;
-        const newStatusTextCentered = CenterText(newStatusText, 7, this.size);
-        this.statusText.UpdateString(newStatusText);
-        this.statusText.UpdatePos(new Vector2(newStatusTextCentered.x, newStatusTextCentered.y + this.position.y + 1));
+
+        if (this.hasText) {
+            const newStatusText = `${this.currentValue} / ${this.maxValue}`;
+            this.statusText.SetString(newStatusText);
+        }
     }
 
     Draw() {
         this.backgroundTexture.Draw();
         this.statusTexture.Draw();
-        this.statusText.Draw();
+        
+        if (this.hasText) {
+            this.statusText.Draw();
+        }
     }
     
 }

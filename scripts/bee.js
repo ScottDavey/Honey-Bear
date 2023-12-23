@@ -7,36 +7,198 @@ class Bee {
     constructor(position) {
         this.position = position;
         this.hivePosition = new Vector2(this.position.x, this.position.y);
+        this.playerCenter = new Vector2(0, 0);
         this.size = new Vector2(2.5, 5);
-        this.hiveCenter = new Vector2(
-            this.hivePosition.x + 15,
-            this.hivePosition.y + 20
-        );
+        this.bounds = new Rectangle(this.position.x, this.position.y, this.size.x, this.size.y);
+
+        this.BEE_STATE = {
+            HOME: {
+                CALM: 0,
+                HIGH_ALERT: 1,
+            },
+            AGGRESSIVE: 2,
+            DYING: 3,
+            DEAD: 4
+        };
+        this.state = this.BEE_STATE.HOME.CALM;
+
+        this.minWanderDistance = undefined;
+        this.maxWanderDistance = undefined;
+        this.UpdateWanderArea(this.hivePosition);
+
         this.texture = new Texture(
             this.position,
             this.size,
-            '#88000066',
+            '#FFC43666',
             1,
-            '#880000'
+            '#000000'
         );
         this.currentTarget = this.GetRandomTarget();
         this.isPausing = false;
         this.pauseChance = 5;
         this.pauseTimer = undefined;
 
+        this.isDead = false;
+        this.health = 800;
+        this.statusText = [];
+
         this.dirX = 1;
         this.dirY = 1;
-        this.moveSpeed = 10;
+        this.trackingMoveSpeed = 200;
+        this.moveSpeed = 100;
+        this.wanderSpeed = 100;
+
+        this.aggressiveSpeed = 200;
+        this.aggressiveVolume = 0.3;
+        this.stingDamage = random(5, 10);
+        this.stingCooldownDuration = 2;
+        this.stingDelay = +((this.stingCooldownDuration * (random(1, 100) / 100)).toFixed(1));
+        this.isStinging = false;
+        this.stingCooldown = undefined;
+
+        this.buzzSound = new Sound(`sounds/effects/bee_${random(1, 4)}.ogg`, true, true, false, 0, 0);
+        this.buzzSound.Play();
+        this.maxVolumneDistance = 400;
+        this.buzzDefaultVolume = 0.15;
+        this.buzzMaxVolume = this.buzzDefaultVolume;
+    }
+
+    Reset() {
+        this.SetAggressive(false);
+        this.buzzMaxVolume = this.buzzDefaultVolume;
+        this.UpdateWanderArea(this.hivePosition);
+        this.isStinging = false;
+        this.stingCooldown = undefined;
+        this.moveSpeed = this.wanderSpeed;
     }
 
     GetRandomTarget() {
         return new Vector2(
-            random(this.hiveCenter.x, this.hiveCenter.x + 200),
-            random(this.hiveCenter.y, this.hiveCenter.y + 200)
+            random(this.minWanderDistance.x, this.maxWanderDistance.x),
+            random(this.minWanderDistance.y, this.maxWanderDistance.y)
         );
     }
 
-    Update() {
+    GetIsAggressive() {
+        return this.state === this.BEE_STATE.AGGRESSIVE;
+    }
+
+    GetIsDead() {
+        return this.isDead;
+    }
+
+    GetDamage() {
+        return { amount: this.stingDamage, isCrit: false };
+    }
+
+    GetBounds() {
+        return this.bounds;
+    }
+
+    GetState() {
+        return this.state;
+    }
+
+    SetAggressive(isAggressive) {
+        let speed, volume;
+        
+        if (isAggressive) {
+            this.state = this.BEE_STATE.AGGRESSIVE;
+            speed = this.aggressiveSpeed;
+            volume = this.aggressiveVolume;
+        } else if (this.state === this.BEE_STATE.AGGRESSIVE) {
+            this.state = this.BEE_STATE.HOME.HIGH_ALERT;
+            speed = this.wanderSpeed;
+            volume = this.buzzDefaultVolume;
+        }
+
+        this.moveSpeed = speed;
+        this.buzzMaxVolume = volume;
+    }
+
+    SetIsDead() {
+        this.buzzSound.Stop();
+        this.buzzSound = undefined;
+        this.isDead = true;
+    }
+
+    StingAttack() {
+        this.isStinging = false;
+        
+        if (this.stingCooldown && this.stingCooldown.IsComplete()) {
+            this.isStinging = true;
+        }
+
+        if (!this.stingCooldown || this.stingCooldown.IsComplete()) {
+            this.stingCooldown = new Timer(GameTime.getCurrentGameTime(), this.stingCooldownDuration);
+        }
+    }
+
+    IsStinging() {
+        return this.isStinging;
+    }
+
+    DoDamage(damage) {       
+        this.health -= damage.amount;
+        this.health = (this.health < 0) ? 0 : this.health;
+
+        this.statusText.push(
+            new StatusText(
+                'DAMAGE',
+                damage.amount,
+                damage.isCrit,
+                this.position,
+                0
+            )
+        );
+
+        if (this.health <= 0) {
+            this.SetIsDead();
+        }
+    }
+    
+    UpdateProximityVolume() {
+        const deltaX = Math.pow(this.position.x - this.playerCenter.x, 2);
+        const deltaY = Math.pow(this.position.y - this.playerCenter.y, 2);
+        const delta = Math.sqrt(deltaX + deltaY);
+        
+        let volume = 0;
+        
+        if (delta < this.maxVolumneDistance) {
+
+            if (!this.buzzSound.IsPlaying()) {
+                this.buzzSound.Play();
+            }
+
+            volume = this.buzzMaxVolume - (this.buzzMaxVolume * (delta / this.maxVolumneDistance));
+            volume = (volume >= this.buzzMaxVolume) ? this.buzzMaxVolume : volume;
+        } else {
+
+            this.buzzSound.Stop();
+
+        }
+        
+        // Based on the player's distance from the bee, set volume
+        this.buzzSound.SetVolumne(volume);
+    }
+
+    UpdateHivePosition(position) {
+        this.hivePosition = new Vector2(position.x, position.y);
+        // this.UpdateWanderArea(this.hivePosition);
+    }
+
+    UpdateWanderArea(area) {
+        this.minWanderDistance = new Vector2(
+            area.x - 50,
+            area.y - 20
+        );
+        this.maxWanderDistance = new Vector2(
+            area.x + 15 + 50,
+            area.y + 20 + 20
+        );
+    }
+
+    ApplyMovement() {
         const elapsed = GameTime.getElapsed();
 
         if (this.pauseTimer && this.pauseTimer.IsComplete()) {
@@ -50,6 +212,9 @@ class Bee {
                 this.position.x - this.currentTarget.x,
                 this.position.y - this.currentTarget.y
             );
+            const shouldPause = 
+                this.state !== this.BEE_STATE.AGGRESSIVE &&
+                random(0 ,100) < this.pauseChance;
             
             this.dirX = posDiff.x < 0 ? 1 : -1;
             this.dirY = posDiff.y < 0 ? 1 : -1;
@@ -57,62 +222,49 @@ class Bee {
             this.position.x += this.dirX * this.moveSpeed * elapsed;
             this.position.y += this.dirY * this.moveSpeed * elapsed;
 
-            if (posDiff.x < 5 && posDiff.y < 5) {
+            if (Math.abs(posDiff.x) < 5 && Math.abs(posDiff.y) < 5) {
 
-                if (random(0 ,100) < this.pauseChance) {
-                    console.log('IS PAUSING');
+                if (shouldPause) {
                     this.isPausing = true;
-                    this.pauseTimer = new Timer(GameTime.getCurrentGameTime(), 2);
+                    this.pauseTimer = new Timer(GameTime.getCurrentGameTime(), 1);
                 } else {
                     this.currentTarget = this.GetRandomTarget();
                 }
             }
 
         }
-        /*
-            if (this.isPausing && this.pauseTimer && this.pauseTimer.IsComplete()) {
-                this.isPausing = false;
+    }
+
+    Update(hivePosition, playerCenter) {
+        this.hivePosition = hivePosition;
+        this.playerCenter = playerCenter;
+
+        const diffPlayerPos = new Vector2(
+            this.position.x - this.playerCenter.x,
+            this.position.y - this.playerCenter.y
+        );
+        const isCloseToPlayer = (Math.abs(diffPlayerPos.x) < 50 && Math.abs(diffPlayerPos.y) < 50);
+
+        if (this.state < this.BEE_STATE.AGGRESSIVE) {
+            this.UpdateWanderArea(this.hivePosition);
+        }
+
+        if (this.state === this.BEE_STATE.AGGRESSIVE) {
+            this.UpdateWanderArea(this.playerCenter);
+    
+            if (isCloseToPlayer) {
+                this.StingAttack();
             }
+        }
+        
+        if (isCloseToPlayer && this.state === this.BEE_STATE.HOME.HIGH_ALERT) {
+            console.log('HIGH ALERT');
+            this.SetAggressive(true);
+        }
 
-            if (!this.isPausing) {
-                // Move towards currentTarget
-                // set direction based on currentTarget
-                this.dirX = ((this.position.x - this.currentTarget.x) < 0) ? 1 : -1;
-                this.dirY = ((this.position.y - this.currentTarget.y) < 0) ? 1 : -1;
-                this.position.x += (this.dirX < 0) ? -this.moveSpeed : this.moveSpeed;
-                this.position.y += (this.dirY < 0) ? -this.moveSpeed : this.moveSpeed;
-
-                const diffPos = new Vector2(
-                    Math.abs(this.position.x - this.currentTarget.x),
-                    Math.abs(this.position.y - this.currentTarget.y)
-                );
-
-                // if target is reached, either pause or move to next
-                if (diffPos.x < 1 && diffPos.y < 1) {
-                    
-                    // this.isPausing = random(0, 100) <= this.pauseChance;
-
-                    if (!this.isPausing) {
-                        this.pauseTimer = new Timer(GameTime.getCurrentGameTime(), 2);
-                        this.currentTarget = this.GetRandomTarget();
-                    }
-
-                }
-
-                this.texture.Update(this.position);
-            }
-
-            console.log(
-                {
-                    direction: `x: ${this.dirX}, y: ${this.dirY}`,
-                    position: this.position,
-                    curTar: this.currentTarget,
-                    hPos: this.hivePosition
-                }
-            );
-
-        */
-
+        this.ApplyMovement();
+        this.bounds.Update(new Vector2(this.position.x, this.position.y), this.size);
+        this.UpdateProximityVolume();
     }
 
     Draw() {

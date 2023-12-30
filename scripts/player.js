@@ -47,7 +47,9 @@ class Player extends Character {
     }
 
     Initialize(position, size) {
-        this.ResetHealth();
+        if (this.isDead) {
+            this.ResetHealth();
+        }
         this.SetPosition(position);
         this.SetSize(size);
         this.SetIsDead(false);

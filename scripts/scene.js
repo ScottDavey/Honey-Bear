@@ -15,6 +15,9 @@
         this.worldHeight = this.level.worldHeight;
         this.collision = new Collision(this.level.collision);
         this.eventCollision = this.level.eventCollision;
+        this.isBossSequence = false;
+        this.bossAreaBounds = undefined;
+        this.isBossDefeated = false;
         this.exit = new Rectangle(
             this.eventCollision.exit.pos[0],
             this.eventCollision.exit.pos[1],
@@ -43,8 +46,11 @@
             '#FFC436'
         );
         
-        this.pitFallData = this.level.eventCollision.pitfalls;
+        this.pitFallData = this.eventCollision.pitfalls;
         this.pitfalls = [];
+
+        this.genericEventData = this.eventCollision.generic;
+        this.genericEvents = [];
         
         this.camera = new Camera();
         this.parallax = new Parallax(this.level.backgrounds, this.worldWidth);
@@ -159,23 +165,38 @@
 
     LoadContent() {
         // LOAD BEARS
-        this.bears = this.level.enemies.map(bear => {
+        this.bears = this.level.bears.map(bear => {
             return new Bear(
                 new Vector2(bear.start[0], bear.start[1]),
                 new Vector2(bear.size[0], bear.size[1])
             );
         });
 
-        for (let h = 1; h < 5; h++) {
-            const position = new Vector2(h * 800, 420);
+        this.beeHives = this.level.beeHives.map(hive => {
+            const position = new Vector2(hive.start[0], hive.start[1]);
             const collisionPositionY = this.collision.GetLineYCollisionFromPosition(position);
             
-            this.beeHives.push(new BeeHive(position, collisionPositionY));
-        }
+            return new BeeHive(position, collisionPositionY);
+        });
 
         // PITFALLS
         this.pitfalls = this.pitFallData.map(pitfall => {
             return new Rectangle(pitfall.pos[0], pitfall.pos[1], pitfall.size[0], pitfall.size[1]);
+        });
+
+        // GENERIC EVENTS
+        this.genericEvents = this.genericEventData.map(gen => {
+            
+            const bounds = new Rectangle(gen.pos[0], gen.pos[1], gen.size[0], gen.size[1]);
+
+            if (gen.name === 'BOSS') {
+                this.bossAreaBounds = bounds;
+            }
+
+            return {
+                bounds,
+                name: gen.name
+            };
         });
 
         // LOAD SONG
@@ -324,6 +345,75 @@
 
     }
 
+    CheckGenericEventCollision() {
+        const playerBounds = this.player.GetBounds();
+
+        this.isBossSequence = false;
+
+        for (const gen of this.genericEvents) {
+
+            if (this.collision.CheckBoxCollision(playerBounds, gen.bounds)) {
+
+                if (gen.name === 'BOSS' && !this.isBossDefeated) {
+                    this.isBossSequence = true;
+                    
+                    // Set enemies to stop tracking player
+                    for (const bear of this.bears) {
+                        bear.TrackPlayer(false);
+                        
+                        // Send bears the other way if they're in the boss area
+                        if (bear.GetPosition().x >= gen.bounds.left) {
+                            bear.SetDirection(-1);
+                        }
+                    }
+
+                    for (const hive of this.beeHives) {
+                        for (const bee of hive.GetBees()) {
+                            const isAggressive = bee.GetIsAggressive();
+
+                            if (isAggressive) {
+                                bee.Reset();
+                            }
+                        }
+                    }
+                } else if (gen.name === 'PIT' && playerBounds.top >= gen.bounds.top) {
+                    this.player.DoDamage({ amount: this.player.GetCurrentHealth(), isCrit: false }, true);
+                }
+
+            }
+
+        }
+
+        // Keep player within the boss area until the fight is over
+        if (this.isBossSequence && !this.isBossDefeated) {
+            const playerPosition = this.player.GetPosition();
+            const playerVelocity = this.player.GetVelocity();
+            let newPosX = playerPosition.x;
+            let newVelX = playerVelocity.x;
+
+            if (playerPosition.x <= this.bossAreaBounds.left) {
+                newPosX = this.bossAreaBounds.left;
+                newVelX = 0;
+            } else if (playerPosition.x >= this.bossAreaBounds.right - this.player.GetSize().x) {
+                newPosX = this.bossAreaBounds.right - this.player.GetSize().x;
+                newVelX = 0;
+            }
+
+            this.player.SetPosition(new Vector2(newPosX, playerPosition.y));
+            this.player.SetVelocity(new Vector2(newVelX, playerVelocity.y));
+        }
+    }
+
+    CheckBeeAggression(bees) {
+
+        for (const bee of bees) {
+
+            if (bee.IsStinging() && !this.player.GetIsDead()) {
+                this.player.DoDamage(bee.GetDamage(), true);
+            }
+        }
+    }
+
     FadeOutSound() {
         const currentGameTime = GameTime.getCurrentGameTime();
 
@@ -343,11 +433,16 @@
         let cameraPosX = this.player.position.x + this.player.size.x / 2 - CANVAS_WIDTH / 2;
         let cameraPosY = this.player.position.y + this.player.size.y / 2 - CANVAS_HEIGHT / 2;
 
-        // Keep camera within canvas bounds
-        if (cameraPosX < 0) {
-            cameraPosX = 0;
-        } else if (cameraPosX > this.worldWidth - CANVAS_WIDTH) {
-            cameraPosX = this.worldWidth - CANVAS_WIDTH;
+        // Keep camera within specified bounds. This can be either canvas or boss area
+        const xLimit = {
+            left: this.isBossSequence ? this.bossAreaBounds.left : 0,
+            right: this.isBossSequence ? this.bossAreaBounds.right : this.worldWidth
+        };
+
+        if (cameraPosX < xLimit.left) {
+            cameraPosX = xLimit.left;
+        } else if (cameraPosX > xLimit.right - CANVAS_WIDTH) {
+            cameraPosX = xLimit.right - CANVAS_WIDTH;
         }
 
         if (cameraPosY < 0) {
@@ -361,16 +456,6 @@
         // Based on the camera's position, update the parallax backgrounds
         const cameraLookAt = this.camera.getlookat();
         this.parallax.Update(new Vector2(cameraLookAt.x, cameraLookAt.y));
-    }
-
-    CheckBeeAggression(bees) {
-
-        for (const bee of bees) {
-
-            if (bee.IsStinging() && !this.player.GetIsDead()) {
-                this.player.DoDamage(bee.GetDamage(), true);
-            }
-        }
     }
     
     Update() {
@@ -407,13 +492,23 @@
             this.player.SetInputLock(false);
         }
 
+        // if (Input.Keys.GetKey(Input.Keys.M)) {
+        //     if (!this.isPlayerRandomPositionKeyLocked) {
+        //         const randPos = new Vector2();
+        //         randPos.x = random(0, this.worldWidth - 300);
+        //         randPos.y = random(-this.worldHeight - 500, -this.worldHeight);
+        //         this.player.SetRandomPosition(randPos);
+        //         this.isPlayerRandomPositionKeyLocked = true;
+        //     }
+        // } else {
+        //     this.isPlayerRandomPositionKeyLocked = false;
+        // }
+        
         if (Input.Keys.GetKey(Input.Keys.M)) {
             if (!this.isPlayerRandomPositionKeyLocked) {
-                const randPos = new Vector2();
-                randPos.x = random(0, this.worldWidth - 300);
-                randPos.y = random(-this.worldHeight - 500, -this.worldHeight);
-                this.player.SetRandomPosition(randPos);
-                this.isPlayerRandomPositionKeyLocked = true;
+                if (!this.isBossDefeated && this.isBossSequence) {
+                    this.isBossDefeated = true;
+                }
             }
         } else {
             this.isPlayerRandomPositionKeyLocked = false;
@@ -432,6 +527,8 @@
 
         // Check for Pitfalls
         this.CheckEntityPitfallCollision();
+        // Check for Generic Events
+        this.CheckGenericEventCollision();
 
         // BEARS
         for (let b = 0; b < this.bears.length; b++) {
@@ -457,7 +554,14 @@
 
         // BEE HIVES
         for (const beeHive of this.beeHives) {
+            const beeHiveState = beeHive.GetState();
+            const beeHiveBounds = beeHive.GetBounds();
+
             beeHive.Update(this.player.GetBounds().center);
+
+            if (beeHiveState === HIVE_STATE.FALLING && this.collision.CheckLineCollisionRect(beeHiveBounds)) {
+                beeHive.SetGroundState();
+            }
 
             this.player.SetInputLock(false);
 

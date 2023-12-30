@@ -8,11 +8,12 @@ class BeeHive {
         this.position = position;
         this.size = new Vector2(30, 40);
         this.collisionPositionY = collisionPositionY - this.size.y;
+        this.bounds = new Rectangle(this.position.x, this.position.y, this.size.x, this.size.y);
         this.center = new Vector2(
             this.position.x + 10,
             this.position.y + 30
         );
-        this.numberOfBees = random(5, 10);
+        this.numberOfBees = random(5, 15);
         this.bees = [];
         this.sprite = new Sprite('images/level_assets/BeeHive.png', new Vector2(this.position.x, this.position.y), new Vector2(this.size.x, this.size.y));
         this.RummageSprite = new Nimation(
@@ -27,22 +28,18 @@ class BeeHive {
             new Vector2(0, 0)
         );
         
-        this.HIVE_STATES = {
-            NEW: 0,
-            PARTIALLY_RUMMAGED: 1,
-            FALLING: 2,
-            ON_GROUND: 3,
-            COLLECTING: 4,
-            EMPTY: 5
-        };
-        this.state = this.HIVE_STATES.NEW;
+        this.state = HIVE_STATE.NEW;
 
         this.isRummaging = false;
         this.rummageProgress = 0;
         this.rummageRate = 30;
         this.rummageSound = new Sound('sounds/effects/foliage_rustle.ogg', false, true, false, 0.1, 0);
         this.rummageSoundTimer = undefined;
-        this.fallSpeed = 175;
+
+        this.doesPhysicsApply = false;
+        this.gravity = 9000;
+        this.maxFallSpeed = 500;
+        this.velocityY = 0;
 
         this.isPlayerInRange = false;
         this.honeyPrize = random(50, 120);
@@ -100,6 +97,16 @@ class BeeHive {
         }
     }
 
+    SetGroundState() {
+        if (this.state !== HIVE_STATE.ON_GROUND) {
+            this.state = HIVE_STATE.ON_GROUND;
+        }
+    }
+
+    GetBounds() {
+        return this.bounds;
+    }
+
     GetState() {
         return this.state;
     }
@@ -109,7 +116,7 @@ class BeeHive {
     }
 
     GetCenter() {
-        return this.center;
+        return this.bounds.center;
     }
 
     GetBees() {
@@ -121,7 +128,7 @@ class BeeHive {
     }
 
     GetDrawOrder() {
-        return (this.state < this.HIVE_STATES.FALLING) ? 0 : 1;
+        return (this.state < HIVE_STATE.FALLING) ? 0 : 1;
     }
 
     LoadBees() {
@@ -133,7 +140,7 @@ class BeeHive {
     }
 
     IsCollecting() {
-        return this.state === this.HIVE_STATES.COLLECTING;
+        return this.state === HIVE_STATE.COLLECTING;
     }
 
     Interact(isPresseingActionButton = false) {
@@ -145,7 +152,7 @@ class BeeHive {
             return;
         }
 
-        if (this.state < this.HIVE_STATES.FALLING) {
+        if (this.state < HIVE_STATE.FALLING) {
 
             this.showRummageHint = true;
 
@@ -156,30 +163,30 @@ class BeeHive {
                 this.hintTextRummage.SetBorder(this.hintBorder.normal, 1);
             }
 
-        } else if (this.state === this.HIVE_STATES.ON_GROUND) {
+        } else if (this.state === HIVE_STATE.ON_GROUND) {
 
             this.showCollectHint = true;
 
             if (isPresseingActionButton) {
-                this.state = this.HIVE_STATES.COLLECTING;
+                this.state = HIVE_STATE.COLLECTING;
             }
 
-        } else if (this.state === this.HIVE_STATES.COLLECTING) {
-            this.state = this.HIVE_STATES.EMPTY;
+        } else if (this.state === HIVE_STATE.COLLECTING) {
+            this.state = HIVE_STATE.EMPTY;
         }
     }
 
     Rummage() {
         
         if (this.rummageProgress >= 100) {
-            this.state = this.HIVE_STATES.FALLING;
+            this.state = HIVE_STATE.FALLING;
             return;
         }
 
         const elapsed = GameTime.getElapsed();
 
         this.isRummaging = true;
-        this.state = this.HIVE_STATES.PARTIALLY_RUMMAGED;
+        this.state = HIVE_STATE.PARTIALLY_RUMMAGED;
         this.RummageSprite.Update(new Vector2(this.position.x, this.position.y));
         this.rummageProgress += this.rummageRate * elapsed;
 
@@ -191,16 +198,16 @@ class BeeHive {
     HandleRummagedSequence() {
         const elapsed = GameTime.getElapsed();
 
-        // Step 1: FALLING
-        this.position.y += this.fallSpeed * elapsed;
+        this.velocityY = Clamp(
+            this.velocityY + this.gravity * elapsed,
+            -this.maxFallSpeed,
+            this.maxFallSpeed
+        );
+
+        this.position.y += this.velocityY * elapsed;
+        this.position.y = Math.round(this.position.y);
 
         this.SetHintPosition();
-
-        if (this.position.y >= this.collisionPositionY) {
-            this.position.y = this.collisionPositionY;
-            this.state = this.HIVE_STATES.ON_GROUND;
-            this.SetBeeAggression(true);
-        }
 
     }
 
@@ -210,12 +217,12 @@ class BeeHive {
 
         // Check if the player is within rummaging distance
         const diffPos = new Vector2(
-            Math.abs(playerCenter.x - this.center.x),
-            Math.abs(playerCenter.y - this.center.y)
+            Math.abs(playerCenter.x - this.bounds.center.x),
+            Math.abs(playerCenter.y - this.bounds.center.y)
         );
         this.isPlayerInRange = (diffPos.x < 75 && diffPos.y < 75);
 
-        if (this.state === this.HIVE_STATES.FALLING) {
+        if (this.state === HIVE_STATE.FALLING) {
             this.HandleRummagedSequence();
         }
 
@@ -230,6 +237,7 @@ class BeeHive {
             bee.Update(this.position, playerCenter);
         }
 
+        this.bounds.Update(this.position, this.size);
         this.sprite.Update(this.position);
 
     }
@@ -245,7 +253,7 @@ class BeeHive {
 
             this.hintTextRummage.Draw();
 
-            if (this.state < this.HIVE_STATES.FALLING) {
+            if (this.state < HIVE_STATE.FALLING) {
                 this.progressBar.Draw();
             }
         }

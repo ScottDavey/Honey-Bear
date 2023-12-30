@@ -70,6 +70,10 @@ class Character {
         this.position = position;
     }
 
+    SetVelocity(vel) {
+        this.velocity = vel;
+    }
+
     SetSize(size) {
         this.size = size;
         // this.healthBar.SetSize(new Vector2(size.x, 3));

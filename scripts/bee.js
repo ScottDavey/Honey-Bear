@@ -11,16 +11,7 @@ class Bee {
         this.size = new Vector2(2.5, 5);
         this.bounds = new Rectangle(this.position.x, this.position.y, this.size.x, this.size.y);
 
-        this.BEE_STATE = {
-            HOME: {
-                CALM: 0,
-                HIGH_ALERT: 1,
-            },
-            AGGRESSIVE: 2,
-            DYING: 3,
-            DEAD: 4
-        };
-        this.state = this.BEE_STATE.HOME.CALM;
+        this.state = BEE_STATE.HOME.CALM;
 
         this.minWanderDistance = undefined;
         this.maxWanderDistance = undefined;
@@ -80,7 +71,7 @@ class Bee {
     }
 
     GetIsAggressive() {
-        return this.state === this.BEE_STATE.AGGRESSIVE;
+        return this.state === BEE_STATE.AGGRESSIVE;
     }
 
     GetIsDead() {
@@ -103,11 +94,11 @@ class Bee {
         let speed, volume;
         
         if (isAggressive) {
-            this.state = this.BEE_STATE.AGGRESSIVE;
+            this.state = BEE_STATE.AGGRESSIVE;
             speed = this.aggressiveSpeed;
             volume = this.aggressiveVolume;
-        } else if (this.state === this.BEE_STATE.AGGRESSIVE) {
-            this.state = this.BEE_STATE.HOME.HIGH_ALERT;
+        } else if (this.state === BEE_STATE.AGGRESSIVE) {
+            this.state = BEE_STATE.HOME.HIGH_ALERT;
             speed = this.wanderSpeed;
             volume = this.buzzDefaultVolume;
         }
@@ -213,7 +204,7 @@ class Bee {
                 this.position.y - this.currentTarget.y
             );
             const shouldPause = 
-                this.state !== this.BEE_STATE.AGGRESSIVE &&
+                this.state !== BEE_STATE.AGGRESSIVE &&
                 random(0 ,100) < this.pauseChance;
             
             this.dirX = posDiff.x < 0 ? 1 : -1;
@@ -245,11 +236,11 @@ class Bee {
         );
         const isCloseToPlayer = (Math.abs(diffPlayerPos.x) < 50 && Math.abs(diffPlayerPos.y) < 50);
 
-        if (this.state < this.BEE_STATE.AGGRESSIVE) {
+        if (this.state < BEE_STATE.AGGRESSIVE) {
             this.UpdateWanderArea(this.hivePosition);
         }
 
-        if (this.state === this.BEE_STATE.AGGRESSIVE) {
+        if (this.state === BEE_STATE.AGGRESSIVE) {
             this.UpdateWanderArea(this.playerCenter);
     
             if (isCloseToPlayer) {
@@ -257,8 +248,7 @@ class Bee {
             }
         }
         
-        if (isCloseToPlayer && this.state === this.BEE_STATE.HOME.HIGH_ALERT) {
-            console.log('HIGH ALERT');
+        if (isCloseToPlayer && this.state === BEE_STATE.HOME.HIGH_ALERT) {
             this.SetAggressive(true);
         }
 

@@ -175,7 +175,6 @@ class Bee {
 
     UpdateHivePosition(position) {
         this.hivePosition = new Vector2(position.x, position.y);
-        // this.UpdateWanderArea(this.hivePosition);
     }
 
     UpdateWanderArea(area) {
@@ -226,7 +225,7 @@ class Bee {
         }
     }
 
-    Update(hivePosition, playerCenter) {
+    Update(hivePosition, hiveState, playerCenter) {
         this.hivePosition = hivePosition;
         this.playerCenter = playerCenter;
 
@@ -247,6 +246,10 @@ class Bee {
                 this.StingAttack();
             }
         }
+
+        // if (hiveState === HIVE_STATE.ON_GROUND && this.state !== BEE_STATE.HOME.HIGH_ALERT) {
+        //     this.SetAggressive(true);
+        // }
         
         if (isCloseToPlayer && this.state === BEE_STATE.HOME.HIGH_ALERT) {
             this.SetAggressive(true);

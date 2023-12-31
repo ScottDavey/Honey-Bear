@@ -100,6 +100,7 @@ class BeeHive {
     SetGroundState() {
         if (this.state !== HIVE_STATE.ON_GROUND) {
             this.state = HIVE_STATE.ON_GROUND;
+            this.SetBeeAggression(true);
         }
     }
 
@@ -234,7 +235,7 @@ class BeeHive {
                 continue;
             }
 
-            bee.Update(this.position, playerCenter);
+            bee.Update(this.position, this.state, playerCenter);
         }
 
         this.bounds.Update(this.position, this.size);

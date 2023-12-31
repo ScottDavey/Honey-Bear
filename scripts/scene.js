@@ -15,9 +15,14 @@
         this.worldHeight = this.level.worldHeight;
         this.collision = new Collision(this.level.collision);
         this.eventCollision = this.level.eventCollision;
+
+        this.boss = new TreeMonster(new Vector2(3500, 400), new Vector2(200, 300));
         this.isBossSequence = false;
+        this.bossSequenceIntro = undefined;
+        this.bossSequenceIntroComplete = false;
         this.bossAreaBounds = undefined;
         this.isBossDefeated = false;
+        
         this.exit = new Rectangle(
             this.eventCollision.exit.pos[0],
             this.eventCollision.exit.pos[1],
@@ -530,70 +535,74 @@
         // Check for Generic Events
         this.CheckGenericEventCollision();
 
-        // BEARS
-        for (let b = 0; b < this.bears.length; b++) {
-            const bear = this.bears[b];
+        if (!this.isBossSequence) {
 
-            if (bear.GetIsDead() && bear.GetIsDeathDone()) {
-                this.bears.splice(b, 1);
-                continue;
+            // BEARS
+            for (let b = 0; b < this.bears.length; b++) {
+                const bear = this.bears[b];
+
+                if (bear.GetIsDead() && bear.GetIsDeathDone()) {
+                    this.bears.splice(b, 1);
+                    continue;
+                }
+
+                bear.Update(this.player.GetPosition());
+                this.collision.CheckLineCollisionEntity(bear);
+
+                if (bear.IsAttacking() && !this.player.GetIsDead()) {
+                    this.player.DoDamage({ amount: bear.GetMeleeAttackDamage(), isCrit: false });
+                }
+
+                // If the Bear falls, throw it back up
+                if (bear.GetPosition().y > (this.worldHeight + 100)) {
+                    bear.SetPosition(new Vector2(bear.GetPosition().x, -300));
+                }
             }
 
-            bear.Update(this.player.GetPosition());
-            this.collision.CheckLineCollisionEntity(bear);
+            // BEE HIVES
+            for (const beeHive of this.beeHives) {
+                const beeHiveState = beeHive.GetState();
+                const beeHiveBounds = beeHive.GetBounds();
 
-            if (bear.IsAttacking() && !this.player.GetIsDead()) {
-                this.player.DoDamage({ amount: bear.GetMeleeAttackDamage(), isCrit: false });
+                beeHive.Update(this.player.GetBounds().center);
+
+                if (beeHiveState === HIVE_STATE.FALLING && this.collision.CheckLineCollisionRect(beeHiveBounds)) {
+                    beeHive.SetGroundState();
+                }
+
+                this.player.SetInputLock(false);
+
+                beeHive.Interact(Input.Keys.GetKey(Input.Keys.E) || Input.GamePad.Y.pressed);
+                
+                if (beeHive.IsCollecting()) {
+                    this.player.Heal(beeHive.GetHoneyPrize());
+                }
+
+                // Check if Bees are aggressive and within range. If so, do damage to the player
+                this.CheckBeeAggression(beeHive.GetBees());
             }
 
-            // If the Bear falls, throw it back up
-            if (bear.GetPosition().y > (this.worldHeight + 100)) {
-                bear.SetPosition(new Vector2(bear.GetPosition().x, -300));
-            }
-        }
+            // EXIT
+            if (this.collision.CheckBoxCollision(this.player.GetBounds(), this.exit)) {
+                this.isLevelEndSequence = true;
+                this.player.SetInputLock(true);
 
-        // BEE HIVES
-        for (const beeHive of this.beeHives) {
-            const beeHiveState = beeHive.GetState();
-            const beeHiveBounds = beeHive.GetBounds();
+                if (!this.exitTransition) {
+                    const exitTransitionPosition = new Vector2(
+                        this.player.GetPosition.x - CANVAS_WIDTH / 2,
+                        0
+                    );
+                    this.exitTransition = new Transition('0, 0, 0', 1.5, 'out', exitTransitionPosition);
+                }
 
-            beeHive.Update(this.player.GetBounds().center);
-
-            if (beeHiveState === HIVE_STATE.FALLING && this.collision.CheckLineCollisionRect(beeHiveBounds)) {
-                beeHive.SetGroundState();
-            }
-
-            this.player.SetInputLock(false);
-
-            beeHive.Interact(Input.Keys.GetKey(Input.Keys.E) || Input.GamePad.Y.pressed);
-            
-            if (beeHive.IsCollecting()) {
-                this.player.Heal(beeHive.GetHoneyPrize());
+                if (!this.exitTransition.IsComplete()) {
+                    this.exitTransition.update(currentGameTime);
+                    this.FadeOutSound();
+                } else {
+                    this.isLevelComplete = true;
+                }
             }
 
-            // Check if Bees are aggressive and within range. If so, do damage to the player
-            this.CheckBeeAggression(beeHive.GetBees());
-        }
-
-        // EXIT
-        if (this.collision.CheckBoxCollision(this.player.GetBounds(), this.exit)) {
-            this.isLevelEndSequence = true;
-            this.player.SetInputLock(true);
-
-            if (!this.exitTransition) {
-                const exitTransitionPosition = new Vector2(
-                    this.player.GetPosition.x - CANVAS_WIDTH / 2,
-                    0
-                );
-                this.exitTransition = new Transition('0, 0, 0', 1.5, 'out', exitTransitionPosition);
-            }
-
-            if (!this.exitTransition.IsComplete()) {
-                this.exitTransition.update(currentGameTime);
-                this.FadeOutSound();
-            } else {
-                this.isLevelComplete = true;
-            }
         }
         
     }
@@ -613,23 +622,29 @@
             this.exitLogBack.Draw();
         }
         
-        // Bee Hive - before rummaged draw order
-        for (const beeHive of this.beeHives) {
-            if (beeHive.GetDrawOrder() === 0) {
-                beeHive.Draw();
+        if (!this.isBossSequence) {
+            // Bee Hive - before rummaged draw order
+            for (const beeHive of this.beeHives) {
+                if (beeHive.GetDrawOrder() === 0) {
+                    beeHive.Draw();
+                }
             }
         }
 
-        for (const bear of this.bears) {
-            bear.Draw();
+        if (!this.isBossSequence) {
+            for (const bear of this.bears) {
+                bear.Draw();
+            }
         }
 
         this.player.Draw();
 
-        // Bee Hive - after rummaged draw order
-        for (const beeHive of this.beeHives) {
-            if (beeHive.GetDrawOrder() === 1) {
-                beeHive.Draw();
+        if (!this.isBossSequence) {
+            // Bee Hive - after rummaged draw order
+            for (const beeHive of this.beeHives) {
+                if (beeHive.GetDrawOrder() === 1) {
+                    beeHive.Draw();
+                }
             }
         }
         

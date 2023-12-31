@@ -9,7 +9,7 @@ class StatusText {
         this.value = value;
         this.isCrit = isCrit;
         this.positionX = random(position.x - 20, position.x + 20);
-        this.position = new Vector2(this.positionX, position.y - 20);
+        this.position = new Vector2(this.positionX, position.y);
         this.isPlayer = isPlayer;
         this.duration = 2;
         this.changeRate = 1 / (this.duration * 60);

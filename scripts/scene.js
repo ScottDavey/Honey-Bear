@@ -16,7 +16,25 @@
         this.collision = new Collision(this.level.collision);
         this.eventCollision = this.level.eventCollision;
 
-        this.boss = new TreeMonster(new Vector2(3500, 400), new Vector2(200, 300));
+        this.boss = new TreeMonster(new Vector2(3500, 180), new Vector2(200, 300));
+        this.bossName = new TextC(
+            'Tree Monster',
+            new Vector2(CANVAS_WIDTH / 2 - 200, 15),
+            'Lobster, Raleway',
+            'normal',
+            20,
+            '#FFFFFF',
+            'left'
+        );
+        this.bossHealth = new StatusBar(
+            new Vector2(CANVAS_WIDTH / 2 - 200, 30),
+            new Vector2(400, 40),
+            this.boss.GetCurrentHealth(),
+            '#990000',
+            2,
+            '#550000',
+            true
+        );
         this.isBossSequence = false;
         this.bossSequenceIntro = undefined;
         this.bossSequenceIntroComplete = false;
@@ -241,10 +259,7 @@
         for (let g = 0; g < globs.length; g++) {
             const glob = globs[g];
             const globBounds = glob.GetRect();
-            const globDamage = {
-                amount: glob.GetDamage(),
-                isCrit: false
-            };
+            const globDamage = glob.GetDamage();
             
             // Check against environment
             if (this.collision.CheckLineCollisionRect(globBounds) ||
@@ -256,35 +271,46 @@
                 continue;
             }
 
-            // Check against emenies
-            for (let b = 0; b < this.bears.length; b++) {
-                const bear = this.bears[b];
-                const bearBounds = bear.GetBounds();
-                const bearHeadBounds = bear.GetHeadBounds();
+            if (this.isBossSequence) {
+                
+                const bossBounds = this.boss.GetBounds();
 
-                if (!bear.GetIsDead()) {
+                if (this.collision.CheckBoxCollision(globBounds, bossBounds)) {
+                    this.boss.DoDamage(globDamage);
+                    this.honeyGlobHitSound.Play();
+                    this.camera.shake(0.3);
+                    glob.SetHasHit(true);
 
-                    const isHeadShot = this.collision.CheckBoxCollision(globBounds, bearHeadBounds);
-                    const isBodyShot = this.collision.CheckBoxCollision(globBounds, bearBounds);
-
-                    // If it's a head shot, add crit damage
-                    if (isHeadShot) {
-                        globDamage.amount = glob.GetCritDamage();
-                        globDamage.isCrit = true;
-                    }
-                    
-                    if (isHeadShot || isBodyShot) {
-                        bear.DoDamage(globDamage);
-                        this.honeyGlobHitSound.Play();
-                        this.camera.shake(globDamage.isCrit ? 0.3 : 0.1);
-                        glob.SetHasHit(true);
-
-                        if (!bear.GetIsTracking()) {
-                            bear.TrackPlayer(true);
-                            continue;
-                        }
+                    if (this.boss.GetIsDead()) {
+                        this.isBossDefeated = true;
+                        this.isBossSequence = false;
                     }
                 }
+
+            } else {
+
+                // Check against emenies
+                for (let b = 0; b < this.bears.length; b++) {
+                    const bear = this.bears[b];
+                    const bearBounds = bear.GetBounds();
+
+                    if (!bear.GetIsDead()) {
+
+                        if (this.collision.CheckBoxCollision(globBounds, bearBounds)) {
+                            bear.DoDamage(globDamage);
+                            this.honeyGlobHitSound.Play();
+                            this.camera.shake(globDamage.isCrit ? 0.3 : 0.1);
+                            glob.SetHasHit(true);
+
+                            if (!bear.GetIsTracking()) {
+                                bear.TrackPlayer(true);
+                                continue;
+                            }
+                        }
+
+                    }
+                }
+
             }
         }
 
@@ -497,23 +523,13 @@
             this.player.SetInputLock(false);
         }
 
-        // if (Input.Keys.GetKey(Input.Keys.M)) {
-        //     if (!this.isPlayerRandomPositionKeyLocked) {
-        //         const randPos = new Vector2();
-        //         randPos.x = random(0, this.worldWidth - 300);
-        //         randPos.y = random(-this.worldHeight - 500, -this.worldHeight);
-        //         this.player.SetRandomPosition(randPos);
-        //         this.isPlayerRandomPositionKeyLocked = true;
-        //     }
-        // } else {
-        //     this.isPlayerRandomPositionKeyLocked = false;
-        // }
-        
         if (Input.Keys.GetKey(Input.Keys.M)) {
             if (!this.isPlayerRandomPositionKeyLocked) {
-                if (!this.isBossDefeated && this.isBossSequence) {
-                    this.isBossDefeated = true;
-                }
+                const randPos = new Vector2();
+                randPos.x = random(0, this.worldWidth - 300);
+                randPos.y = random(-this.worldHeight - 500, -this.worldHeight);
+                this.player.SetRandomPosition(randPos);
+                this.isPlayerRandomPositionKeyLocked = true;
             }
         } else {
             this.isPlayerRandomPositionKeyLocked = false;
@@ -535,7 +551,11 @@
         // Check for Generic Events
         this.CheckGenericEventCollision();
 
-        if (!this.isBossSequence) {
+        if (this.isBossSequence) {
+            this.boss.Update(this.player.GetPosition());
+            this.bossHealth.Update(this.boss.GetCurrentHealth());
+            this.collision.CheckLineCollisionEntity(this.boss);
+        } else {
 
             // BEARS
             for (let b = 0; b < this.bears.length; b++) {
@@ -621,6 +641,10 @@
         if (+this.selectedLevel === 0) {
             this.exitLogBack.Draw();
         }
+
+        if (this.isBossSequence) {
+            this.boss.Draw();
+        }
         
         if (!this.isBossSequence) {
             // Bee Hive - before rummaged draw order
@@ -656,6 +680,11 @@
         }
 
         this.camera.end();
+
+        if (this.isBossSequence) {
+            this.bossName.Draw();
+            this.bossHealth.Draw();
+        }
 
         this.playerHealthBar.Draw();
         this.globAbilityIcon.Draw();

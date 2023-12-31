@@ -10,7 +10,17 @@ class TreeMonster extends Character {
         this.health = 1500;
         this.maxMoveSpeed = 100;
 
-        this.texture = new Texture(this.position, this.size, '#9900088', 1, '#99000');
+        this.sprite = new Nimation(
+            'images/spritesheets/TreeMonster.png',
+            new Vector2(this.position.x, this.position.y),
+            300,
+            300,
+            6,
+            0,
+            0.1,
+            true,
+            new Vector2(0, 0)
+        );
     }
 
     Update(playerPosition) {
@@ -18,7 +28,6 @@ class TreeMonster extends Character {
     }
 
     Draw() {
-        this.texture.Draw();
         super.Draw();
     }
 

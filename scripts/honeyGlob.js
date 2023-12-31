@@ -35,11 +35,10 @@
         }
     
         GetDamage() {
-            // const isCrit = (random(0, 100) <= this.critPercent);
-            // const critPercent = isCrit ? this.critDamagePercent : 1;
-            // const amount = this.damage * critPercent;
-            // return { amount, isCrit };
-            return this.damage;
+            const isCrit = (random(0, 100) <= this.critPercent);
+            const critPercent = isCrit ? this.critDamagePercent : 1;
+            const amount = this.damage * critPercent;
+            return { amount, isCrit };
         }
 
         GetCritDamage() {

@@ -20,3 +20,11 @@ const BEE_STATE = {
     DYING: 3,
     DEAD: 4
 };
+
+const BOSS_STATE = {
+    IDLE: 0,
+    ATTACK_READY: 1,
+    ATTACKING: 2,
+    CHASING: 3,
+    STUNNED: 4
+};

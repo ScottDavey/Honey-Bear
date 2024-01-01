@@ -16,7 +16,7 @@
         this.collision = new Collision(this.level.collision);
         this.eventCollision = this.level.eventCollision;
 
-        this.boss = new TreeMonster(new Vector2(3500, 180), new Vector2(200, 300));
+        this.boss = undefined;
         this.bossName = new TextC(
             'Tree Monster',
             new Vector2(CANVAS_WIDTH / 2 - 200, 15),
@@ -29,7 +29,7 @@
         this.bossHealth = new StatusBar(
             new Vector2(CANVAS_WIDTH / 2 - 200, 30),
             new Vector2(400, 40),
-            this.boss.GetCurrentHealth(),
+            0,
             '#990000',
             2,
             '#550000',
@@ -552,6 +552,12 @@
         this.CheckGenericEventCollision();
 
         if (this.isBossSequence) {
+
+            if (!this.boss) {
+                this.boss = new TreeMonster(new Vector2(3500, 180), new Vector2(200, 300));
+                this.bossHealth.SetMaxValue(this.boss.GetCurrentHealth());
+            }
+
             this.boss.Update(this.player.GetPosition());
             this.bossHealth.Update(this.boss.GetCurrentHealth());
             this.collision.CheckLineCollisionEntity(this.boss);

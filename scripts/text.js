@@ -15,6 +15,10 @@ class TextC {
         this.textWidth = 0;
     }
 
+    GetPosition() {
+        return this.position;
+    }
+
     GetString() {
         return this.string;
     }
@@ -23,10 +27,10 @@ class TextC {
         return this.textWidth;
     }
 
-    GetCenteredTextPosition(targetCenter) {
+    GetCenteredTextPosition() {
         return new Vector2(
-            targetCenter.x - this.textWidth / 2,
-            targetCenter.y - (this.fontSize / 2)
+            this.position.x - this.textWidth / 2,
+            this.position.y - (this.fontSize / 2)
         );
     }
 
@@ -64,7 +68,7 @@ class TextC {
         CONTEXT.fillStyle = this.color;
         CONTEXT.textBaseline = 'middle';
         CONTEXT.textAlign = this.alignment;
-
+        
         this.textWidth = CONTEXT.measureText(this.string).width;
 
         CONTEXT.fillText(this.string, this.position.x, this.position.y);

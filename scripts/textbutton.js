@@ -3,11 +3,12 @@
 ************************************************/
 class TextButton {
 
-    constructor(text, pos, font = { family: 'Verdana', size: 12 }, color, hoverColor, BGColor, hoverBGColor) {
+    constructor(text, pos, font = { family: 'Verdana', size: 12, align: 'left' }, color, hoverColor, BGColor, hoverBGColor) {
         this.text = text;
         this.pos = new Vector2(pos.x, pos.y);
         this.fontFamily = font.family;
         this.fontSize = font.size;
+        this.align = font.align;
         this.originalFontColor = color;
         this.fontColor = this.originalFontColor;
         this.hoverColor = hoverColor;
@@ -23,12 +24,18 @@ class TextButton {
             'normal',
             this.fontSize,
             this.fontColor,
-            'left'
+            this.align
         );
+        this.buttonTextWidth = 0;
 
         this.collision = new Collision();
 
-        this.bounds = new Rectangle(this.pos.x, this.pos.y - (this.fontSize / 2), this.size.x, this.size.y);
+        this.bounds = new Rectangle(
+            this.pos.x,
+            this.pos.y,
+            this.buttonTextWidth,
+            this.size.y
+        );
     }
 
     IsPushed() {
@@ -79,6 +86,16 @@ class TextButton {
             this.isLeftClickLocked = false;
             this.isPushed = false;
         }
+
+        this.buttonTextWidth = this.buttonText.GetTextWidth();
+        const buttonPosition = this.align === 'center' ?
+            this.buttonText.GetCenteredTextPosition() :
+            new Vector2(this.pos.x, this.pos.y - this.fontSize / 2);
+
+        this.bounds.Update(
+            buttonPosition,
+            new Vector2(this.buttonTextWidth, this.size.y)
+        );
 
     }
 

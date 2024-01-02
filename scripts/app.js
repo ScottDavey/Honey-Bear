@@ -1,25 +1,6 @@
 // GLOBAL VARIABLES
 const CANVAS_WIDTH = 1300;
 const CANVAS_HEIGHT = 500;
-const GAME_STATES = {
-    PRIMARY: {
-        INTRO: 0,
-        MAIN_MENU: 1,
-        PLAYING: 2,
-        OUTRO: 3,
-        LOADING: 4
-    },
-    SECONDARY: {
-        GAME_MENU: 0,
-        OPTIONS_MENU: 1,
-        TRANSITION: 2
-    },
-    LEVEL: {
-        HUB: 0,
-        SCENE: 1,
-        BOSS: 2
-    }
-};
 
 let FPS = new FPSClass();
 let GAME = undefined;

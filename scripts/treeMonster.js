@@ -77,17 +77,16 @@ class TreeMonster extends Character {
 
         /*
         
-            IDLE: sequence starts in IDLE state.
+            SIMPLIFIED:
 
-            IDLE: attack cooldown timer starts, with random duration
+                - choose random attack
+                    - if proximity based, move towards player
+                
+                - attack!
+                    - attack timer
+                        - start attack cooldown
 
-            CHASING: while attack cooldown is running, chase player
-
-            ATTACK_READY: when ready, pick random attack
-
-            ATTACKING: perform attack
-
-            CHASING: go back to chasing
+                Generally, it doesn't move unless it needs to do a proximity attack on the player
         
         */
 

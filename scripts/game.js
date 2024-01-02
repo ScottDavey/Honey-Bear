@@ -18,20 +18,8 @@ class Game {
         this.intro = undefined;
         this.mainMenu = undefined;
         this.level = undefined;
-        this.gameMenu = undefined;
-        this.isPaused = false;
-        this.pausedText = new TextC(
-            'PAUSED',
-            new Vector2(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2),
-            'Jura, Consolas, Verdana',
-            'normal',
-            75,
-            '#FFFFFF',
-            'center'
-        );
-        this.pausedOverlay = undefined;
+        this.gameMenu = new GameMenu();
         this.isEscapeLocked = false;
-        this.escapeLockStart = 0;
         this.timeText = new TextC(
             `Time: 0:00`,
             new Vector2(CANVAS_WIDTH - 75, 10),
@@ -49,6 +37,7 @@ class Game {
     };
 
     update() {
+        const isPaused = this.gameMenu.GetIsPaused();
         const currentGameTime = GameTime.getCurrentGameTime();
         // Update our Game Time each frame
         GameTime.update();
@@ -84,17 +73,16 @@ class Game {
                     break;
                 case GAME_STATES.PRIMARY.PLAYING:
 
-                    // Remove locks after 0.5 seconds
-                    if (this.isEscapeLocked && (currentGameTime - this.escapeLockStart) >= 0.5) this.isEscapeLocked = false;
-
-                    if (!this.isEscapeLocked && (Input.Keys.GetKey(Input.Keys.ESCAPE) || Input.GamePad.START.pressed)) {
-                        this.isPaused = (this.isPaused) ? false : true;
-                        if (!this.pausedOverlay) this.pausedOverlay = new Texture(new Vector2(0, 0), new Vector2(CANVAS_WIDTH, CANVAS_HEIGHT), 'rgba(0, 0, 0, 0.7)', 1, 'black');
-                        this.isEscapeLocked = true;
-                        this.escapeLockStart = currentGameTime;
+                    if ((Input.Keys.GetKey(Input.Keys.ESCAPE) || Input.GamePad.START.pressed)) {
+                        if (!this.isEscapeLocked) {
+                            this.isEscapeLocked = true;
+                            this.gameMenu.SetIsPaused(!isPaused);
+                        }
+                    } else {
+                        this.isEscapeLocked = false;
                     }
 
-                    if (!this.isPaused) {
+                    if (!isPaused) {
                         if (typeof this.level === 'undefined') this.level = new Level();
                         this.level.Update();
                     }
@@ -103,6 +91,10 @@ class Game {
                     break;
             }
 
+        }
+
+        if (this.gameMenu.GetIsPaused()) {
+            this.gameMenu.Update();
         }
 
     };
@@ -137,9 +129,8 @@ class Game {
                 break;
         }
 
-        if (this.isPaused) {
-            this.pausedOverlay.Draw()
-            this.pausedText.Draw();
+        if (this.gameMenu.GetIsPaused()) {
+            this.gameMenu.Draw();
         }
 
         // FPS

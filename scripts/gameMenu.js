@@ -5,9 +5,17 @@
 class GameMenu {
 
     constructor() {
-        const center = new Vector2(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+        this.center = new Vector2(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
         this.isPaused = false;
-        this.state = GAME_MENU.MAIN;
+        this.state = undefined;
+        this.numberOfElements = 0;
+        this.initialOptionYPos = 225;
+
+        this.resumeButton = undefined;
+        this.optionButton = undefined;
+        this.backbutton = undefined;
+
+        this.activeButton = undefined;
 
         this.overlay = new Texture(
             new Vector2(0, 0),
@@ -16,10 +24,9 @@ class GameMenu {
             0,
             '#00000000'
         );
-        const initialOptionYPos = 200;
         this.pausedText = new TextC(
-            '> PAUSED <',
-            new Vector2(center.x, initialOptionYPos),
+            'PAUSED',
+            new Vector2(this.center.x, 175),
             'Jura, Consolas, Verdana',
             'normal',
             70,
@@ -27,10 +34,18 @@ class GameMenu {
             'center'
         );
 
+        this.InitializeMain();
+    }
+
+    InitializeMain() {
+        this.state = GAME_MENU.MAIN;
+        this.numberOfElements = 0;
+        this.DeInitializeBack();
+
         // MAIN STATE
         this.resumeButton = new TextButton(
             'Resume Game',
-            new Vector2(center.x, initialOptionYPos + 60),
+            new Vector2(this.center.x, this.initialOptionYPos + (this.numberOfElements * 40)),
             {
                 family: 'Raleway, sans-serif',
                 size: 30,
@@ -41,9 +56,11 @@ class GameMenu {
             '',
             ''
         );
+        this.numberOfElements++;
+
         this.optionButton = new TextButton(
             'Options',
-            new Vector2(center.x, initialOptionYPos + 95),
+            new Vector2(this.center.x, this.initialOptionYPos + (this.numberOfElements * 40)),
             {
                 family: 'Raleway, sans-serif',
                 size: 30,
@@ -54,14 +71,47 @@ class GameMenu {
             '',
             ''
         );
+        this.numberOfElements++;
 
-        // OPTIONS STATE
-        
-        
+        this.exitButton = new TextButton(
+            'Exit',
+            new Vector2(this.center.x, this.initialOptionYPos + (this.numberOfElements * 40)),
+            {
+                family: 'Raleway, sans-serif',
+                size: 30,
+                align: 'center'
+            },
+            '#FFFFFF',
+            '#5831a0',
+            '',
+            ''
+        );
+        this.numberOfElements++;
+    }
+
+    DeinitializeMain() {
+        this.resumeButton = undefined;
+        this.optionButton = undefined;
+        this.exitButton = undefined;
+    }
+
+    InitializeOptions() {
+        this.state = GAME_MENU.OPTIONS;
+        this.numberOfElements = 0;
+
+        this.InitializeBack();
+    }
+
+    DeinitializeOptions() {
+
+    }
+
+    InitializeBack() {
+        const yPosition = this.initialOptionYPos + (this.numberOfElements * 30);
         // SUB STATES
         this.backbutton = new TextButton(
-            '<- BACK',
-            new Vector2(center.x, initialOptionYPos + 60),
+            'Back',
+            new Vector2(this.center.x, yPosition),
             {
                 family: 'Raleway, sans-serif',
                 size: 30,
@@ -72,7 +122,10 @@ class GameMenu {
             '',
             ''
         );
+    }
 
+    DeInitializeBack() {
+        this.backbutton = undefined;
     }
 
     SetIsPaused(isPaused) {
@@ -89,13 +142,19 @@ class GameMenu {
             case GAME_MENU.MAIN:
                 this.resumeButton.Update();
                 this.optionButton.Update();
+                this.exitButton.Update();
 
                 if (this.resumeButton.IsPushed()) {
                     this.SetIsPaused(false);
                 }
 
                 if (this.optionButton.IsPushed()) {
-                    this.state = GAME_MENU.OPTIONS;
+                    this.InitializeOptions();
+                }
+
+                if (this.exitButton.IsPushed()) {
+                    // window.close();
+                    // maybe this can go back to the main menu
                 }
                 
                 break;
@@ -110,7 +169,7 @@ class GameMenu {
             this.backbutton.Update();
 
             if (this.backbutton.IsPushed()) {
-                this.state = GAME_MENU.MAIN;
+                this.InitializeMain();
             }
         }
 
@@ -124,6 +183,7 @@ class GameMenu {
             case GAME_MENU.MAIN:
                 this.resumeButton.Draw();
                 this.optionButton.Draw();
+                this.exitButton.Draw();
                 break;
             case GAME_MENU.OPTIONS:
                 break;

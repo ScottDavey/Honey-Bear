@@ -435,6 +435,22 @@
         }
     }
 
+    CheckAcornCollisionWithPlayer() {
+
+        const acorns = this.boss.GetAcorns();
+        const playerBounds = this.player.GetBounds();
+
+        for (const acorn of acorns) {
+            const acornBounds = acorn.GetBounds();
+
+            if (this.collision.CheckBoxCollision(playerBounds, acornBounds)) {
+                acorn.SetHasHitPlayer(true);
+                this.player.DoDamage(acorn.GetDamage());
+            }
+        }
+
+    }
+
     CheckBeeAggression(bees) {
 
         for (const bee of bees) {
@@ -554,13 +570,19 @@
         if (this.isBossSequence) {
 
             if (!this.boss) {
-                this.boss = new TreeMonster(new Vector2(3500, 180), new Vector2(200, 300));
+                this.boss = new TreeMonster(
+                    new Vector2(3500, 180),
+                    new Vector2(200, 300),
+                    this.camera.getlookat()
+                );
                 this.bossHealth.SetMaxValue(this.boss.GetCurrentHealth());
             }
 
             this.boss.Update(this.player.GetPosition());
             this.bossHealth.Update(this.boss.GetCurrentHealth());
             this.collision.CheckLineCollisionEntity(this.boss);
+
+            this.CheckAcornCollisionWithPlayer();
         } else {
 
             // BEARS

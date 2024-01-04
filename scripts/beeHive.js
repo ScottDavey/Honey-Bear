@@ -67,6 +67,12 @@ class BeeHive {
         this.LoadBees();
     }
 
+    UnloadContent() {
+        for (const bee of this.bees) {
+            bee.UnloadContent();
+        }
+    }
+
     ResetBees() {
         for (const bee of this.bees) {
             bee.Reset();

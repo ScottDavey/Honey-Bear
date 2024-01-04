@@ -23,6 +23,7 @@ const GAME_STATES = {
 };
 
 const GAME_MENU = {
+    EXIT: -1,
     MAIN: 0,
     OPTIONS: 1,
     SOUND: 2

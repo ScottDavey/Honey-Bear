@@ -18,6 +18,9 @@ class TreeMonster extends Character {
         const currentGameTime = GameTime.getCurrentGameTime();
         this.idleTimer = new Timer(currentGameTime, 5);
         this.isAttacking = false;
+        this.isMeleeAttack = false;
+        this.meleeAttackDamage = 0;
+        this.meleeAttackDamageRange = [200, 300];
         this.currentAttack = undefined;
         this.attackTimer = undefined;
         this.attackCooldownDuration = [3, 7];
@@ -33,7 +36,7 @@ class TreeMonster extends Character {
             {
                 name: 'BRANCH_SMASH',
                 fn: this.BranchSmash,
-                duration: 3,
+                duration: 4,
                 isProximityBased: true,
                 damage: []
             },
@@ -80,6 +83,24 @@ class TreeMonster extends Character {
 
     BranchSmash() {
         console.log('BranchSmash');
+
+        this.isMeleeAttack = false;
+
+        if (this.attackTimer.GetRemainder(1) === 3 && this.isCloseToPlayer) {
+            this.isMeleeAttack = true;
+            this.meleeAttackDamage = random(this.meleeAttackDamageRange[0], this.meleeAttackDamageRange[1]);
+        }
+    }
+
+    GetIsMeleeAttack() {
+        return this.isMeleeAttack;
+    }
+
+    GetMeleeAttackDamage() {
+        return {
+            amount: this.meleeAttackDamage,
+            isCrit: false
+        };
     }
 
     AnimalFlurry() {
@@ -116,6 +137,8 @@ class TreeMonster extends Character {
         // If attacking and the timer has completed, reset attack and start cooldown
         if (this.isAttacking && this.attackTimer && this.attackTimer.IsComplete()) {
             this.isAttacking = false;
+            this.isMeleeAttack = false;
+            this.meleeAttackDamage = 0;
             this.attackTimer = undefined;
             this.currentAttack = undefined;
 

@@ -95,6 +95,13 @@ class Game {
 
         if (this.gameMenu.GetIsPaused()) {
             this.gameMenu.Update();
+
+            if (this.gameMenu.GetState() === GAME_MENU.EXIT) {
+                this.state = GAME_STATES.PRIMARY.MAIN_MENU;
+                this.level.UnloadContent();
+                this.level = undefined;
+                this.gameMenu.SetIsPaused(false);
+            }
         }
 
     };

@@ -28,6 +28,12 @@
         return Math.floor(this.timer);
     }
 
+    UnloadContent() {
+        if (this.scene) {
+            this.scene.UnloadContent();
+        }
+    }
+
     Update() {
         const elapsed = GameTime.getElapsed();
 

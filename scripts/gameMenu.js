@@ -37,12 +37,15 @@ class GameMenu {
         this.InitializeMain();
     }
 
+    GetState() {
+        return this.state;
+    }
+
     InitializeMain() {
         this.state = GAME_MENU.MAIN;
         this.numberOfElements = 0;
         this.DeInitializeBack();
 
-        // MAIN STATE
         this.resumeButton = new TextButton(
             'Resume Game',
             new Vector2(this.center.x, this.initialOptionYPos + (this.numberOfElements * 40)),
@@ -153,8 +156,7 @@ class GameMenu {
                 }
 
                 if (this.exitButton.IsPushed()) {
-                    // window.close();
-                    // maybe this can go back to the main menu
+                    this.state = GAME_MENU.EXIT;
                 }
                 
                 break;

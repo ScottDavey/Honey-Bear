@@ -60,6 +60,12 @@ class Character {
         };
     }
 
+    UnloadContent() {
+        this.walkSounds.GRASS.Stop();
+        this.walkSounds.GRASS = undefined;
+        this.sprite = undefined;
+    }
+
     // GETTERS AND SETTERS
 
     SetSprite(sprite) {

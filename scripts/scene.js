@@ -232,7 +232,7 @@
             backgroundMusicChoice.defaultVolume,
             1.0
         );
-        // this.backgroundMusic.Play();
+        this.backgroundMusic.Play();
 
         if (+this.selectedLevel === 0) {
             this.birds = new Sound('sounds/effects/birds.ogg', true, true, false, 0.2, 1.5);
@@ -243,6 +243,18 @@
     }
 
     UnloadContent() {
+        this.backgroundMusic.Stop();
+        this.birds.Stop();
+        this.player.UnloadContent();
+        
+        for (const bear of this.bears) {
+            bear.UnloadContent();
+        }
+
+        for (const hive of this.beeHives) {
+            hive.UnloadContent();
+        }
+
         return;
     }
 
@@ -583,6 +595,10 @@
             this.collision.CheckLineCollisionEntity(this.boss);
 
             this.CheckAcornCollisionWithPlayer();
+
+            if (this.boss.GetIsMeleeAttack()) {
+                this.player.DoDamage(this.boss.GetMeleeAttackDamage());
+            }
         } else {
 
             // BEARS

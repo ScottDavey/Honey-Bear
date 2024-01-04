@@ -53,6 +53,11 @@ class Bee {
         this.buzzDefaultVolume = 0.15;
         this.buzzMaxVolume = this.buzzDefaultVolume;
     }
+    
+    UnloadContent() {
+        this.buzzSound.Stop();
+        this.buzzSound = undefined;
+    }
 
     Reset() {
         this.SetAggressive(false);

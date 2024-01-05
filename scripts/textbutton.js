@@ -42,9 +42,22 @@ class TextButton {
         return this.isPushed;
     }
 
+    GetIsLeftClickLocked() {
+        return this.isLeftClickLocked;
+    }
+
+    SetIsLeftClickLocked(isLocked) {
+        this.isLeftClickLocked = isLocked;
+    }
+
     SetFontColor(color) {
         this.fontColor = color;
         this.buttonText.SetColor(this.fontColor);
+    }
+
+    SetText(text) {
+        this.text = text;
+        this.buttonText.SetString(this.text);
     }
 
     isPointerOver(pos) {
@@ -56,7 +69,6 @@ class TextButton {
     CheckPointerAction(pointerPos, isPointerEngaged) {
 
         if (!this.isLeftClickLocked) {
-            this.isLeftClickLocked = true;
             if (this.isPointerOver(pointerPos)) {
                 this.isPushed = true;
             }
@@ -83,7 +95,6 @@ class TextButton {
         } else if (Input.Mouse.GetButton(Input.Mouse.LEFT)) {
             this.CheckPointerAction(mousePos, true);
         } else {
-            this.isLeftClickLocked = false;
             this.isPushed = false;
         }
 

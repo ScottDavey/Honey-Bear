@@ -56,7 +56,7 @@ class Character {
 
         // Sound Effects
         this.walkSounds = {
-            GRASS: new Sound('sounds/effects/WALK_Grass.OGG', true, true, false, 0.1, 0),
+            GRASS: new Sound('sounds/effects/WALK_Grass.OGG', 'SFX', false, true, 0.1, 0),
         };
     }
 
@@ -288,7 +288,9 @@ class Character {
                 } else {
                     this.walkSounds[this.groundType].Stop();
                 }
-            }   
+            }
+
+            this.walkSounds.GRASS.Update();
         }
     }
 

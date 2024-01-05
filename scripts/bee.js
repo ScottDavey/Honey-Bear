@@ -47,7 +47,7 @@ class Bee {
         this.isStinging = false;
         this.stingCooldown = undefined;
 
-        this.buzzSound = new Sound(`sounds/effects/bee_${random(1, 4)}.ogg`, true, true, false, 0, 0);
+        this.buzzSound = new Sound(`sounds/effects/bee_${random(1, 4)}.ogg`, 'SFX', true, true, 0, 0);
         this.buzzSound.Play();
         this.maxVolumneDistance = 400;
         this.buzzDefaultVolume = 0.15;
@@ -152,31 +152,6 @@ class Bee {
             this.SetIsDead();
         }
     }
-    
-    UpdateProximityVolume() {
-        const deltaX = Math.pow(this.position.x - this.playerCenter.x, 2);
-        const deltaY = Math.pow(this.position.y - this.playerCenter.y, 2);
-        const delta = Math.sqrt(deltaX + deltaY);
-        
-        let volume = 0;
-        
-        if (delta < this.maxVolumneDistance) {
-
-            if (!this.buzzSound.IsPlaying()) {
-                this.buzzSound.Play();
-            }
-
-            volume = this.buzzMaxVolume - (this.buzzMaxVolume * (delta / this.maxVolumneDistance));
-            volume = (volume >= this.buzzMaxVolume) ? this.buzzMaxVolume : volume;
-        } else {
-
-            this.buzzSound.Stop();
-
-        }
-        
-        // Based on the player's distance from the bee, set volume
-        this.buzzSound.SetVolumne(volume);
-    }
 
     UpdateHivePosition(position) {
         this.hivePosition = new Vector2(position.x, position.y);
@@ -251,10 +226,6 @@ class Bee {
                 this.StingAttack();
             }
         }
-
-        // if (hiveState === HIVE_STATE.ON_GROUND && this.state !== BEE_STATE.HOME.HIGH_ALERT) {
-        //     this.SetAggressive(true);
-        // }
         
         if (isCloseToPlayer && this.state === BEE_STATE.HOME.HIGH_ALERT) {
             this.SetAggressive(true);
@@ -262,7 +233,8 @@ class Bee {
 
         this.ApplyMovement();
         this.bounds.Update(new Vector2(this.position.x, this.position.y), this.size);
-        this.UpdateProximityVolume();
+
+        this.buzzSound.Update(this.position, playerCenter);
     }
 
     Draw() {

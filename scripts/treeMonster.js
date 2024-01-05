@@ -12,7 +12,7 @@ class TreeMonster extends Character {
         this.health = this.initialHealth;
         this.maxMoveSpeed = 100;
         this.isCloseToPlayer = false;
-        this.playerPosition = new Vector2(0, 0);
+        this.playerBounds = undefined;
         this.shouldMoveTowardsPlayer = false;
 
         this.state = BOSS_STATE.IDLE;
@@ -21,8 +21,8 @@ class TreeMonster extends Character {
         this.idleTimer = new Timer(currentGameTime, 5);
         this.isAttacking = false;
         this.isMeleeAttack = false;
-        this.meleeAttackDamage = 0;
-        this.meleeAttackDamageRange = [200, 300];
+        this.branchSmashDamage = 0;
+        this.branchSmashDamageRange = [200, 300];
         this.currentAttack = undefined;
         this.attackTimer = undefined;
         this.attackCooldownDuration = [1, 3];
@@ -33,23 +33,30 @@ class TreeMonster extends Character {
                 fn: this.AcornDrop,
                 duration: 5,
                 isProximityBased: false,
-                damage: []
             },
             {
                 name: 'BRANCH_SMASH',
                 fn: this.BranchSmash,
                 duration: 4,
                 isProximityBased: true,
-                damage: []
+            },
+            // Doubling up to increase its chance of being chosen
+            {
+                name: 'BRANCH_SMASH',
+                fn: this.BranchSmash,
+                duration: 4,
+                isProximityBased: true,
             },
             {
                 name: 'ANIMAL_FLURRY',
                 fn: this.AnimalFlurry,
                 duration: 3,
                 isProximityBased: false,
-                damage: []
             }
         ];
+        this.branchSmashBounds = undefined;
+        this.branchSmashTimer = undefined;
+        this.branchSmashDuration = 0.5;
         this.acorns = [];
         this.previousAcornDropTime = 0;
         this.animalFlurry = undefined;
@@ -110,21 +117,33 @@ class TreeMonster extends Character {
 
     BranchSmash() {
 
-        this.isMeleeAttack = false;
+        if (this.attackTimer.GetRemainder(1) === 3) {
+            const branchSmashHeight = this.size.y / 2;
+            const branchSmashPosition = new Vector2(
+                this.bounds.center.x - (this.dir < 0 ? 300 : 0),
+                this.position.y + this.size.y - branchSmashHeight
+            );
 
-        if (this.attackTimer.GetRemainder(1) === 3 && this.isCloseToPlayer) {
-            this.isMeleeAttack = true;
-            this.meleeAttackDamage = random(this.meleeAttackDamageRange[0], this.meleeAttackDamageRange[1]);
+            this.branchSmashBounds = new Texture(
+                branchSmashPosition,
+                new Vector2(300, branchSmashHeight),
+                '#88000088',
+                1,
+                '#880000'
+            );
+            this.branchSmashTimer = new Timer(GameTime.getCurrentGameTime(), this.branchSmashDuration);
+            this.branchSmashDamage = random(this.branchSmashDamageRange[0], this.branchSmashDamageRange[1]);
         }
     }
 
-    GetIsMeleeAttack() {
-        return this.isMeleeAttack;
+    GetBranchSmashBounds() {
+        const branchSmashBounds = this.branchSmashBounds ? this.branchSmashBounds.GetRect() : undefined;
+        return branchSmashBounds;
     }
 
-    GetMeleeAttackDamage() {
+    GetBranchSmashDamage() {
         return {
-            amount: this.meleeAttackDamage,
+            amount: this.branchSmashDamage,
             isCrit: false
         };
     }
@@ -203,7 +222,7 @@ class TreeMonster extends Character {
         if (this.isAttacking && this.attackTimer && this.attackTimer.IsComplete()) {
             this.isAttacking = false;
             this.isMeleeAttack = false;
-            this.meleeAttackDamage = 0;
+            this.branchSmashDamage = 0;
             this.animalFlurry = undefined;
             this.previousAcornDropTime = 0;
             this.attackTimer = undefined;
@@ -221,16 +240,16 @@ class TreeMonster extends Character {
 
     }
 
-    Update(playerPosition) {
+    Update(playerBounds) {
 
-        this.playerPosition = playerPosition;
+        this.playerBounds = playerBounds;
 
         const playerPosDiff = new Vector2(
-            this.bounds.center.x - this.playerPosition.x,
-            this.bounds.center.y - this.playerPosition.y
+            this.bounds.center.x - this.playerBounds.center.x,
+            this.bounds.center.y - this.playerBounds.center.y
         );
 
-        this.isCloseToPlayer = (Math.abs(playerPosDiff.x) < 100);
+        this.isCloseToPlayer = (Math.abs(playerPosDiff.x) < 250);
 
         this.movement = 0;
 
@@ -251,6 +270,11 @@ class TreeMonster extends Character {
 
         // Handle attacks
         this.HandleAttack();
+
+        if (this.branchSmashBounds && this.branchSmashTimer && this.branchSmashTimer.IsComplete()) {
+            this.branchSmashBounds = undefined;
+            this.branchSmashTimer = undefined;
+        }
 
         for (let a = 0; a < this.acorns.length; a++) {
             const acorn = this.acorns[a];
@@ -287,6 +311,10 @@ class TreeMonster extends Character {
 
         if (this.animalFlurry) {
             this.animalFlurry.Draw();
+        }
+
+        if (this.branchSmashBounds) {
+            this.branchSmashBounds.Draw();
         }
     }
 

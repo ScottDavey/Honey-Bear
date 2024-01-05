@@ -17,8 +17,11 @@
         this.eventCollision = this.level.eventCollision;
 
         this.boss = undefined;
+        this.bossData = this.level.boss;
+        this.bossStart = new Vector2(this.bossData.start[0], this.bossData.start[1]);
+        this.bossSize = new Vector2(this.bossData.size[0], this.bossData.size[1]);
         this.bossName = new TextC(
-            'Tree Monster',
+            this.bossData.name,
             new Vector2(CANVAS_WIDTH / 2 - 200, 35),
             'Lobster, Raleway',
             'normal',
@@ -158,7 +161,7 @@
 
         // Sounds Effects
         this.birds = undefined;
-        this.honeyGlobHitSound = new Sound('sounds/effects/splat.ogg', false, true, false, 0.2, 0);
+        this.honeyGlobHitSound = new Sound('sounds/effects/splat.ogg', 'SFX', false, false, 0.2, 0);
 
         this.caveFront = new Sprite('images/backgrounds/FOREST_CAVE-FRONT.png', new Vector2(0, 0), new Vector2(123, 648));
         this.twilightExit = new Texture(
@@ -181,7 +184,9 @@
             hive.ResetBees();
         }
 
-        this.boss.ResetHealth();
+        if (this.boss) {
+            this.boss.ResetHealth();
+        }
 
         this.player.Initialize(
             new Vector2(this.level.player.start[0], this.level.player.start[1]),
@@ -230,16 +235,16 @@
         const backgroundMusicChoice = this.backgroundMusicSources[this.selectedLevel];
         this.backgroundMusic = new Sound(
             `sounds/music/${backgroundMusicChoice.path}`,
-            true,
-            true,
+            'MUSIC',
             false,
+            true,
             backgroundMusicChoice.defaultVolume,
             1.0
         );
         this.backgroundMusic.Play();
 
         if (+this.selectedLevel === 0) {
-            this.birds = new Sound('sounds/effects/birds.ogg', true, true, false, 0.2, 1.5);
+            this.birds = new Sound('sounds/effects/birds.ogg', 'SFX', false, true, 0.2, 1.5);
             this.birds.Play();
         }
 
@@ -613,22 +618,24 @@
 
             if (!this.boss) {
                 this.boss = new TreeMonster(
-                    new Vector2(3200, 180),
-                    new Vector2(200, 300),
+                    this.bossStart,
+                    this.bossSize,
                     this.camera.getlookat()
                 );
                 this.bossHealth.SetMaxValue(this.boss.GetCurrentHealth());
             }
 
-            this.boss.Update(this.player.GetBounds().center);
+            this.boss.Update(this.player.GetBounds());
             this.bossHealth.Update(this.boss.GetCurrentHealth());
             this.collision.CheckLineCollisionEntity(this.boss);
 
             this.CheckAcornCollisionWithPlayer();
             this.CheckAnimalFlurryCollisionWithPlayer();
 
-            if (this.boss.GetIsMeleeAttack()) {
-                this.player.DoDamage(this.boss.GetMeleeAttackDamage());
+            const branchSmashBounds = this.boss.GetBranchSmashBounds();
+
+            if (branchSmashBounds && this.collision.CheckBoxCollision(branchSmashBounds, this.player.GetBounds())) {
+                this.player.DoDamage(this.boss.GetBranchSmashDamage());
             }
         } else {
 
@@ -700,7 +707,13 @@
 
         }
 
+        this.honeyGlobHitSound.Update();
+        this.backgroundMusic.Update();
+        this.birds.Update();
+
         DEBUG.Update('PLAYER', `Position X: ${this.player.GetPosition().x}`);
+        DEBUG.Update('ENEMIESLEFT', `Enemies Remaining: ${this.bears.length}`);
+        DEBUG.Update('BOSSSEQ', `Boss Sequence: ${this.isBossSequence ? 'YES' : 'NO'}`);
         
     }
 

@@ -16,7 +16,9 @@ class Game {
 
     initialize() {
         this.state = GAME_STATES.PRIMARY.INTRO;
-        this.intro = new Introduction();    
+        this.intro = new Introduction();
+
+        
     };
 
     update() {
@@ -80,6 +82,7 @@ class Game {
                 this.level.UnloadContent();
                 this.level = undefined;
                 this.gameMenu.SetIsPaused(false);
+                this.gameMenu.SetState(GAME_MENU.MAIN);
             }
         }
 

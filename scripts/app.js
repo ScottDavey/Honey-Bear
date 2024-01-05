@@ -3,6 +3,7 @@ const CANVAS_WIDTH = 1300;
 const CANVAS_HEIGHT = 500;
 
 const DEBUG = new Debug();
+const SOUND_MANAGER = new SoundManager();
 
 let FPS = new FPSClass();
 let GAME = undefined;
@@ -13,6 +14,10 @@ let CANVAS = undefined;
 let CONTEXT = undefined;
 let IS_MOBILE = false;
 let HAS_GAME_PAD = false;
+
+// SETTINGS
+let IS_MUSIC_ON = true;
+let IS_SFX_ON = true;
 
 function main() {
     // Set up canvas and viewport dimensions

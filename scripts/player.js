@@ -36,7 +36,7 @@ class Player extends Character {
 
         this.isInputLocked = false;
         this.throwStartTime = 0;
-        this.throwSound = new Sound('sounds/effects/throw.ogg', false, true, false, 0.2, 0);
+        this.throwSound = new Sound('sounds/effects/throw.ogg', 'SFX', false, false, 0.2, 0);
         this.globAnimationMaxTime = 0.12;
         this.globs = [];
         this.globCooldown = undefined;
@@ -296,6 +296,8 @@ class Player extends Character {
         if (this.blastCooldown && this.blastCooldown.IsComplete()) {
             this.blastCooldown = undefined;
         }
+
+        this.throwSound.Update();
         
         super.Update();
     }

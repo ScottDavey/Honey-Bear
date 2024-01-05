@@ -9,10 +9,20 @@ class GameMenu {
         this.isPaused = false;
         this.state = undefined;
         this.numberOfElements = 0;
-        this.initialOptionYPos = 225;
+        this.pauseTextYPos = 175;
+        this.initialOptionYPos = this.pauseTextYPos + 100;
+        this.buttonHeight = 40;
+
+        this.buttonFont = {
+            family: 'Raleway, sans-serif',
+            size: 30,
+            align: 'center'
+        };
 
         this.resumeButton = undefined;
         this.optionButton = undefined;
+        this.toggleMusicButton = undefined;
+        this.toggleSFXButton = undefined;
         this.backbutton = undefined;
 
         this.activeButton = undefined;
@@ -37,6 +47,10 @@ class GameMenu {
         this.InitializeMain();
     }
 
+    SetState(state) {
+        this.state = state;
+    }
+
     GetState() {
         return this.state;
     }
@@ -48,12 +62,8 @@ class GameMenu {
 
         this.resumeButton = new TextButton(
             'Resume Game',
-            new Vector2(this.center.x, this.initialOptionYPos + (this.numberOfElements * 40)),
-            {
-                family: 'Raleway, sans-serif',
-                size: 30,
-                align: 'center'
-            },
+            new Vector2(this.center.x, this.initialOptionYPos + (this.numberOfElements * this.buttonHeight)),
+            this.buttonFont,
             '#FFFFFF',
             '#5831a0',
             '',
@@ -63,12 +73,8 @@ class GameMenu {
 
         this.optionButton = new TextButton(
             'Options',
-            new Vector2(this.center.x, this.initialOptionYPos + (this.numberOfElements * 40)),
-            {
-                family: 'Raleway, sans-serif',
-                size: 30,
-                align: 'center'
-            },
+            new Vector2(this.center.x, this.initialOptionYPos + (this.numberOfElements * this.buttonHeight)),
+            this.buttonFont,
             '#FFFFFF',
             '#5831a0',
             '',
@@ -78,12 +84,8 @@ class GameMenu {
 
         this.exitButton = new TextButton(
             'Exit',
-            new Vector2(this.center.x, this.initialOptionYPos + (this.numberOfElements * 40)),
-            {
-                family: 'Raleway, sans-serif',
-                size: 30,
-                align: 'center'
-            },
+            new Vector2(this.center.x, this.initialOptionYPos + (this.numberOfElements * this.buttonHeight)),
+            this.buttonFont,
             '#FFFFFF',
             '#5831a0',
             '',
@@ -101,6 +103,30 @@ class GameMenu {
     InitializeOptions() {
         this.state = GAME_MENU.OPTIONS;
         this.numberOfElements = 0;
+        
+        const isMusicOn = IS_MUSIC_ON ? 'Yes' : 'No';
+        this.toggleMusicButton = new TextButton(
+            `Music: ${isMusicOn}`,
+            new Vector2(this.center.x, this.initialOptionYPos + (this.numberOfElements * this.buttonHeight)),
+            this.buttonFont,
+            '#FFFFFF',
+            '#5831a0',
+            '',
+            ''
+        );
+        this.numberOfElements++;
+        
+        const isSFXOn = IS_SFX_ON ? 'Yes' : 'No';
+        this.toggleSFXButton = new TextButton(
+            `SFX: ${isSFXOn}`,
+            new Vector2(this.center.x, this.initialOptionYPos + (this.numberOfElements * this.buttonHeight)),
+            this.buttonFont,
+            '#FFFFFF',
+            '#5831a0',
+            '',
+            ''
+        );
+        this.numberOfElements++;
 
         this.InitializeBack();
     }
@@ -110,16 +136,12 @@ class GameMenu {
     }
 
     InitializeBack() {
-        const yPosition = this.initialOptionYPos + (this.numberOfElements * 30);
+        const yPosition = this.initialOptionYPos + (this.numberOfElements * this.buttonHeight);
         // SUB STATES
         this.backbutton = new TextButton(
             'Back',
             new Vector2(this.center.x, yPosition),
-            {
-                family: 'Raleway, sans-serif',
-                size: 30,
-                align: 'center',
-            },
+            this.buttonFont,
             '#FFFFFF',
             '#5831a0',
             '',
@@ -161,6 +183,28 @@ class GameMenu {
                 
                 break;
             case GAME_MENU.OPTIONS:
+                this.toggleMusicButton.Update();
+                this.toggleSFXButton.Update();
+
+                if (this.toggleMusicButton.IsPushed()) {
+                    if (!this.toggleMusicButton.GetIsLeftClickLocked()) {
+                        this.toggleMusicButton.SetIsLeftClickLocked(true);
+                        IS_MUSIC_ON = !IS_MUSIC_ON;
+                        this.toggleMusicButton.SetText(`Music: ${IS_MUSIC_ON ? 'YES' : 'NO'}`);
+                    }
+                } else {
+                    this.toggleMusicButton.SetIsLeftClickLocked(false);
+                }
+
+                if (this.toggleSFXButton.IsPushed()) {
+                    if (!this.toggleSFXButton.GetIsLeftClickLocked()) {
+                        this.toggleSFXButton.SetIsLeftClickLocked(true);
+                        IS_SFX_ON = !IS_SFX_ON;
+                        this.toggleSFXButton.SetText(`SFX: ${IS_SFX_ON ? 'YES' : 'NO'}`);
+                    }
+                } else {
+                    this.toggleSFXButton.SetIsLeftClickLocked(false);
+                }
                 break;
             default:
                 break;
@@ -175,6 +219,9 @@ class GameMenu {
             }
         }
 
+        DEBUG.Update('MUSIC', `Music ON: ${IS_MUSIC_ON ? 'YES' : 'NO'}`);
+        DEBUG.Update('SFX', `SFX ON: ${IS_SFX_ON ? 'YES' : 'NO'}`);
+
     }
 
     Draw() {
@@ -188,6 +235,8 @@ class GameMenu {
                 this.exitButton.Draw();
                 break;
             case GAME_MENU.OPTIONS:
+                this.toggleMusicButton.Draw();
+                this.toggleSFXButton.Draw();
                 break;
             default:
                 break;

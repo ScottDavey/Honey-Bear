@@ -2,6 +2,8 @@
 const CANVAS_WIDTH = 1300;
 const CANVAS_HEIGHT = 500;
 
+const DEBUG = new Debug();
+
 let FPS = new FPSClass();
 let GAME = undefined;
 let GAME_PAD_DIV = undefined;

@@ -6,7 +6,7 @@ class Acorn {
 
     constructor(position) {
         this.position = position;
-        this.size = new Vector2(15, 15);
+        this.size = new Vector2(27, 35);
 
         this.velocityY = 0;
         this.gravity = 3000;
@@ -15,13 +15,12 @@ class Acorn {
         this.hasHitPlayer = false;
 
         this.damage = random(50, 100);
-        
-        this.sprite = new Texture(
-            new Vector2(this.position.x, this.position.y),
-            new Vector2(this.size.x, this.size.y),
-            '#FF880088',
-            1,
-            '#FF8800'
+
+        this.sprite = new Sprite(
+            // this.spriteOptions[random(0, this.spriteOptions.length - 1)],
+            'images/level_assets/Acorn_1.png',
+            this.position,
+            this.size
         );
         this.bounds = new Rectangle(this.position.x, this.position.y, this.size.x, this.size.y);
     }

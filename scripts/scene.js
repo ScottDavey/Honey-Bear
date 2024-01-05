@@ -19,7 +19,7 @@
         this.boss = undefined;
         this.bossName = new TextC(
             'Tree Monster',
-            new Vector2(CANVAS_WIDTH / 2 - 200, 15),
+            new Vector2(CANVAS_WIDTH / 2 - 200, 35),
             'Lobster, Raleway',
             'normal',
             20,
@@ -27,13 +27,14 @@
             'left'
         );
         this.bossHealth = new StatusBar(
-            new Vector2(CANVAS_WIDTH / 2 - 200, 30),
-            new Vector2(400, 40),
+            new Vector2(CANVAS_WIDTH / 2 - 200, 50),
+            new Vector2(400, 30),
             0,
             '#990000',
             2,
             '#550000',
-            true
+            true,
+            '#FFFFFF'
         );
         this.isBossSequence = false;
         this.bossSequenceIntro = undefined;
@@ -167,6 +168,7 @@
             1,
             '#141414'
         );
+
     }
 
     Restart() {
@@ -178,6 +180,8 @@
         for (const hive of this.beeHives) {
             hive.ResetBees();
         }
+
+        this.boss.ResetHealth();
 
         this.player.Initialize(
             new Vector2(this.level.player.start[0], this.level.player.start[1]),
@@ -243,8 +247,14 @@
     }
 
     UnloadContent() {
-        this.backgroundMusic.Stop();
-        this.birds.Stop();
+        if (this.backgroundMusic) {
+            this.backgroundMusic.Stop();
+        }
+
+        if (this.birds) {
+            this.birds.Stop();
+        }
+        
         this.player.UnloadContent();
         
         for (const bear of this.bears) {
@@ -397,7 +407,7 @@
 
             if (this.collision.CheckBoxCollision(playerBounds, gen.bounds)) {
 
-                if (gen.name === 'BOSS' && !this.isBossDefeated) {
+                if (gen.name === 'BOSS' && !this.isBossDefeated && !this.isBossSequence) {
                     this.isBossSequence = true;
                     
                     // Set enemies to stop tracking player
@@ -437,8 +447,8 @@
             if (playerPosition.x <= this.bossAreaBounds.left) {
                 newPosX = this.bossAreaBounds.left;
                 newVelX = 0;
-            } else if (playerPosition.x >= this.bossAreaBounds.right - this.player.GetSize().x) {
-                newPosX = this.bossAreaBounds.right - this.player.GetSize().x;
+            } else if (playerPosition.x >= (this.bossAreaBounds.left + CANVAS_WIDTH) - this.player.GetSize().x) {
+                newPosX = (this.bossAreaBounds.left + CANVAS_WIDTH) - this.player.GetSize().x;
                 newVelX = 0;
             }
 
@@ -461,6 +471,21 @@
             }
         }
 
+    }
+
+    CheckAnimalFlurryCollisionWithPlayer() {
+
+        const animalFlurry = this.boss.GetAnimalFlurry();
+
+        if (animalFlurry) {
+            const animalFlurryBounds = animalFlurry.GetBounds();
+            const playerBounds = this.player.GetBounds();
+
+            if (this.collision.CheckBoxCollision(animalFlurryBounds, playerBounds)) {
+                this.player.DoDamage(animalFlurry.GetDamage());
+                animalFlurry.SetHasHitPlayer(true);
+            }
+        }
     }
 
     CheckBeeAggression(bees) {
@@ -488,20 +513,24 @@
     }
 
     UpdateCamera() {
+        
         // Camera
         let cameraPosX = this.player.position.x + this.player.size.x / 2 - CANVAS_WIDTH / 2;
         let cameraPosY = this.player.position.y + this.player.size.y / 2 - CANVAS_HEIGHT / 2;
 
-        // Keep camera within specified bounds. This can be either canvas or boss area
-        const xLimit = {
-            left: this.isBossSequence ? this.bossAreaBounds.left : 0,
-            right: this.isBossSequence ? this.bossAreaBounds.right : this.worldWidth
-        };
+        if (this.isBossSequence) {
+            
+            // Keep camera within specified bounds. This can be either canvas or boss area
+            this.camera.moveTo(this.bossAreaBounds.left, this.worldHeight - CANVAS_HEIGHT);
+            
+            return;
+        }
 
-        if (cameraPosX < xLimit.left) {
-            cameraPosX = xLimit.left;
-        } else if (cameraPosX > xLimit.right - CANVAS_WIDTH) {
-            cameraPosX = xLimit.right - CANVAS_WIDTH;
+        // Make sure X and Y camera position stops at world edges
+        if (cameraPosX < 0) {
+            cameraPosX = 0;
+        } else if (cameraPosX + CANVAS_WIDTH > this.worldWidth) {
+            cameraPosX = this.worldWidth - CANVAS_WIDTH;
         }
 
         if (cameraPosY < 0) {
@@ -510,6 +539,7 @@
             cameraPosY = this.worldHeight - CANVAS_HEIGHT;
         }
 
+        // Move camera
         this.camera.moveTo(cameraPosX, cameraPosY);
 
         // Based on the camera's position, update the parallax backgrounds
@@ -583,18 +613,19 @@
 
             if (!this.boss) {
                 this.boss = new TreeMonster(
-                    new Vector2(3500, 180),
+                    new Vector2(3200, 180),
                     new Vector2(200, 300),
                     this.camera.getlookat()
                 );
                 this.bossHealth.SetMaxValue(this.boss.GetCurrentHealth());
             }
 
-            this.boss.Update(this.player.GetPosition());
+            this.boss.Update(this.player.GetBounds().center);
             this.bossHealth.Update(this.boss.GetCurrentHealth());
             this.collision.CheckLineCollisionEntity(this.boss);
 
             this.CheckAcornCollisionWithPlayer();
+            this.CheckAnimalFlurryCollisionWithPlayer();
 
             if (this.boss.GetIsMeleeAttack()) {
                 this.player.DoDamage(this.boss.GetMeleeAttackDamage());
@@ -668,6 +699,8 @@
             }
 
         }
+
+        DEBUG.Update('PLAYER', `Position X: ${this.player.GetPosition().x}`);
         
     }
 

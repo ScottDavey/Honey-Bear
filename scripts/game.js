@@ -5,30 +5,13 @@
 class Game {
 
     constructor() {
-        this.fpsText = new TextC(
-            `FPS: ${FPS.GetFPS()}`,
-            new Vector2(CANVAS_WIDTH / 2, 10),
-            'Quicksand, Consolas',
-            'normal',
-            12,
-            '#FFFFFF',
-            'center'
-        );
         this.state = undefined;
         this.intro = undefined;
         this.mainMenu = undefined;
         this.level = undefined;
         this.gameMenu = new GameMenu();
         this.isEscapeLocked = false;
-        this.timeText = new TextC(
-            `Time: 0:00`,
-            new Vector2(CANVAS_WIDTH - 75, 10),
-            'Jura, COnsolas, Verdanda',
-            'normal',
-            12,
-            '#FFFFFF',
-            'left'
-        );
+        this.debugKeyLocked = false;
     }
 
     initialize() {
@@ -38,12 +21,8 @@ class Game {
 
     update() {
         const isPaused = this.gameMenu.GetIsPaused();
-        const currentGameTime = GameTime.getCurrentGameTime();
         // Update our Game Time each frame
         GameTime.update();
-        const elapsed = GameTime.getElapsed();  // currently unused
-
-        this.fpsText.SetString(`FPS: ${FPS.GetFPS()}`);
 
         if (HAS_GAME_PAD) {
             Input.GamePad.Update();
@@ -104,6 +83,17 @@ class Game {
             }
         }
 
+        if (Input.Keys.GetKey(Input.Keys.CONTROL) || Input.GamePad.BACK.pressed) {
+            if (!this.debugKeyLocked) {
+                this.debugKeyLocked = true;
+                DEBUG.SetShowDebug();
+            }
+        } else {
+            this.debugKeyLocked = false;
+        }
+
+        DEBUG.Update('FPS', `FPS: ${FPS.GetFPS()}`);
+
     };
 
     draw() {
@@ -125,8 +115,7 @@ class Game {
             case GAME_STATES.PRIMARY.PLAYING:
                 if (typeof this.level !== 'undefined') {
                     this.level.Draw();
-                    this.timeText.SetString(`Time: ${SecondsToTime(this.level.GetTimer())}`);
-                    this.timeText.Draw();
+                    DEBUG.Update('TIME', `Time: ${SecondsToTime(this.level.GetTimer())}`);
                 }
 
                 state = 'PLAYING';
@@ -140,8 +129,8 @@ class Game {
             this.gameMenu.Draw();
         }
 
-        // FPS
-        this.fpsText.Draw();
+        // DEBUG
+        DEBUG.Draw();
 
     };
 

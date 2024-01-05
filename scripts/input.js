@@ -85,7 +85,14 @@ var Input = {
                 Input.GamePad.B = GAME_PAD.buttons[1];
                 Input.GamePad.X = GAME_PAD.buttons[2];
                 Input.GamePad.Y = GAME_PAD.buttons[3];
+                Input.GamePad.LEFT_BUMPER = GAME_PAD.buttons[4];
+                Input.GamePad.RIGHT_BUMBER = GAME_PAD.buttons[5];
+                Input.GamePad.LEFT_TRIGGER = GAME_PAD.buttons[6];
+                Input.GamePad.RIGHT_TRIGGER = GAME_PAD.buttons[7];
+                Input.GamePad.BACK = GAME_PAD.buttons[8];
                 Input.GamePad.START = GAME_PAD.buttons[9];
+                Input.GamePad.LEFT_THUMBSTICK = GAME_PAD.buttons[10];
+                Input.GamePad.RIGHT_THUMBSTICK = GAME_PAD.buttons[11];
                 Input.GamePad.UP = GAME_PAD.buttons[12];
                 Input.GamePad.DOWN = GAME_PAD.buttons[13];
                 Input.GamePad.LEFT = GAME_PAD.buttons[14];
@@ -98,11 +105,18 @@ var Input = {
         B: {},
         X: {},
         Y: {},
+        LEFT_BUMPER: {},
+        RIGHT_BUMBER: {},
+        LEFT_TRIGGER: {},
+        RIGHT_TRIGGER: {},
+        BACK: {},
         UP: {},
         DOWN: {},
         LEFT: {},
         RIGHT: {},
         START: {},
+        LEFT_THUMBSTICK: {},
+        RIGHT_THUMBSTICK: {},
         AXES: {
             VERTICAL: {},
             HORIZONTAL: {}

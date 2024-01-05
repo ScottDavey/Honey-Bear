@@ -8,9 +8,11 @@ class TreeMonster extends Character {
         super(position, size, false);
         this.worldBounds = worldBounds;
         this.size = size;
-        this.health = 2500;
+        this.initialHealth = 6000;
+        this.health = this.initialHealth;
         this.maxMoveSpeed = 100;
         this.isCloseToPlayer = false;
+        this.playerPosition = new Vector2(0, 0);
         this.shouldMoveTowardsPlayer = false;
 
         this.state = BOSS_STATE.IDLE;
@@ -23,13 +25,13 @@ class TreeMonster extends Character {
         this.meleeAttackDamageRange = [200, 300];
         this.currentAttack = undefined;
         this.attackTimer = undefined;
-        this.attackCooldownDuration = [3, 7];
+        this.attackCooldownDuration = [1, 3];
         this.attackCooldown = new Timer(currentGameTime, 5);
         this.moveList = [
             {
                 name: 'ACORN_DROP',
                 fn: this.AcornDrop,
-                duration: 3,
+                duration: 5,
                 isProximityBased: false,
                 damage: []
             },
@@ -49,31 +51,56 @@ class TreeMonster extends Character {
             }
         ];
         this.acorns = [];
+        this.previousAcornDropTime = 0;
+        this.animalFlurry = undefined;
+        this.canThrowAnimalFlurry = false;
 
-        this.sprite = new Nimation(
-            'images/spritesheets/TreeMonster.png',
-            new Vector2(this.position.x, this.position.y),
-            300,
-            300,
-            6,
-            0,
-            0.1,
-            true,
-            new Vector2(0, 0)
-        );
+        this.spritesheet = 'images/spritesheets/TreeMonster.png';
+        this.animations = {
+            idleLeft: new Nimation(
+                this.spritesheet,
+                new Vector2(this.position.x, this.position.y),
+                300,
+                300,
+                6,
+                0,
+                0.1,
+                true,
+                new Vector2(0, 0)),
+            idleRight: new Nimation(
+                this.spritesheet,
+                new Vector2(this.position.x, this.position.y),
+                300,
+                300,
+                6,
+                1,
+                0.1,
+                true,
+                new Vector2(0, 0))
+        };
+    }
+
+    ResetHealth() {
+        this.health = this.initialHealth;
     }
 
     AcornDrop() {
-        console.log('AcornDrop');
 
-        if (this.acorns.length === 0) {
-            const numberOfAcorns = random(5, 10);
-            for (let i = 0; i <= numberOfAcorns; i++) {
-                const position = new Vector2(random(this.worldBounds.x, this.worldBounds.x + CANVAS_WIDTH), -100);
-                this.acorns.push(
-                    new Acorn(position)
-                );
-            }
+        const currentGameTime = GameTime.getCurrentGameTime();
+        const timeSincelastAcornDrop = +(currentGameTime - this.previousAcornDropTime);
+
+        if (this.previousAcornDropTime === 0) {
+            this.previousAcornDropTime = currentGameTime;
+        }
+
+        // Every 0.25 seconds, release an acorn
+        if (+(timeSincelastAcornDrop.toFixed(2)) === 0.25) {
+            this.previousAcornDropTime = currentGameTime;
+
+            const position = new Vector2(random(this.worldBounds.x, this.worldBounds.x + CANVAS_WIDTH), -100);
+            this.acorns.push(
+                new Acorn(position)
+            )
         }
     }
 
@@ -82,7 +109,6 @@ class TreeMonster extends Character {
     }
 
     BranchSmash() {
-        console.log('BranchSmash');
 
         this.isMeleeAttack = false;
 
@@ -104,7 +130,17 @@ class TreeMonster extends Character {
     }
 
     AnimalFlurry() {
-        console.log('AnimalFlurry');
+        if (!this.animalFlurry && this.canThrowAnimalFlurry) {
+            this.animalFlurry = new AnimalFlurry(
+                this.position,
+                this.dir
+            );
+            this.canThrowAnimalFlurry = false;
+        }
+    }
+
+    GetAnimalFlurry() {
+        return this.animalFlurry;
     }
 
     HandleAttack() {
@@ -113,7 +149,36 @@ class TreeMonster extends Character {
         // COOLDOWN & NEW ATTACK
         if (this.attackCooldown && this.attackCooldown.IsComplete()) {
             this.attackCooldown = undefined;
-            this.currentAttack = this.moveList[random(0, this.moveList.length-1)];
+
+            // Choose a random move.
+            // To provide a wider range of numbers, it'll be a random number out of 1000
+
+            // Get the total move list length
+            const moveListLength = this.moveList.length;
+            // Get the percetange range each move will have of being chosen. ex: out of 3 moves, each will have 33%
+            const moveListSpreadPercentage = Math.floor(1000 / moveListLength);
+            // Choose random number out of 1000
+            const randomNumber = random(1, 1000);
+            // Go through the move list to find the move that falls inside the random number range
+            const randomMove = this.moveList.find((move, index) => {
+                // Get upper range of percentage based on the move's index value
+                const upperPercentRange = (index + 1) * moveListSpreadPercentage;
+                // Also get the lower range. This will just be the index * the max range - the range spread
+                // ex: index 0, range spread 33% -> { lower: 0, upper: 33 }
+                const movePercentRange = { lower: upperPercentRange - moveListSpreadPercentage, upper: upperPercentRange };
+                // Check to see if the random number falls within the range
+                const isInRange = (randomNumber > movePercentRange.lower && randomNumber <= movePercentRange.upper);
+
+                return isInRange;
+            });
+
+            this.currentAttack = randomMove;
+
+            if (this.currentAttack.name === 'ANIMAL_FLURRY') {
+                this.canThrowAnimalFlurry = true;
+            }
+
+            DEBUG.Update('NEXTATTACK', `Next Attack: ${this.currentAttack.name}`);
         }
 
         // If we're not yet attacking but we have our next attack ready,
@@ -139,6 +204,8 @@ class TreeMonster extends Character {
             this.isAttacking = false;
             this.isMeleeAttack = false;
             this.meleeAttackDamage = 0;
+            this.animalFlurry = undefined;
+            this.previousAcornDropTime = 0;
             this.attackTimer = undefined;
             this.currentAttack = undefined;
 
@@ -146,25 +213,39 @@ class TreeMonster extends Character {
         }
 
         // WE'RE ATTACKING. call the attack function
-        if (this.isAttacking && this.attackTimer && !this.attackTimer.IsComplete()) {
+        if (this.isAttacking && this.attackTimer && !this.attackTimer.IsComplete() && this.currentAttack) {
             this.currentAttack.fn.apply(this);
         }
+
+        DEBUG.Update('COOLDOWN', `Cooldown: ${this.attackCooldown ? this.attackCooldown.GetRemainder(2) : 'N/A'}`);
 
     }
 
     Update(playerPosition) {
 
+        this.playerPosition = playerPosition;
+
         const playerPosDiff = new Vector2(
-            this.position.x - playerPosition.x,
-            this.position.y - playerPosition.y
+            this.bounds.center.x - this.playerPosition.x,
+            this.bounds.center.y - this.playerPosition.y
         );
 
-        this.isCloseToPlayer = (Math.abs(playerPosDiff.x) < 150);
+        this.isCloseToPlayer = (Math.abs(playerPosDiff.x) < 100);
 
         this.movement = 0;
 
+        // Always face the player, unless the current attack is "BRANCH_SMASH" and the attack has begun
+        if (!(this.currentAttack && this.currentAttack.name === 'BRANCH_SMASH' && this.isAttacking)) {
+            if (playerPosDiff.x < 0) {
+                this.sprite = this.animations.idleRight;
+                this.dir = 1;
+            } else {
+                this.sprite = this.animations.idleLeft;
+                this.dir = -1;
+            }
+        }
+
         if (this.shouldMoveTowardsPlayer) {
-            this.dir = (playerPosDiff.x < 0) ? 1 : -1;
             this.movement = this.dir;
         }
 
@@ -181,6 +262,19 @@ class TreeMonster extends Character {
             }
         }
 
+        if (this.animalFlurry) {
+            const animalFlurryPositionX = this.animalFlurry.GetPosition().x;
+
+            this.animalFlurry.Update();
+
+            if (this.animalFlurry.GetHasHitPlayer() ||
+                animalFlurryPositionX < this.worldBounds.x ||
+                this.animalFlurryPositionX > this.worldBounds.x + CANVAS_WIDTH
+            ) {
+                this.animalFlurry = undefined;
+            }
+        }
+
         super.Update();
     }
 
@@ -189,6 +283,10 @@ class TreeMonster extends Character {
 
         for (const acorn of this.acorns) {
             acorn.Draw();
+        }
+
+        if (this.animalFlurry) {
+            this.animalFlurry.Draw();
         }
     }
 

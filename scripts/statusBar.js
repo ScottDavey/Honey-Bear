@@ -4,7 +4,7 @@
 
 class StatusBar {
 
-    constructor(position, size, maxValue, color, borderSize = 1, borderColor = '#5831a0', hasText = false) {
+    constructor(position, size, maxValue, color, borderSize = 1, borderColor = '#5831a0', hasText = false, textColor = '#5831a0') {
         this.position = position;
         this.borderSize = borderSize;
         this.borderColor = borderColor;
@@ -13,6 +13,7 @@ class StatusBar {
         this.currentValue = this.maxValue;
         this.color = color;
         this.hasText = hasText;
+        this.textColor = textColor;
         this.backgroundTexture = new Texture(
             this.position,
             this.size,
@@ -34,7 +35,7 @@ class StatusBar {
             'Jura, Verdana',
             'bold',
             12,
-            '#5831a0',
+            this.textColor,
             'center'
         );
     }

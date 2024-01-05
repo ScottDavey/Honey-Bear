@@ -7,7 +7,7 @@ class Player extends Character {
         super(position, size, true);
 
         this.isInvincible = false;
-        this.invincibilityDuration = 2;
+        this.invincibilityDuration = 1;
         this.invincibilityTimer = undefined;
 
         // Nimation: img, pos, frameHeight, frameWidth, totalFrames, animationSeq, speed, isLooping, offset

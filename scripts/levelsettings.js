@@ -1,5 +1,71 @@
+const SOUNDS = {
+    music: [
+        {
+            name: 'Blood On Blood',
+            path: 'BloodOnBlood.mp3',
+            region: 'LEVEL',
+        },
+        {
+            name: 'Halloween',
+            path: 'Halloween.mp3',
+            region: 'BOSS',
+        },
+        {
+            name: 'The Forgotten Forest',
+            path: 'MUSIC_The-Forgotten_Forest.mp3',
+            region: 'LEVEL',
+        },
+        {
+            name: 'Seneca',
+            path: 'Seneca.mp3',
+            region: 'LEVEL',
+        },
+    ],
+    effects: [
+        {
+            name: 'Bee Buzz',
+            path: [
+                'bee_1.ogg',
+                'bee_2.ogg',
+                'bee_3.ogg',
+                'bee_4.ogg',
+            ],
+            hasVariations: true,
+            isProximityBased: true,
+            isLooping: true,
+        },
+        {
+            name: 'Foliage Rustle',
+            path: 'foliage_rustle.ogg',
+            hasVariations: false,
+            isProximityBased: false,
+            isLooping: false,
+        },
+        {
+            name: 'Splat',
+            path: 'splat.ogg',
+            hasVariations: false,
+            isProximityBased: false,
+            isLooping: false,
+        },
+        {
+            name: 'Throw',
+            path: 'throw.ogg',
+            hasVariations: false,
+            isProximityBased: false,
+            isLooping: false,
+        },
+        {
+            name: 'Walk - Grass',
+            path: 'WALK_Grass.ogg',
+            hasVariations: false,
+            isProximityBased: false,
+            isLooping: false,
+        },
+    ]
+};
 
-const stages = [
+const STAGES = [
 
     // LEVEL 0
     {"worldWidth":4000,"worldHeight":648,"introText":"THE FOREST!","levelName":"The Forest","player":{"start":[7,430],"size":[40,65]},"boss":{"name":"Tree Monster","start":[3200,180],"size":[300,300]},"bears":[{"start":[1209,461],"size":[40,65],"region":{"pos":[0,0],"size":[9000,9000]}},{"start":[2065,460],"size":[40,65],"region":{"pos":[0,0],"size":[9000,9000]}}],"beeHives":[{"start":[850,429],"size":[40,65],"region":{"pos":[0,0],"size":[9000,9000]}},{"start":[1985,440],"size":[40,65],"region":{"pos":[0,0],"size":[9000,9000]}},{"start":[3944,401],"size":[40,65],"region":{"pos":[0,0],"size":[9000,9000]}}],"backgrounds":[{"path":"./images/backgrounds/FOREST_BACKGROUND.png","pos":[0,0],"size":[4000,648],"isRepeating":false,"parallax":[0,0]},{"path":"./images/backgrounds/FOREST_TREES_4.png","pos":[0,0],"size":[4000,648],"isRepeating":false,"parallax":[0.9,0.9]},{"path":"./images/backgrounds/FOREST_TREES_3.png","pos":[0,0],"size":[4000,648],"isRepeating":false,"parallax":[0.7,0.7]},{"path":"./images/backgrounds/FOREST_TREES_2.png","pos":[0,0],"size":[4000,648],"isRepeating":false,"parallax":[0.5,0.5]},{"path":"./images/backgrounds/FOREST_TREES_1.png","pos":[0,0],"size":[4000,648],"isRepeating":false,"parallax":[0,0]},{"path":"./images/backgrounds/FOREST_FOREGROUND.png","pos":[0,0],"size":[4000,648],"isRepeating":false,"parallax":[0,0]}],"eventCollision":{"exit":{"pos":[3881,487],"size":[117,71]},"pitfalls":[{"pos":[2239,187],"size":[73,403],"name":"PITFALLS"},{"pos":[734,282],"size":[60,289],"name":"PITFALLS"}],"generic":[{"pos":[2311,-1],"size":[1484,648],"name":"BOSS"}]},"collision":[{"sx":1,"sy":504,"ex":49,"ey":504,"c":"FLOOR","n":"-1","s":"GRASS","h":"#9F0313","sl":0,"b":504},{"sx":49,"sy":504,"ex":90,"ey":520,"c":"FLOOR","n":"-1","s":"GRASS","h":"#9F0313","sl":0.3902439024390244,"b":484.8780487804878},{"sx":90,"sy":520,"ex":145,"ey":524,"c":"FLOOR","n":"-1","s":"GRASS","h":"#9F0313","sl":0.07272727272727272,"b":513.4545454545455},{"sx":145,"sy":524,"ex":408,"ey":525,"c":"FLOOR","n":"-1","s":"GRASS","h":"#9F0313","sl":0.0038022813688212928,"b":523.4486692015209},{"sx":408,"sy":525,"ex":828,"ey":530,"c":"FLOOR","n":"-1","s":"GRASS","h":"#9F0313","sl":0.011904761904761904,"b":520.1428571428571},{"sx":828,"sy":530,"ex":1295,"ey":533,"c":"FLOOR","n":"-1","s":"GRASS","h":"#9F0313","sl":0.006423982869379015,"b":524.6809421841542},{"sx":1295,"sy":533,"ex":1874,"ey":539,"c":"FLOOR","n":"-1","s":"GRASS","h":"#9F0313","sl":0.010362694300518135,"b":519.580310880829},{"sx":1874,"sy":539,"ex":2071,"ey":543,"c":"FLOOR","n":"-1","s":"GRASS","h":"#9F0313","sl":0.02030456852791878,"b":500.9492385786802},{"sx":2071,"sy":543,"ex":2346,"ey":544,"c":"FLOOR","n":"-1","s":"GRASS","h":"#9F0313","sl":0.0036363636363636364,"b":535.4690909090909},{"sx":2346,"sy":544,"ex":2546,"ey":543,"c":"FLOOR","n":"-1","s":"GRASS","h":"#9F0313","sl":-0.005,"b":555.73},{"sx":2546,"sy":543,"ex":2938,"ey":547,"c":"FLOOR","n":"-1","s":"GRASS","h":"#9F0313","sl":0.01020408163265306,"b":517.0204081632653},{"sx":2938,"sy":547,"ex":3242,"ey":551,"c":"FLOOR","n":"-1","s":"GRASS","h":"#9F0313","sl":0.013157894736842105,"b":508.3421052631579},{"sx":3242,"sy":551,"ex":3566,"ey":552,"c":"FLOOR","n":"-1","s":"GRASS","h":"#9F0313","sl":0.0030864197530864196,"b":540.9938271604939},{"sx":3566,"sy":552,"ex":3730,"ey":557,"c":"FLOOR","n":"-1","s":"GRASS","h":"#9F0313","sl":0.03048780487804878,"b":443.280487804878},{"sx":3998,"sy":0,"ex":3998,"ey":557,"c":"WALL","n":"-1","s":"","h":"#02AA30","sl":null,"b":null},{"sx":1,"sy":2,"ex":1,"ey":504,"c":"WALL","n":"1","s":"","h":"#02AA30","sl":null,"b":null},{"sx":69,"sy":378,"ex":69,"ey":378,"c":"FLOOR","n":"-1","s":"GRASS","h":"#9F0313","sl":null,"b":null},{"sx":69,"sy":378,"ex":95,"ey":384,"c":"FLOOR","n":"-1","s":"GRASS","h":"#9F0313","sl":0.23076923076923078,"b":362.0769230769231},{"sx":69,"sy":378,"ex":69,"ey":378,"c":"FLOOR","n":"-1","s":"GRASS","h":"#9F0313","sl":null,"b":null},{"sx":69,"sy":378,"ex":70,"ey":377,"c":"FLOOR","n":"-1","s":"GRASS","h":"#9F0313","sl":-1,"b":447},{"sx":40,"sy":377,"ex":70,"ey":377,"c":"FLOOR","n":"-1","s":"GRASS","h":"#9F0313","sl":0,"b":377},{"sx":1,"sy":386,"ex":40,"ey":377,"c":"FLOOR","n":"-1","s":"GRASS","h":"#9F0313","sl":-0.23076923076923078,"b":386.2307692307692},{"sx":95,"sy":384,"ex":95,"ey":398,"c":"WALL","n":"1","s":"","h":"#02AA30","sl":null,"b":null},{"sx":2,"sy":401,"ex":94,"ey":397,"c":"CEILING","n":"1","s":"","h":"#0E72D5","sl":-0.043478260869565216,"b":401.0869565217391},{"sx":3823,"sy":476,"ex":3851,"ey":485,"c":"FLOOR","n":"-1","s":"GRASS","h":"#9F0313","sl":0.32142857142857145,"b":-752.8214285714287},{"sx":3851,"sy":485,"ex":3999,"ey":483,"c":"FLOOR","n":"-1","s":"GRASS","h":"#9F0313","sl":-0.013513513513513514,"b":537.0405405405405},{"sx":3822,"sy":478,"ex":3849,"ey":489,"c":"CEILING","n":"1","s":"","h":"#0E72D5","sl":0.4074074074074074,"b":-1079.111111111111},{"sx":3849,"sy":489,"ex":3998,"ey":487,"c":"CEILING","n":"1","s":"","h":"#0E72D5","sl":-0.013422818791946308,"b":540.6644295302013},{"sx":3730,"sy":557,"ex":3818,"ey":555,"c":"FLOOR","n":"-1","s":"GRASS","h":"#9F0313","sl":-0.022727272727272728,"b":641.7727272727273},{"sx":3818,"sy":555,"ex":3844,"ey":552,"c":"FLOOR","n":"-1","s":"GRASS","h":"#9F0313","sl":-0.11538461538461539,"b":995.5384615384615},{"sx":3844,"sy":552,"ex":3998,"ey":557,"c":"FLOOR","n":"-1","s":"GRASS","h":"#9F0313","sl":0.032467532467532464,"b":427.1948051948052}]},

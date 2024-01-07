@@ -29,10 +29,10 @@ class StatusBar {
             '#00000000'
         );
         const statusText = `${this.currentValue} / ${this.maxValue}`;
-        this.statusText = new TextC(
+        this.statusText = new Text(
             statusText,
             new Vector2(this.position.x + (this.size.x / 2), this.position.y + (this.size.y / 2)),
-            'Jura, Verdana',
+            'Jura, "Century Gothic", sans-serif',
             'bold',
             12,
             this.textColor,

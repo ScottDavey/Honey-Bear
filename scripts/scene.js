@@ -8,7 +8,7 @@
         this.player = player;
         this.isPlayerRandomPositionKeyLocked = false;
 
-        this.level = stages[this.selectedLevel];
+        this.level = STAGES[this.selectedLevel];
         this.isLevelComplete = false;
         this.isLevelEndSequence = false;
         this.worldWidth = this.level.worldWidth;
@@ -20,7 +20,7 @@
         this.bossData = this.level.boss;
         this.bossStart = new Vector2(this.bossData.start[0], this.bossData.start[1]);
         this.bossSize = new Vector2(this.bossData.size[0], this.bossData.size[1]);
-        this.bossName = new TextC(
+        this.bossName = new Text(
             this.bossData.name,
             new Vector2(CANVAS_WIDTH / 2 - 200, 35),
             'Lobster, Raleway',
@@ -56,10 +56,10 @@
         this.exitLogFront = new Sprite('images/level_assets/FOREST_ExitLog_FRONT.png', new Vector2(3801, 464), new Vector2(199, 94));
         this.isLevelEndSequence = false;
         this.intoTransition = new Transition('0, 0, 0', 3, 'in');
-        this.introText = new TextC(
+        this.introText = new Text(
             this.level.introText,
             new Vector2(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2),
-            'Poiret One, Verdana',
+            'Poiret One, "Century Gothic", sans-serif',
             'normal',
             60,
             '#FFFFFF',
@@ -104,10 +104,10 @@
             1,
             '#990000'
         );
-        this.deathText = new TextC(
+        this.deathText = new Text(
             'YOU DIED',
             new Vector2(CANVAS_WIDTH / 2, (CANVAS_HEIGHT / 2) - 100),
-            'Joesfin Sans, Verdana',
+            'Joesfin Sans, "Century Gothic", sans-serif',
             'normal',
             36,
             '#990000',
@@ -117,13 +117,13 @@
         // Ability Icons / Cooldowns
         this.globAbilityIcon = new Sprite('images/level_assets/AbilityIcon_Glob.png', new Vector2(10, 70), new Vector2(31, 31));
         this.globAbilityCooldownOverlay = new Texture(new Vector2(10, 70), new Vector2(31, 31), '#00000088', 1, '#00000088');
-        this.globAbilityCooldown = new TextC(
+        this.globAbilityCooldown = new Text(
             '0',
             new Vector2(
                 this.globAbilityIcon.GetPosition().x + (this.globAbilityIcon.GetSize().x / 2),
                 this.globAbilityIcon.GetPosition().y + (this.globAbilityIcon.GetSize().y / 2)
             ),
-            'Jura, Verdana',
+            'Jura, "Century Gothic", sans-serif',
             'normal',
             12,
             '#FFFFFF',
@@ -131,13 +131,13 @@
         );
         this.blastAbilityIcon = new Sprite('images/level_assets/AbilityIcon_Blast.png', new Vector2(46, 70), new Vector2(31, 31));
         this.BlastAbilityCooldownOverlay = new Texture(new Vector2(46, 70), new Vector2(31, 31), '#00000088', 1, '#00000088');
-        this.blastAbilityCooldown = new TextC(
+        this.blastAbilityCooldown = new Text(
             '0',
             new Vector2(
                 this.blastAbilityIcon.GetPosition().x + (this.blastAbilityIcon.GetSize().x / 2),
                 this.blastAbilityIcon.GetPosition().y + (this.blastAbilityIcon.GetSize().y / 2)
             ),
-            'Jura, Verdana',
+            'Jura, "Century Gothic", sans-serif',
             'normal',
             12,
             '#FFFFFF',
@@ -158,6 +158,18 @@
             { path: 'Halloween.mp3', defaultVolume: 0.4 },
             { path: 'MUSIC_The-Forgotten_Forest.mp3', defaultVolume: 0.2 }
         ];
+
+        // SOUND_MANAGER.Add(
+        //     new Sound(
+        //         'BackgroundMusic_Level'
+        //         `sounds/music/Seneca.mp3`,
+        //         'MUSIC',
+        //         false,
+        //         true,
+        //         backgroundMusicChoice.defaultVolume,
+        //         1.0
+        //     )
+        // );
 
         // Sounds Effects
         this.birds = undefined;
@@ -241,7 +253,7 @@
             backgroundMusicChoice.defaultVolume,
             1.0
         );
-        this.backgroundMusic.Play();
+        // this.backgroundMusic.Play();
 
         if (+this.selectedLevel === 0) {
             this.birds = new Sound('sounds/effects/birds.ogg', 'SFX', false, true, 0.2, 1.5);
@@ -707,13 +719,21 @@
 
         }
 
-        this.honeyGlobHitSound.Update();
-        this.backgroundMusic.Update();
-        this.birds.Update();
-
         DEBUG.Update('PLAYER', `Position X: ${this.player.GetPosition().x}`);
         DEBUG.Update('ENEMIESLEFT', `Enemies Remaining: ${this.bears.length}`);
         DEBUG.Update('BOSSSEQ', `Boss Sequence: ${this.isBossSequence ? 'YES' : 'NO'}`);
+        
+        const totalHives = this.beeHives.length;
+        let hivesRumaged = 0;
+        let hivesCollected = 0;
+
+        for (const hive of this.beeHives) {
+            const hiveState = hive.GetState();
+            hivesRumaged += hiveState >= HIVE_STATE.FALLING ? 1 : 0;
+            hivesCollected += hiveState === HIVE_STATE.EMPTY;
+        }
+        
+        DEBUG.Update('HIVES', `Hives T: ${totalHives} | R: ${hivesRumaged} | C: ${hivesCollected}`);
         
     }
 

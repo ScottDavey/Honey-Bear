@@ -21,9 +21,7 @@ class Sound {
     }
 
     Play() {
-        if ((this.type === 'MUSIC' && IS_MUSIC_ON) || (this.type === 'SFX' && IS_SFX_ON)) {
-            this.audEl.play();
-        }
+        this.audEl.play();
     }
 
     Stop() {
@@ -58,50 +56,6 @@ class Sound {
         this.SetVolumne(newVolume);
 
         return elapsed >= this.fadeOutDuration;
-    }
-
-    Update(sourcePosition, playerPosition) {
-
-        if (this.isProximityBased) {
-            const deltaX = Math.pow(sourcePosition.x - playerPosition.x, 2);
-            const deltaY = Math.pow(sourcePosition.y - playerPosition.y, 2);
-            const delta = Math.sqrt(deltaX + deltaY);
-            
-            let volume = 0;
-            
-            if (delta < this.maxVolumneDistance) {
-
-                if (!this.IsPlaying()) {
-                    this.Play();
-                }
-
-                volume = this.buzzMaxVolume - (this.buzzMaxVolume * (delta / this.maxVolumneDistance));
-                volume = (volume >= this.buzzMaxVolume) ? this.buzzMaxVolume : volume;
-            } else {
-
-                this.Stop();
-
-            }
-            
-            // Based on the player's distance from the source, set volume
-            this.SetVolumne(volume);
-        }
-
-        // Only play the sound if the setting is ON
-        if (this.type === 'MUSIC') {
-            if (!IS_MUSIC_ON && !this.IsPlaying()) {
-                this.Stop();
-            } else if (IS_MUSIC_ON && !this.IsPlaying()) {
-                this.Play();
-            }
-        }
-
-        if (this.type === 'SFX') {
-            if (!IS_SFX_ON && !this.IsPlaying()) {
-                this.Stop();
-            }
-        }
-
     }
 
 }

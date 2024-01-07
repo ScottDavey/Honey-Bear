@@ -25,7 +25,7 @@ class GameMenu {
         this.toggleSFXButton = undefined;
         this.backbutton = undefined;
 
-        this.activeButton = undefined;
+        this.buttons = [];
 
         this.overlay = new Texture(
             new Vector2(0, 0),
@@ -34,10 +34,10 @@ class GameMenu {
             0,
             '#00000000'
         );
-        this.pausedText = new TextC(
+        this.pausedText = new Text(
             'PAUSED',
             new Vector2(this.center.x, 175),
-            'Jura, Consolas, Verdana',
+            'Jura, Consolas, "Century Gothic", sans-serif',
             'normal',
             70,
             '#FFFFFF',
@@ -57,100 +57,99 @@ class GameMenu {
 
     InitializeMain() {
         this.state = GAME_MENU.MAIN;
-        this.numberOfElements = 0;
-        this.DeInitializeBack();
 
-        this.resumeButton = new TextButton(
-            'Resume Game',
-            new Vector2(this.center.x, this.initialOptionYPos + (this.numberOfElements * this.buttonHeight)),
-            this.buttonFont,
-            '#FFFFFF',
-            '#5831a0',
-            '',
-            ''
-        );
-        this.numberOfElements++;
-
-        this.optionButton = new TextButton(
-            'Options',
-            new Vector2(this.center.x, this.initialOptionYPos + (this.numberOfElements * this.buttonHeight)),
-            this.buttonFont,
-            '#FFFFFF',
-            '#5831a0',
-            '',
-            ''
-        );
-        this.numberOfElements++;
-
-        this.exitButton = new TextButton(
-            'Exit',
-            new Vector2(this.center.x, this.initialOptionYPos + (this.numberOfElements * this.buttonHeight)),
-            this.buttonFont,
-            '#FFFFFF',
-            '#5831a0',
-            '',
-            ''
-        );
-        this.numberOfElements++;
-    }
-
-    DeinitializeMain() {
-        this.resumeButton = undefined;
-        this.optionButton = undefined;
-        this.exitButton = undefined;
+        this.buttons = [
+            {
+                name: 'RESUME',
+                obj: new TextButton(
+                    'Resume Game',
+                    new Vector2(this.center.x, this.initialOptionYPos + (1 * this.buttonHeight)),
+                    this.buttonFont,
+                    '#FFFFFF',
+                    '#5831a0',
+                    '',
+                    ''
+                ), 
+            },
+            {
+                name: 'OPTIONS',
+                obj: new TextButton(
+                    'Options',
+                    new Vector2(this.center.x, this.initialOptionYPos + (2 * this.buttonHeight)),
+                    this.buttonFont,
+                    '#FFFFFF',
+                    '#5831a0',
+                    '',
+                    ''
+                ), 
+            },
+            {
+                name: 'EXIT',
+                obj: new TextButton(
+                    'Exit',
+                    new Vector2(this.center.x, this.initialOptionYPos + (3 * this.buttonHeight)),
+                    this.buttonFont,
+                    '#FFFFFF',
+                    '#5831a0',
+                    '',
+                    ''
+                ), 
+            },
+        ];
     }
 
     InitializeOptions() {
         this.state = GAME_MENU.OPTIONS;
-        this.numberOfElements = 0;
-        
         const isMusicOn = IS_MUSIC_ON ? 'Yes' : 'No';
-        this.toggleMusicButton = new TextButton(
-            `Music: ${isMusicOn}`,
-            new Vector2(this.center.x, this.initialOptionYPos + (this.numberOfElements * this.buttonHeight)),
-            this.buttonFont,
-            '#FFFFFF',
-            '#5831a0',
-            '',
-            ''
-        );
-        this.numberOfElements++;
-        
         const isSFXOn = IS_SFX_ON ? 'Yes' : 'No';
-        this.toggleSFXButton = new TextButton(
-            `SFX: ${isSFXOn}`,
-            new Vector2(this.center.x, this.initialOptionYPos + (this.numberOfElements * this.buttonHeight)),
-            this.buttonFont,
-            '#FFFFFF',
-            '#5831a0',
-            '',
-            ''
-        );
-        this.numberOfElements++;
+
+        this.buttons = [
+            {
+                name: 'MUSIC',
+                obj: new TextButton(
+                    `Music: ${isMusicOn}`,
+                    new Vector2(this.center.x, this.initialOptionYPos + (1 * this.buttonHeight)),
+                    this.buttonFont,
+                    '#FFFFFF',
+                    '#5831a0',
+                    '',
+                    ''
+                ),
+            },
+            {
+                name: 'SFX',
+                obj: new TextButton(
+                    `SFX: ${isSFXOn}`,
+                    new Vector2(this.center.x, this.initialOptionYPos + (2 * this.buttonHeight)),
+                    this.buttonFont,
+                    '#FFFFFF',
+                    '#5831a0',
+                    '',
+                    ''
+                ),
+            },
+        ];
 
         this.InitializeBack();
     }
 
-    DeinitializeOptions() {
-
-    }
-
     InitializeBack() {
-        const yPosition = this.initialOptionYPos + (this.numberOfElements * this.buttonHeight);
+        const yPosition = this.initialOptionYPos + (this.buttons.length + 1 * this.buttonHeight);
         // SUB STATES
-        this.backbutton = new TextButton(
-            'Back',
-            new Vector2(this.center.x, yPosition),
-            this.buttonFont,
-            '#FFFFFF',
-            '#5831a0',
-            '',
-            ''
+        this.buttons.push(
+            {
+                name: 'BACK',
+                obj: new TextButton(
+                    'Back',
+                    new Vector2(this.center.x, yPosition),
+                    this.buttonFont,
+                    '#FFFFFF',
+                    '#5831a0',
+                    '',
+                    ''
+                ),
+            }
         );
-    }
-
-    DeInitializeBack() {
-        this.backbutton = undefined;
     }
 
     SetIsPaused(isPaused) {
@@ -162,6 +161,35 @@ class GameMenu {
     }
 
     Update() {
+
+        for (const button of this.buttons) {
+            button.obj.Update();
+
+            if (button.obj.IsPushed()) {
+
+                const isConfirmKeyLocked = ();
+
+                // MAIN
+                if (button.name === 'RESUME') {
+                    this.SetIsPaused(false);
+                } else if (button.name === 'OPTIONS') {
+                    this.InitializeOptions();
+                } else if (button.name === 'EXIT') {
+                    this.state === GAME_MENU.EXIT;
+                }
+                
+                // OPTIONS
+                if (button.name === 'MUSIC') {
+                    if (this.) {
+
+                    }
+                } else {
+
+                }
+
+            }
+        }
+
 
         switch (this.state) {
             case GAME_MENU.MAIN:

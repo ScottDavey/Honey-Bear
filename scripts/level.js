@@ -12,11 +12,11 @@
         this.scene = undefined;
         this.sceneIsLoaded = false;
         this.player = new Player(new Vector2(0, 0), new Vector2(0, 0));
-        this.levelName = stages[this.selectedLevel].levelName;
-        this.selectedLevelText = new TextC(
+        this.levelName = STAGES[this.selectedLevel].levelName;
+        this.selectedLevelText = new Text(
             `LEVEL ${this.selectedLevel + 1} - ${this.levelName}`,
             new Vector2(10, 28),
-            'Jura, Verdana',
+            'Jura, "Century Gothic", sans-serif',
             'normal',
             14,
             '#FFFFFF',
@@ -56,7 +56,7 @@
                 if (this.scene.isLevelComplete) {
                     this.scene.UnloadContent();
                     this.selectedLevel = this.selectedLevel + 1 || 0;
-                    this.selectedLevelText.SetString(`LEVEL ${this.selectedLevel + 1} - ${stages[this.selectedLevel].levelName}`);
+                    this.selectedLevelText.SetString(`LEVEL ${this.selectedLevel + 1} - ${STAGES[this.selectedLevel].levelName}`);
                     this.scene = undefined;
 
                     this.levelStartTime = 0;

@@ -17,19 +17,19 @@ class StatusText {
         if (this.type === 'DAMAGE') {
             this.fontSize = this.isCrit ? 17 : 10;
             this.fontFamily = this.isCrit ? '"Gasoek One"' : 'Anton';
-            this.font = `normal ${this.fontSize}pt ${this.fontFamily}, Verdana`;
+            this.font = `normal ${this.fontSize}pt ${this.fontFamily}, "Century Gothic", sans-serif`;
             this.fontColor = this.isPlayer ? '128, 0, 0' : (this.isCrit ? '247, 181, 28' : '255, 255, 255');
             this.valueFormatted = this.value.toLocaleString();
         } else {
             this.fontSize = 10;
             this.fontFamily = '"Gasoek One"';
-            this.font = `normal ${this.fontSize}pt ${this.fontFamily}, Verdana`;
+            this.font = `normal ${this.fontSize}pt ${this.fontFamily}, "Century Gothic", sans-serif`;
             this.fontColor = '98, 194, 56';
             this.valueFormatted = `+${this.value.toLocaleString()}`;
         }
         this.startTime = GameTime.getCurrentGameTime();
         this.opacity = 1.0;
-        this.text = new TextC(
+        this.text = new Text(
             this.valueFormatted,
             new Vector2(this.position.x, this.position.y),
             this.fontFamily,

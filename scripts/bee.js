@@ -205,6 +205,31 @@ class Bee {
         }
     }
 
+    UpdateProximityVolume() {
+        const deltaX = Math.pow(this.position.x - this.playerCenter.x, 2);
+        const deltaY = Math.pow(this.position.y - this.playerCenter.y, 2);
+        const delta = Math.sqrt(deltaX + deltaY);
+
+        let volume = 0;
+
+        if (delta < this.maxVolumneDistance) {
+
+            if (!this.buzzSound.IsPlaying()) {
+                this.buzzSound.Play();
+            }
+
+            volume = this.buzzMaxVolume - (this.buzzMaxVolume * (delta / this.maxVolumneDistance));
+            volume = (volume >= this.buzzMaxVolume) ? this.buzzMaxVolume : volume;
+        } else {
+
+            this.buzzSound.Stop();
+
+        }
+
+        // Based on the player's distance from the bee, set volume
+        this.buzzSound.SetVolumne(volume);
+    }
+
     Update(hivePosition, hiveState, playerCenter) {
         this.hivePosition = hivePosition;
         this.playerCenter = playerCenter;
@@ -234,7 +259,7 @@ class Bee {
         this.ApplyMovement();
         this.bounds.Update(new Vector2(this.position.x, this.position.y), this.size);
 
-        this.buzzSound.Update(this.position, playerCenter);
+        this.UpdateProximityVolume();
     }
 
     Draw() {

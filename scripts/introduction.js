@@ -7,7 +7,7 @@ class Introduction {
     constructor() {
         this.transitionIn = new Transition('0, 0, 0', 3, 'in');
         this.transitionOut = undefined; // Will be initialized later, once transitionIn is complete
-        this.introText = new TextC(
+        this.introText = new Text(
             'A Game by Kennedy Amanda Davey',
             new Vector2(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2),
             '"Poiret One", sans-serif',

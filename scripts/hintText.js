@@ -17,25 +17,25 @@ class HintText {
             1,
             '#000000'
         );
-        this.buttonText = new TextC(
+        this.buttonText = new Text(
             this.button,
             new Vector2(
                 this.texture.GetPosition().x + (this.texture.GetSize().x / 2),
                 this.texture.GetPosition().y + (this.texture.GetSize().y / 2)
             ),
-            'Gasoek One, Verdana',
+            'Gasoek One, "Century Gothic", sans-serif',
             'normal',
             16,
             '#F8B61D',
             'center'
         );
-        this.captionText = new TextC(
+        this.captionText = new Text(
             this.caption,
             new Vector2(
                 this.texture.GetPosition().x + (this.texture.GetSize().x / 2),
                 this.texture.GetPosition().y + this.texture.GetSize().y + 10
             ),
-            'Jura, Verdana',
+            'Jura, "Century Gothic", sans-serif',
             'normal',
             12,
             '#FFFFFF',

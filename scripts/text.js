@@ -2,7 +2,7 @@
 *****  TEXT CLASS  *****
 ***********************/
 
-class TextC {
+class Text {
 
     constructor(string, position, fontFamily, fontWeight, fontSize, color, alignment) {
         this.string = string;

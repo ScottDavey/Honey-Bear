@@ -247,8 +247,6 @@ class BeeHive {
         this.bounds.Update(this.position, this.size);
         this.sprite.Update(this.position);
 
-        this.rummageSound.Update();
-
     }
 
     Draw() {

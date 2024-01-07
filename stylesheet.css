@@ -9,13 +9,13 @@
 html,
 body {
     background-color: #5831a0;
-    font: normal 11pt Raleway, "Century Gothic", Verdana, Arial;
+    font: normal 11pt Raleway, "Century Gothic", "Century Gothic", sans-serif, Arial;
     color: #DCDCDC;
 }
 
 h1 {
     margin-top: 5px;
-    font: normal 60pt Lobster, "Century Gothic", Verdana, Arial;
+    font: normal 60pt Lobster, "Century Gothic", "Century Gothic", sans-serif, Arial;
     color: #f185b3;
     text-align: center;
     /* text-shadow: -1px -1px 0px #000000; */

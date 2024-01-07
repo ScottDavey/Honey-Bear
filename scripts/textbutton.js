@@ -3,7 +3,7 @@
 ************************************************/
 class TextButton {
 
-    constructor(text, pos, font = { family: 'Verdana', size: 12, align: 'left' }, color, hoverColor, BGColor, hoverBGColor) {
+    constructor(text, pos, font = { family: '"Century Gothic", sans-serif', size: 12, align: 'left' }, color, hoverColor, BGColor, hoverBGColor) {
         this.text = text;
         this.pos = new Vector2(pos.x, pos.y);
         this.fontFamily = font.family;
@@ -17,7 +17,8 @@ class TextButton {
         this.hoverBGColor = hoverBGColor;
         this.isLeftClickLocked = false;
         this.isPushed = false;
-        this.buttonText = new TextC(
+        this.isSelected = false;
+        this.buttonText = new Text(
             this.text,
             new Vector2(this.pos.x, this.pos.y),
             this.fontFamily,
@@ -25,6 +26,13 @@ class TextButton {
             this.fontSize,
             this.fontColor,
             this.align
+        );
+        this.selectedIcon = new Texture(
+            new Vector2(this.buttonText.GetPosition().x - 30, this.buttonText.GetPosition().y - 10),
+            new Vector2(15, 15),
+            '#88000066',
+            1,
+            '#880000'
         );
         this.buttonTextWidth = 0;
 
@@ -36,6 +44,14 @@ class TextButton {
             this.buttonTextWidth,
             this.size.y
         );
+    }
+
+    SetIsSelected(isSelected) {
+        this.isSelected = isSelected;
+    }
+
+    GetIsSelected() {
+        return this.isSelected;
     }
 
     IsPushed() {
@@ -66,7 +82,7 @@ class TextButton {
     }
 
     // Based on a given pointer (mouse, touch control), check to see if we can perform an action on the button
-    CheckPointerAction(pointerPos, isPointerEngaged) {
+    CheckPointerAction(pointerPos) {
 
         if (!this.isLeftClickLocked) {
             if (this.isPointerOver(pointerPos)) {
@@ -85,15 +101,21 @@ class TextButton {
         // Apply hover state (if mouse)
         if (this.isPointerOver(mousePos)) {
             this.SetFontColor(this.hoverColor);
+            this.isSelected = true;
         } else {
             this.SetFontColor(this.originalFontColor);
         }
 
         // Handle Inputs
-        if (Input.Touch.IsTouching()) {
-            this.CheckPointerAction(touchPos, true);
-        } else if (Input.Mouse.GetButton(Input.Mouse.LEFT)) {
-            this.CheckPointerAction(mousePos, true);
+        const isConfirmInputEngaged = this.isSelected && (
+            Input.Touch.IsTouching() ||
+            Input.Mouse.GetButton(Input.Mouse.LEFT) ||
+            Input.Keys.GetKey(Input.Keys.ENTER) ||
+            Input.GamePad.A.pressed
+        );
+
+        if (isConfirmInputEngaged) {
+            this.CheckPointerAction(mousePos || touchPos);
         } else {
             this.isPushed = false;
         }
@@ -108,10 +130,15 @@ class TextButton {
             new Vector2(this.buttonTextWidth, this.size.y)
         );
 
+        this.selectedIcon.Update(new Vector2(buttonPosition.x - 30, this.pos.y - 10));
+
     }
 
     Draw() {
         this.buttonText.Draw();
+        if (this.isSelected) {
+            this.selectedIcon.Draw();
+        }
     }
 
 }

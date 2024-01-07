@@ -289,8 +289,6 @@ class Character {
                     this.walkSounds[this.groundType].Stop();
                 }
             }
-
-            this.walkSounds.GRASS.Update();
         }
     }
 

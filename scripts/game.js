@@ -17,8 +17,7 @@ class Game {
     initialize() {
         this.state = GAME_STATES.PRIMARY.INTRO;
         this.intro = new Introduction();
-
-        
+        SOUND_MANAGER.Initialize(this.state);
     };
 
     update() {
@@ -44,6 +43,7 @@ class Game {
                         this.intro = undefined;
                     }
                     break;
+
                 case GAME_STATES.PRIMARY.MAIN_MENU:
                     if (typeof this.mainMenu === 'undefined') this.mainMenu = new MainMenu();
                     this.mainMenu.Update();
@@ -52,6 +52,7 @@ class Game {
                         this.mainMenu = undefined;
                     }
                     break;
+
                 case GAME_STATES.PRIMARY.PLAYING:
 
                     if ((Input.Keys.GetKey(Input.Keys.ESCAPE) || Input.GamePad.START.pressed)) {
@@ -68,6 +69,7 @@ class Game {
                         this.level.Update();
                     }
                     break;
+                    
                 case GAME_STATES.PRIMARY.OUTRO:
                     break;
             }
@@ -127,6 +129,9 @@ class Game {
                 state = 'OUTRO';
                 break;
         }
+
+        // Put Music Song Name on screen
+        SOUND_MANAGER.Draw();
 
         if (this.gameMenu.GetIsPaused()) {
             this.gameMenu.Draw();

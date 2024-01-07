@@ -37,14 +37,14 @@ class TreeMonster extends Character {
             {
                 name: 'BRANCH_SMASH',
                 fn: this.BranchSmash,
-                duration: 4,
+                duration: 5,
                 isProximityBased: true,
             },
             // Doubling up to increase its chance of being chosen
             {
                 name: 'BRANCH_SMASH',
                 fn: this.BranchSmash,
-                duration: 4,
+                duration: 5,
                 isProximityBased: true,
             },
             {
@@ -117,7 +117,7 @@ class TreeMonster extends Character {
 
     BranchSmash() {
 
-        if (this.attackTimer.GetRemainder(1) === 3) {
+        if (this.attackTimer.GetRemainder(1) === 2) {
             const branchSmashHeight = this.size.y / 2;
             const branchSmashPosition = new Vector2(
                 this.bounds.center.x - (this.dir < 0 ? 300 : 0),

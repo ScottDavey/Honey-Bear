@@ -15,7 +15,7 @@ class Debug {
         this.align = 'left';
         this.showDebug = false;
 
-        this.title = new TextC(
+        this.title = new Text(
             'DEBUG',
             new Vector2(this.position.x + 20, this.position.y + 20),
             this.fontFamily,
@@ -48,7 +48,7 @@ class Debug {
                 this.debugLines.push(
                     {
                         name,
-                        text: new TextC(
+                        text: new Text(
                             value,
                             this.nextLinePosition,
                             this.fontFamily,

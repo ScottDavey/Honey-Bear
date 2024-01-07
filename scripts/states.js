@@ -29,6 +29,11 @@ const GAME_MENU = {
     SOUND: 2
 };
 
+const SOUND_STATE = {
+    PLAYING: 0,
+    STOPPED: 1
+};
+
 const HIVE_STATE = {
     NEW: 0,
     PARTIALLY_RUMMAGED: 1,

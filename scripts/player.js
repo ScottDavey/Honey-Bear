@@ -296,8 +296,6 @@ class Player extends Character {
         if (this.blastCooldown && this.blastCooldown.IsComplete()) {
             this.blastCooldown = undefined;
         }
-
-        this.throwSound.Update();
         
         super.Update();
     }

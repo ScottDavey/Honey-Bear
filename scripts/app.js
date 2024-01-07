@@ -4,6 +4,11 @@ const CANVAS_HEIGHT = 500;
 
 const DEBUG = new Debug();
 const SOUND_MANAGER = new SoundManager();
+const INPUT_TYPES = {
+    KEYBOARD: 0,
+    GAMEPAD: 1,
+    TOUCH: 2
+};
 
 let FPS = new FPSClass();
 let GAME = undefined;
@@ -14,6 +19,7 @@ let CANVAS = undefined;
 let CONTEXT = undefined;
 let IS_MOBILE = false;
 let HAS_GAME_PAD = false;
+let INPUT_TYPE = INPUT_TYPES.KEYBOARD;
 
 // SETTINGS
 let IS_MUSIC_ON = true;
@@ -62,9 +68,4 @@ function run() {
         GAME.draw();
     }
     requestAnimationFrame(run);
-    // if (IS_RUNNING) {
-    //     GAME.update();
-    //     GAME.draw();
-    //     setTimeout(run, 0.5);
-    // }
 }

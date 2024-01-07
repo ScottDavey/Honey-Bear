@@ -58,14 +58,6 @@ class TextButton {
         return this.isPushed;
     }
 
-    GetIsLeftClickLocked() {
-        return this.isLeftClickLocked;
-    }
-
-    SetIsLeftClickLocked(isLocked) {
-        this.isLeftClickLocked = isLocked;
-    }
-
     SetFontColor(color) {
         this.fontColor = color;
         this.buttonText.SetColor(this.fontColor);
@@ -94,8 +86,12 @@ class TextButton {
 
     Update() {
 
-        // Get the coordinates of the various pointers (mouse, touch)
         const mousePos = Input.Mouse.OnMouseMove.GetPosition();
+        this.isSelected = this.isPointerOver(mousePos);
+
+        /*
+
+        // Get the coordinates of the various pointers (mouse, touch)
         const touchPos = Input.Touch.GetPositions()[0]; // We only care about the first touch
 
         // Apply hover state (if mouse)
@@ -119,6 +115,11 @@ class TextButton {
         } else {
             this.isPushed = false;
         }
+
+        */
+
+        const fontColor = this.isSelected ? this.hoverColor : this.originalFontColor;
+        this.SetFontColor(fontColor);
 
         this.buttonTextWidth = this.buttonText.GetTextWidth();
         const buttonPosition = this.align === 'center' ?

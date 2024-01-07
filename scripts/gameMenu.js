@@ -27,6 +27,8 @@ class GameMenu {
 
         this.buttons = [];
 
+        this.isConfirmInputLocked = false;
+
         this.overlay = new Texture(
             new Vector2(0, 0),
             new Vector2(CANVAS_WIDTH, CANVAS_HEIGHT),
@@ -57,78 +59,89 @@ class GameMenu {
 
     InitializeMain() {
         this.state = GAME_MENU.MAIN;
+        this.buttons = [];
 
-        this.buttons = [
+        this.buttons.push(
             {
                 name: 'RESUME',
                 obj: new TextButton(
                     'Resume Game',
-                    new Vector2(this.center.x, this.initialOptionYPos + (1 * this.buttonHeight)),
+                    new Vector2(this.center.x, this.initialOptionYPos + ((this.buttons.length - 1) * this.buttonHeight)),
                     this.buttonFont,
                     '#FFFFFF',
                     '#5831a0',
                     '',
                     ''
                 ), 
-            },
+            }
+        );
+        
+        this.buttons.push(
             {
                 name: 'OPTIONS',
                 obj: new TextButton(
                     'Options',
-                    new Vector2(this.center.x, this.initialOptionYPos + (2 * this.buttonHeight)),
+                    new Vector2(this.center.x, this.initialOptionYPos + ((this.buttons.length - 1) * this.buttonHeight)),
                     this.buttonFont,
                     '#FFFFFF',
                     '#5831a0',
                     '',
                     ''
                 ), 
-            },
+            }
+        );
+
+        this.buttons.push(
             {
                 name: 'EXIT',
                 obj: new TextButton(
                     'Exit',
-                    new Vector2(this.center.x, this.initialOptionYPos + (3 * this.buttonHeight)),
+                    new Vector2(this.center.x, this.initialOptionYPos + ((this.buttons.length - 1) * this.buttonHeight)),
                     this.buttonFont,
                     '#FFFFFF',
                     '#5831a0',
                     '',
                     ''
                 ), 
-            },
-        ];
+            }
+        );
     }
 
     InitializeOptions() {
         this.state = GAME_MENU.OPTIONS;
+        this.buttons = [];
         const isMusicOn = IS_MUSIC_ON ? 'Yes' : 'No';
         const isSFXOn = IS_SFX_ON ? 'Yes' : 'No';
 
-        this.buttons = [
+        this.buttons.push(
             {
                 name: 'MUSIC',
                 obj: new TextButton(
                     `Music: ${isMusicOn}`,
-                    new Vector2(this.center.x, this.initialOptionYPos + (1 * this.buttonHeight)),
+                    new Vector2(this.center.x, this.initialOptionYPos + ((this.buttons.length - 1) * this.buttonHeight)),
                     this.buttonFont,
                     '#FFFFFF',
                     '#5831a0',
                     '',
                     ''
                 ),
-            },
+            }
+        );
+        
+        this.buttons.push(
             {
                 name: 'SFX',
                 obj: new TextButton(
                     `SFX: ${isSFXOn}`,
-                    new Vector2(this.center.x, this.initialOptionYPos + (2 * this.buttonHeight)),
+                    new Vector2(this.center.x, this.initialOptionYPos + ((this.buttons.length - 1) * this.buttonHeight)),
                     this.buttonFont,
                     '#FFFFFF',
                     '#5831a0',
                     '',
                     ''
                 ),
-            },
-        ];
+            }
+        );
 
         this.InitializeBack();
     }
@@ -160,91 +173,51 @@ class GameMenu {
         return this.isPaused;
     }
 
+    HandleInput() {
+
+    }
+
     Update() {
+
+        this.HandleInput();
 
         for (const button of this.buttons) {
             button.obj.Update();
 
             if (button.obj.IsPushed()) {
 
-                const isConfirmKeyLocked = ();
+                if (!this.isConfirmInputLocked) {
+                    this.isConfirmInputLocked = true;
 
-                // MAIN
-                if (button.name === 'RESUME') {
-                    this.SetIsPaused(false);
-                } else if (button.name === 'OPTIONS') {
-                    this.InitializeOptions();
-                } else if (button.name === 'EXIT') {
-                    this.state === GAME_MENU.EXIT;
-                }
-                
-                // OPTIONS
-                if (button.name === 'MUSIC') {
-                    if (this.) {
-
+                     // MAIN
+                    if (button.name === 'RESUME') {
+                        this.SetIsPaused(false);
+                    } else if (button.name === 'OPTIONS') {
+                        this.InitializeOptions();
+                    } else if (button.name === 'EXIT') {
+                        this.state = GAME_MENU.EXIT;
                     }
-                } else {
-
-                }
-
-            }
-        }
-
-
-        switch (this.state) {
-            case GAME_MENU.MAIN:
-                this.resumeButton.Update();
-                this.optionButton.Update();
-                this.exitButton.Update();
-
-                if (this.resumeButton.IsPushed()) {
-                    this.SetIsPaused(false);
-                }
-
-                if (this.optionButton.IsPushed()) {
-                    this.InitializeOptions();
-                }
-
-                if (this.exitButton.IsPushed()) {
-                    this.state = GAME_MENU.EXIT;
-                }
-                
-                break;
-            case GAME_MENU.OPTIONS:
-                this.toggleMusicButton.Update();
-                this.toggleSFXButton.Update();
-
-                if (this.toggleMusicButton.IsPushed()) {
-                    if (!this.toggleMusicButton.GetIsLeftClickLocked()) {
-                        this.toggleMusicButton.SetIsLeftClickLocked(true);
+                    
+                    // OPTIONS
+                    if (button.name === 'MUSIC') {
                         IS_MUSIC_ON = !IS_MUSIC_ON;
-                        this.toggleMusicButton.SetText(`Music: ${IS_MUSIC_ON ? 'YES' : 'NO'}`);
-                    }
-                } else {
-                    this.toggleMusicButton.SetIsLeftClickLocked(false);
-                }
-
-                if (this.toggleSFXButton.IsPushed()) {
-                    if (!this.toggleSFXButton.GetIsLeftClickLocked()) {
-                        this.toggleSFXButton.SetIsLeftClickLocked(true);
+                        button.obj.SetText(`Music: ${IS_MUSIC_ON ? 'YES' : 'NO'}`);
+                    } else if (button.name === 'SFX') {
                         IS_SFX_ON = !IS_SFX_ON;
-                        this.toggleSFXButton.SetText(`SFX: ${IS_SFX_ON ? 'YES' : 'NO'}`);
+                        button.obj.SetText(`SFX: ${IS_SFX_ON ? 'YES' : 'NO'}`);
                     }
+
+                    // BACK
+                    if (button.name === 'BACK') {
+                        this.InitializeMain();
+                    }
+                    
                 } else {
-                    this.toggleSFXButton.SetIsLeftClickLocked(false);
+                    this.isConfirmInputLocked = false;
                 }
-                break;
-            default:
-                break;
-        }
 
-        // If we're deeper than MAIN state (sub-state)
-        if (this.state > GAME_MENU.MAIN) {
-            this.backbutton.Update();
-
-            if (this.backbutton.IsPushed()) {
-                this.InitializeMain();
             }
+
         }
 
         DEBUG.Update('MUSIC', `Music ON: ${IS_MUSIC_ON ? 'YES' : 'NO'}`);
@@ -256,23 +229,8 @@ class GameMenu {
         this.overlay.Draw();
         this.pausedText.Draw();
 
-        switch (this.state) {
-            case GAME_MENU.MAIN:
-                this.resumeButton.Draw();
-                this.optionButton.Draw();
-                this.exitButton.Draw();
-                break;
-            case GAME_MENU.OPTIONS:
-                this.toggleMusicButton.Draw();
-                this.toggleSFXButton.Draw();
-                break;
-            default:
-                break;
-        }
-
-        // If we're deeper than MAIN state (sub-state)
-        if (this.state > GAME_MENU.MAIN) {
-            this.backbutton.Draw();
+        for (const button of this.buttons) {
+            button.obj.Draw();
         }
     }
 }

@@ -98,6 +98,7 @@ class Game {
         }
 
         DEBUG.Update('FPS', `FPS: ${FPS.GetFPS()}`);
+        DEBUG.Update('INPUT', `Input Type: ${Object.keys(INPUT_TYPES).find(key => INPUT_TYPES[key] === INPUT_TYPE)}`);
 
     };
 

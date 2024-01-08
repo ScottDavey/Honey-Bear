@@ -24,7 +24,7 @@ class MainMenu {
         this.buttons = [
             {
                 name: 'PLAY',
-                button: new TextButton(
+                obj: new TextButton(
                     'PLAY',
                     new Vector2(CANVAS_WIDTH - (CANVAS_WIDTH * 0.25), (CANVAS_HEIGHT / 2) + 50),
                     { family: 'Raleway, "Century Gothic", sans-serif', size: 40, align: 'left' },
@@ -43,26 +43,26 @@ class MainMenu {
 
     HandleInput() {
 
-        if (Input.Keys.GetKey(Input.Keys.DOWN) || Input.GamePad.DOWN.pressed) {
+        if (INPUT.GetInput(KEY_BINDINGS.DOWN)) {
             if (!this.isDownInputLocked) {
                 const nextSelectedIndex = this.selectedButtonIndex + 1 > this.buttons.length - 1 ? 0 : this.selectedButtonIndex + 1;
+                this.buttons[this.selectedButtonIndex].obj.SetIsSelected(false);
+                this.buttons[nextSelectedIndex].obj.SetIsSelected(true);
                 
-                this.buttons[this.selectedButtonIndex].button.SetIsSelected(false);
-                this.buttons[nextSelectedIndex].button.SetIsSelected(true);
-                
+                this.selectedButtonIndex = nextSelectedIndex;
                 this.isDownInputLocked = true;
             }
         } else {
             this.isDownInputLocked = false;
         }
         
-        if (Input.Keys.GetKey(Input.Keys.UP) || Input.GamePad.UP.pressed) {
+        if (INPUT.GetInput(KEY_BINDINGS.UP)) {
             if (!this.isUpInputLocked) {
                 const nextSelectedIndex = this.selectedButtonIndex - 1 < 0 ? 0 : this.selectedButtonIndex - 1;
+                this.buttons[this.selectedButtonIndex].obj.SetIsSelected(false);
+                this.buttons[nextSelectedIndex].obj.SetIsSelected(true);
                 
-                this.buttons[this.selectedButtonIndex].button.SetIsSelected(false);
-                this.buttons[nextSelectedIndex].button.SetIsSelected(true);
-                
+                this.selectedButtonIndex = nextSelectedIndex;
                 this.isUpInputLocked = true;
             }
         } else {
@@ -77,9 +77,9 @@ class MainMenu {
         this.HandleInput();
 
         for (const button of this.buttons) {
-            button.button.Update();
+            button.obj.Update();
 
-            if (button.button.IsPushed()) {
+            if (button.obj.IsPushed()) {
                 if (button.name === 'PLAY') {
                     
                     this.isFadingOut = true;
@@ -107,7 +107,7 @@ class MainMenu {
         this.BG.Draw();
 
         for (const button of this.buttons) {
-            button.button.Draw();
+            button.obj.Draw();
         }
 
         if (this.isFadingOut) {

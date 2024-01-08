@@ -598,7 +598,7 @@
             this.player.SetInputLock(false);
         }
 
-        if (Input.Keys.GetKey(Input.Keys.M)) {
+        if (INPUT.GetInput(KEY_BINDINGS.RANDOM_POSITION)) {
             if (!this.isPlayerRandomPositionKeyLocked) {
                 const randPos = new Vector2();
                 randPos.x = random(0, this.worldWidth - 300);
@@ -686,7 +686,7 @@
 
                 this.player.SetInputLock(false);
 
-                beeHive.Interact(Input.Keys.GetKey(Input.Keys.E) || Input.GamePad.Y.pressed);
+                beeHive.Interact(INPUT.GetInput(KEY_BINDINGS.INTERACT));
                 
                 if (beeHive.IsCollecting()) {
                     this.player.Heal(beeHive.GetHoneyPrize());

@@ -20,10 +20,13 @@
 class SoundManager {
 
     constructor() {
+        this.isMusicOn = true;
+        this.isSFXOn = true;
         this.music = [];
         this.effects = [];
         this.workingSounds = [];    // List of sounds currently in use
         this.gameState = undefined;
+        this.gameSubState = undefined;
         this.muteAll = false;
         this.isMusicPlaying = false;
 
@@ -51,6 +54,22 @@ class SoundManager {
         }
 
         this.gameState = gameState;
+    }
+
+    GetMusicOn() {
+        return this.isMusicOn;
+    }
+
+    GetSFXOn() {
+        return this.isSFXOn;
+    }
+
+    SetMusicOn(isOn) {
+        this.isMusicOn = isOn;
+    }
+
+    SetSFXOn(isOn) {
+        this.isSFXOn = isOn;
     }
 
     SetGameState(state) {

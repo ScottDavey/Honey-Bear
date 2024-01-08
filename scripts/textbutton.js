@@ -86,40 +86,14 @@ class TextButton {
 
     Update() {
 
-        const mousePos = Input.Mouse.OnMouseMove.GetPosition();
-        this.isSelected = this.isPointerOver(mousePos);
-
-        /*
-
-        // Get the coordinates of the various pointers (mouse, touch)
-        const touchPos = Input.Touch.GetPositions()[0]; // We only care about the first touch
-
-        // Apply hover state (if mouse)
-        if (this.isPointerOver(mousePos)) {
-            this.SetFontColor(this.hoverColor);
-            this.isSelected = true;
-        } else {
-            this.SetFontColor(this.originalFontColor);
-        }
-
-        // Handle Inputs
-        const isConfirmInputEngaged = this.isSelected && (
-            Input.Touch.IsTouching() ||
-            Input.Mouse.GetButton(Input.Mouse.LEFT) ||
-            Input.Keys.GetKey(Input.Keys.ENTER) ||
-            Input.GamePad.A.pressed
-        );
-
-        if (isConfirmInputEngaged) {
-            this.CheckPointerAction(mousePos || touchPos);
-        } else {
-            this.isPushed = false;
-        }
-
-        */
+        const mousePos = INPUT.GetMousePosition();
 
         const fontColor = this.isSelected ? this.hoverColor : this.originalFontColor;
         this.SetFontColor(fontColor);
+
+        if (this.isSelected && INPUT.GetInput(KEY_BINDINGS.CONFIRM)) {
+            this.isPushed = true;
+        }
 
         this.buttonTextWidth = this.buttonText.GetTextWidth();
         const buttonPosition = this.align === 'center' ?

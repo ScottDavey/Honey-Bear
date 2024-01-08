@@ -90,34 +90,18 @@ class Player extends Character {
         const currentGameTime = GameTime.getCurrentGameTime();
 
         // Horizontal Movement (Either keyboard WASD/Arrows |OR| Game Pad D-Pad |OR| Game Pad Sticks)
-        if (
-            Input.Keys.GetKey(Input.Keys.A) ||
-            Input.Keys.GetKey(Input.Keys.LEFT) ||
-            Input.GamePad.LEFT.pressed ||
-            Input.GamePad.AXES.HORIZONTAL < 0
-        ) {
-            this.movement =
-                Input.GamePad.AXES.HORIZONTAL < 0
-                    ? Input.GamePad.AXES.HORIZONTAL
-                    : -1.0;
+        if (INPUT.GetInput(KEY_BINDINGS.MOVE_LEFT)) {
+            this.movement = -1.0;
             this.SetDirection(-1);
-        } else if (
-            Input.Keys.GetKey(Input.Keys.D) ||
-            Input.Keys.GetKey(Input.Keys.RIGHT) ||
-            Input.GamePad.RIGHT.pressed ||
-            Input.GamePad.AXES.HORIZONTAL > 0
-        ) {
-            this.movement =
-                Input.GamePad.AXES.HORIZONTAL > 0
-                    ? Input.GamePad.AXES.HORIZONTAL
-                    : 1.0;
+        } else if (INPUT.GetInput(KEY_BINDINGS.MOVE_RIGHT)) {
+            this.movement = 1.0;
             this.SetDirection(1);
         }
         
-        this.isJumping = Input.Keys.GetKey(Input.Keys.SPACE) || Input.GamePad.A.pressed;
+        this.isJumping = INPUT.GetInput(KEY_BINDINGS.JUMP);
 
         // Abilities
-        if (Input.Keys.GetKey(Input.Keys.ENTER) || Input.GamePad.X.pressed) {
+        if (INPUT.GetInput(KEY_BINDINGS.SHOOT)) {
 
             if (!this.globCooldown || this.globCooldown.IsComplete()) {
                 this.throwStartTime = currentGameTime;
@@ -131,7 +115,7 @@ class Player extends Character {
 
         }
         
-        if (Input.Keys.GetKey(Input.Keys.SHIFT) || Input.GamePad.B.pressed) {
+        if (INPUT.GetInput(KEY_BINDINGS.SPECIAL)) {
 
             if (!this.blastCooldown || this.blastCooldown.IsComplete()) {
                 this.blast = new HoneyBlast(this.GetBounds());

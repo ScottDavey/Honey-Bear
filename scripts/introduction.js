@@ -36,7 +36,9 @@ class Introduction {
         }
 
         // Exit intro early if ESCAPE key is pressed
-        if (Input.Keys.GetKey(Input.Keys.ESCAPE) || Input.Touch.IsTouching()) this.done = true;
+        if (INPUT.GetInput(KEY_BINDINGS.PAUSE)) {
+            this.done = true;
+        }
     };
 
     Draw() {

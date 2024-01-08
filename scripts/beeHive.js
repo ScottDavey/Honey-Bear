@@ -59,9 +59,10 @@ class BeeHive {
             normal: '#000000',
             active: '#F8B61D'
         };
-        this.hintTextRummage = new HintText('E', 'Rummage', new Vector2(this.position.x, this.position.y), new Vector2(4, -40));
+        const hintText = KEY_BINDINGS.INTERACT[INPUT.inputType].name;
+        this.hintTextRummage = new HintText(hintText, 'Rummage', new Vector2(this.position.x, this.position.y), new Vector2(4, -40));
         this.showRummageHint = false;
-        this.hintTextCollect = new HintText('E', 'Collect Honey (+)', new Vector2(this.position.x, this.position.y), new Vector2(4, -40));
+        this.hintTextCollect = new HintText(hintText, 'Collect Honey (+)', new Vector2(this.position.x, this.position.y), new Vector2(4, -40));
         this.showCollectHint = false;
 
         this.LoadBees();

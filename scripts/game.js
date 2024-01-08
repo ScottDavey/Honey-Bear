@@ -14,20 +14,18 @@ class Game {
         this.debugKeyLocked = false;
     }
 
-    initialize() {
+    Initialize() {
         this.state = GAME_STATES.PRIMARY.INTRO;
         this.intro = new Introduction();
         SOUND_MANAGER.Initialize(this.state);
     };
 
-    update() {
+    Update() {
         const isPaused = this.gameMenu.GetIsPaused();
         // Update our Game Time each frame
         GameTime.update();
 
-        if (HAS_GAME_PAD) {
-            Input.GamePad.Update();
-        }
+        INPUT.Update();
 
         // When we switch tabs the frame rate drops enough for the collision to stop working. We'll pause the game until the framerate comes back up
         if (FPS.GetFPS() > 30) {
@@ -55,7 +53,7 @@ class Game {
 
                 case GAME_STATES.PRIMARY.PLAYING:
 
-                    if ((Input.Keys.GetKey(Input.Keys.ESCAPE) || Input.GamePad.START.pressed)) {
+                    if (INPUT.GetInput(KEY_BINDINGS.PAUSE)) {
                         if (!this.isEscapeLocked) {
                             this.isEscapeLocked = true;
                             this.gameMenu.SetIsPaused(!isPaused);
@@ -88,7 +86,7 @@ class Game {
             }
         }
 
-        if (Input.Keys.GetKey(Input.Keys.CONTROL) || Input.GamePad.BACK.pressed) {
+        if (INPUT.GetInput(KEY_BINDINGS.DEBUG)) {
             if (!this.debugKeyLocked) {
                 this.debugKeyLocked = true;
                 DEBUG.SetShowDebug();
@@ -98,11 +96,10 @@ class Game {
         }
 
         DEBUG.Update('FPS', `FPS: ${FPS.GetFPS()}`);
-        DEBUG.Update('INPUT', `Input Type: ${Object.keys(INPUT_TYPES).find(key => INPUT_TYPES[key] === INPUT_TYPE)}`);
 
     };
 
-    draw() {
+    Draw() {
         let state;
 
         // Clear the screen for re-drawing

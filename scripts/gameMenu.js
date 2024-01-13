@@ -172,6 +172,10 @@ class GameMenu {
 
     SetIsPaused(isPaused) {
         this.isPaused = isPaused;
+        
+        if (this.isPaused) {
+            this.InitializeMain();
+        }
     }
 
     GetIsPaused() {

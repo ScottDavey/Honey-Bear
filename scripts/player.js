@@ -34,9 +34,8 @@ class Player extends Character {
         };
         this.sprite = this.animations.idleSprite;
 
-        this.isInputLocked = false;
         this.throwStartTime = 0;
-        this.throwSound = new Sound('sounds/effects/throw.ogg', 'SFX', false, false, 0.2, 0);
+        // this.throwSound = new Sound('sounds/effects/throw.ogg', 'SFX', false, false, 0.2, 0);
         this.globAnimationMaxTime = 0.12;
         this.globs = [];
         this.globCooldown = undefined;
@@ -62,10 +61,6 @@ class Player extends Character {
 
     SetRandomPosition(randomPos) {
         this.SetPosition(randomPos);
-    }
-
-    SetInputLock(isInputLocked) {
-        this.isInputLocked = isInputLocked;
     }
 
     GetHoneyGlobs() {
@@ -110,7 +105,7 @@ class Player extends Character {
                 const globPosX = (this.dir === 1) ? this.position.x + this.size.x - 10 : this.position.x;
                 this.globs.push(new HoneyGlob(new Vector2(globPosX, this.position.y + (this.size.y / 2)), this.dir, this.velocity.x));
                 this.globCooldown = new Timer(currentGameTime, this.globCooldownDuration);
-                this.throwSound.Play();
+                // this.throwSound.Play();
             }
 
         }
@@ -124,10 +119,6 @@ class Player extends Character {
             }
             
         }
-    }
-
-    GetInputLock() {
-        return this.isInputLocked;
     }
 
     // BEHAVIOURS
@@ -221,7 +212,7 @@ class Player extends Character {
     Update() {
         const currentGameTime = GameTime.getCurrentGameTime();
 
-        if (!this.isInputLocked) {
+        if (!INPUT.IsLocked()) {
             this.GetInput();
         } else {
             this.movement = 0;

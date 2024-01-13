@@ -64,6 +64,8 @@ class FPSClass {
         this.fps = 0;
         this.startTime = 0;
         this.frameNumber = 0;
+        this.lowestFrameRate = 500;
+        this.highestFrameRate = 0;
     }
 
     Update() {
@@ -71,16 +73,32 @@ class FPSClass {
         const currentTime = (d - this.startTime) / 1000;
         
         this.frameNumber++;
-        this.fps = (this.frameNumber / currentTime).toFixed(2);
+        this.fps = +(this.frameNumber / currentTime).toFixed(2);
 
         if (currentTime > 1) {
             this.startTime = new Date().getTime();
             this.frameNumber = 0;
         }
+
+        if (this.fps < this.lowestFrameRate && this.fps > 0) {
+            this.lowestFrameRate = this.fps;
+        }
+
+        if (this.fps > this.highestFrameRate && this.fps < 500) {
+            this.highestFrameRate = this.fps;
+        }
     }
 
     GetFPS() {
         return this.fps;
+    }
+
+    GetLowestFPS() {
+        return this.lowestFrameRate;
+    }
+
+    GetHighestFPS() {
+        return this.highestFrameRate;
     }
 
 }

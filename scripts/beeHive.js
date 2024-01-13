@@ -33,8 +33,8 @@ class BeeHive {
         this.isRummaging = false;
         this.rummageProgress = 0;
         this.rummageRate = 30;
-        this.rummageSound = new Sound('sounds/effects/foliage_rustle.ogg', 'SFX', false, false, 0.1, 0);
-        this.rummageSoundTimer = undefined;
+        // this.rummageSound = new Sound('sounds/effects/foliage_rustle.ogg', 'SFX', false, false, 0.1, 0);
+        // this.rummageSoundTimer = undefined;
 
         this.doesPhysicsApply = false;
         this.gravity = 9000;
@@ -59,10 +59,10 @@ class BeeHive {
             normal: '#000000',
             active: '#F8B61D'
         };
-        const hintText = KEY_BINDINGS.INTERACT[INPUT.inputType].name;
-        this.hintTextRummage = new HintText(hintText, 'Rummage', new Vector2(this.position.x, this.position.y), new Vector2(4, -40));
+        const hintKey = KEY_BINDINGS.INTERACT;
+        this.hintTextRummage = new HintText(hintKey, 'Rummage', new Vector2(this.position.x, this.position.y), new Vector2(4, -40));
         this.showRummageHint = false;
-        this.hintTextCollect = new HintText(hintText, 'Collect Honey (+)', new Vector2(this.position.x, this.position.y), new Vector2(4, -40));
+        this.hintTextCollect = new HintText(hintKey, 'Collect Honey (+)', new Vector2(this.position.x, this.position.y), new Vector2(4, -40));
         this.showCollectHint = false;
 
         this.LoadBees();
@@ -200,7 +200,7 @@ class BeeHive {
 
         this.progressBar.Update(this.rummageProgress);
 
-        this.rummageSound.Play();
+        // this.rummageSound.Play();
     }
 
     HandleRummagedSequence() {
@@ -237,7 +237,7 @@ class BeeHive {
         for (let b = 0; b < this.bees.length; b++) {
             const bee = this.bees[b];
 
-            if (bee.GetIsDead()) {
+            if (bee.GetState() === BEE_STATE.DEAD) {
                 this.bees.splice(b, 1);
                 continue;
             }

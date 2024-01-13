@@ -19,9 +19,8 @@ function main() {
     CANVAS.height = CANVAS_HEIGHT;
     CONTEXT = CANVAS.getContext('2d');
 
-    const WRAPPER_DIV = document.getElementById('wrapper')
+    const WRAPPER_DIV = document.getElementById('wrapper');
     WRAPPER_DIV.style.width = `${CANVAS_WIDTH + 4}px`;
-    // WRAPPER_DIV.style.height = `${CANVAS_HEIGHT}px`;
 
     // Event Listeners (Keyboad / Mouse / Gamepad / Touch (phone/tablet))
     window.addEventListener('keyup', e => { INPUT.OnInputEvent(e, 'keyup'); }, false);

@@ -10,7 +10,7 @@ class Game {
         this.mainMenu = undefined;
         this.level = undefined;
         this.gameMenu = new GameMenu();
-        this.isEscapeLocked = false;
+        this.isPauseLocked = false;
         this.debugKeyLocked = false;
     }
 
@@ -54,12 +54,12 @@ class Game {
                 case GAME_STATES.PRIMARY.PLAYING:
 
                     if (INPUT.GetInput(KEY_BINDINGS.PAUSE)) {
-                        if (!this.isEscapeLocked) {
-                            this.isEscapeLocked = true;
+                        if (!this.isPauseLocked) {
+                            this.isPauseLocked = true;
                             this.gameMenu.SetIsPaused(!isPaused);
                         }
                     } else {
-                        this.isEscapeLocked = false;
+                        this.isPauseLocked = false;
                     }
 
                     if (!isPaused) {
@@ -74,7 +74,7 @@ class Game {
 
         }
 
-        if (this.gameMenu.GetIsPaused()) {
+        if (isPaused) {
             this.gameMenu.Update();
 
             if (this.gameMenu.GetState() === GAME_MENU.EXIT) {
@@ -96,6 +96,9 @@ class Game {
         }
 
         DEBUG.Update('FPS', `FPS: ${FPS.GetFPS()}`);
+        DEBUG.Update('FPSLOW', `FPS (Lowest): ${FPS.GetLowestFPS()}`);
+        DEBUG.Update('ISPAUSED', `Is Paused: ${isPaused ? 'YES' : 'NO'}`);
+        DEBUG.Update('PAUSELOCK', `Is Paused Locked: ${this.isPauseLocked ? 'YES' : 'NO'}`);
 
     };
 

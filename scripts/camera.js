@@ -77,41 +77,9 @@ class Camera {
 		const elapsed = GameTime.getElapsed();
 		const currentGameTime = GameTime.getCurrentGameTime();
 
-		/*
-		const distanceX = this.lookat.x - x;
-		const distanceY = this.lookat.y - y;
-
-		// Assume the camera is moving until proven otherwise.
-		this.movementX = (distanceX < 0) ? 1 : -1;
-		this.movementY = (distanceY < 0) ? 1 : -1;
-
-		// If we're in the same position as our x and y, stop moving.
-		if (Math.abs(distanceX) < 10) {
-			this.movementX = 0;
-		}
-		
-		if (Math.abs(distanceY) < 10) {
-			this.movementY = 0;
-		}
-
-		this.velocity.x += this.movementX * this.moveAcceleration;
-		this.velocity.x *= this.friction;
-		this.velocity.x = Clamp(this.velocity.x, -this.maxMoveSpeed, this.maxMoveSpeed);
-		this.velocity.x = (Math.abs(this.velocity.x) < 5) ? 0 : this.velocity.x;
-
-		this.velocity.y += this.movementY * this.moveAcceleration;
-		this.velocity.y *= this.friction;
-		this.velocity.y = Clamp(this.velocity.y, -this.maxMoveSpeed, this.maxMoveSpeed);
-		this.velocity.y = (Math.abs(this.velocity.y) < 5) ? 0 : this.velocity.y;
-
-		this.lookat.x += Math.round(this.velocity.x * elapsed);
-		this.lookat.y += Math.round(this.velocity.y * elapsed);
-
-		*/
-
-		this.lookat.x += (x - this.lookat.x) * 0.05;
+		this.lookat.x += (x - this.lookat.x) * 2 * elapsed;
 		this.lookat.x = (this.lookat.x < 0.5) ? 0 : this.lookat.x;
-		this.lookat.y += (y - this.lookat.y) * 0.05;
+		this.lookat.y += (y - this.lookat.y) * 2 * elapsed;
 		this.lookat.y = (this.lookat.y < 0.5) ? 0 : this.lookat.y;
 
 		if (this.isShaking) {

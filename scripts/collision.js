@@ -64,7 +64,7 @@ class Collision {
             const slope = line.slope;
             const b = line.b;
             const isWithinLineX = (bounds.center.x >= line.startPos.x && bounds.center.x <= line.endPos.x);
-            const isWithinLineY = (bounds.center.y > line.startPos.y && bounds.center.y < line.endPos.y);
+            const isWithinLineY = (bounds.center.y >= line.startPos.y && bounds.center.y <= line.endPos.y);
 
             // CHECK AGAINST WALL COLLISIONS
             if (line.collision === 'WALL' && isWithinLineY) {
@@ -94,7 +94,8 @@ class Collision {
                     if (Math.abs(y - bounds.bottom) <= 15) {
                         y = Math.floor(y);
                         entity.position.y = y - bounds.height;
-                        entity.velocity.y = 0
+
+                        entity.velocity.y = 0;
                         entity.isOnGround = true;
                         entity.groundType = line.sound;
                     }

@@ -55,14 +55,14 @@ class Character {
         this.stunDuration = 1;
 
         // Sound Effects
-        this.walkSounds = {
-            GRASS: new Sound('sounds/effects/WALK_Grass.OGG', 'SFX', false, true, 0.1, 0),
-        };
+        // this.walkSounds = {
+        //     GRASS: new Sound('sounds/effects/WALK_Grass.OGG', 'SFX', false, true, 0.1, 0),
+        // };
     }
 
     UnloadContent() {
-        this.walkSounds.GRASS.Stop();
-        this.walkSounds.GRASS = undefined;
+        // this.walkSounds.GRASS.Stop();
+        // this.walkSounds.GRASS = undefined;
         this.sprite = undefined;
     }
 
@@ -277,6 +277,7 @@ class Character {
 
     }
 
+    /*
     HandleSoundEffects() {
         if (this.isPlayer) {
             const walkSound = this.walkSounds[this.groundType];
@@ -291,6 +292,7 @@ class Character {
             }
         }
     }
+    */
 
     // UPDATE and DRAW
 
@@ -331,7 +333,7 @@ class Character {
                 this.HandleDeath();
             }
 
-            this.HandleSoundEffects();
+            // this.HandleSoundEffects();
         }
     }
 

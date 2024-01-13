@@ -13,7 +13,7 @@ class Bear extends Character {
         this.meleeCooldown = undefined;
         this.meleeCooldownDuration = 5;
 
-        this.maxMoveSpeed = 75.0;
+        this.maxMoveSpeed = 100;
         this.isMoving = true;
 
         // Sprites
@@ -72,11 +72,11 @@ class Bear extends Character {
         this.isTrackingPlayer = isTracking;
 
         if (isTracking) {
-            this.SetMaxMoveSpeed(150.0);
+            this.SetMaxMoveSpeed(150);
             this.runRightSprite.SetSpeed(0.07);
             this.runLeftSprite.SetSpeed(0.07);
         } else {
-            this.SetMaxMoveSpeed(75.0);
+            this.SetMaxMoveSpeed(100);
             this.runRightSprite.SetSpeed(0.5);
             this.runLeftSprite.SetSpeed(0.5);
         }

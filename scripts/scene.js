@@ -115,6 +115,8 @@
         );
 
         // Ability Icons / Cooldowns
+        this.inputType = INPUT.GetInputType();
+
         this.globAbilityIcon = new Sprite('images/level_assets/AbilityIcon_Glob.png', new Vector2(10, 70), new Vector2(31, 31));
         this.globAbilityCooldownOverlay = new Texture(new Vector2(10, 70), new Vector2(31, 31), '#00000088', 1, '#00000088');
         this.globAbilityCooldown = new Text(
@@ -129,6 +131,8 @@
             '#FFFFFF',
             'center'
         );
+        this.honeyGlobKeyIcon = new Sprite(KEY_BINDINGS.SHOOT[this.inputType].path, new Vector2(15, 103), new Vector2(20, 20));
+
         this.blastAbilityIcon = new Sprite('images/level_assets/AbilityIcon_Blast.png', new Vector2(46, 70), new Vector2(31, 31));
         this.BlastAbilityCooldownOverlay = new Texture(new Vector2(46, 70), new Vector2(31, 31), '#00000088', 1, '#00000088');
         this.blastAbilityCooldown = new Text(
@@ -143,6 +147,7 @@
             '#FFFFFF',
             'center'
         );
+        this.honeyBlastKeyIcon = new Sprite(KEY_BINDINGS.SPECIAL[this.inputType].path, new Vector2(51, 103), new Vector2(20, 20));
         
         this.bears = [];
 
@@ -150,14 +155,14 @@
         this.beeHives = [];
 
         // MUSIC
-        this.backgroundMusic = undefined;
-        this.backgroundMusicSources = [
-            { path: 'Seneca.mp3', defaultVolume: 0.4 },
-            { path: 'MUSIC_The-Forgotten_Forest.mp3', defaultVolume: 0.2 },
-            { path: 'BloodOnBlood.mp3', defaultVolume: 0.4 },
-            { path: 'Halloween.mp3', defaultVolume: 0.4 },
-            { path: 'MUSIC_The-Forgotten_Forest.mp3', defaultVolume: 0.2 }
-        ];
+        // this.backgroundMusic = undefined;
+        // this.backgroundMusicSources = [
+        //     { path: 'Seneca.mp3', defaultVolume: 0.4 },
+        //     { path: 'MUSIC_The-Forgotten_Forest.mp3', defaultVolume: 0.2 },
+        //     { path: 'BloodOnBlood.mp3', defaultVolume: 0.4 },
+        //     { path: 'Halloween.mp3', defaultVolume: 0.4 },
+        //     { path: 'MUSIC_The-Forgotten_Forest.mp3', defaultVolume: 0.2 }
+        // ];
 
         // SOUND_MANAGER.Add(
         //     new Sound(
@@ -172,8 +177,8 @@
         // );
 
         // Sounds Effects
-        this.birds = undefined;
-        this.honeyGlobHitSound = new Sound('sounds/effects/splat.ogg', 'SFX', false, false, 0.2, 0);
+        // this.birds = undefined;
+        // this.honeyGlobHitSound = new Sound('sounds/effects/splat.ogg', 'SFX', false, false, 0.2, 0);
 
         this.caveFront = new Sprite('images/backgrounds/FOREST_CAVE-FRONT.png', new Vector2(0, 0), new Vector2(123, 648));
         this.twilightExit = new Texture(
@@ -244,33 +249,33 @@
         });
 
         // LOAD SONG
-        const backgroundMusicChoice = this.backgroundMusicSources[this.selectedLevel];
-        this.backgroundMusic = new Sound(
-            `sounds/music/${backgroundMusicChoice.path}`,
-            'MUSIC',
-            false,
-            true,
-            backgroundMusicChoice.defaultVolume,
-            1.0
-        );
+        // const backgroundMusicChoice = this.backgroundMusicSources[this.selectedLevel];
+        // this.backgroundMusic = new Sound(
+        //     `sounds/music/${backgroundMusicChoice.path}`,
+        //     'MUSIC',
+        //     false,
+        //     true,
+        //     backgroundMusicChoice.defaultVolume,
+        //     1.0
+        // );
         // this.backgroundMusic.Play();
 
-        if (+this.selectedLevel === 0) {
-            this.birds = new Sound('sounds/effects/birds.ogg', 'SFX', false, true, 0.2, 1.5);
-            this.birds.Play();
-        }
+        // if (+this.selectedLevel === 0) {
+        //     this.birds = new Sound('sounds/effects/birds.ogg', 'SFX', false, true, 0.2, 1.5);
+        //     this.birds.Play();
+        // }
 
         return true;
     }
 
     UnloadContent() {
-        if (this.backgroundMusic) {
-            this.backgroundMusic.Stop();
-        }
+        // if (this.backgroundMusic) {
+        //     this.backgroundMusic.Stop();
+        // }
 
-        if (this.birds) {
-            this.birds.Stop();
-        }
+        // if (this.birds) {
+        //     this.birds.Stop();
+        // }
         
         this.player.UnloadContent();
         
@@ -316,7 +321,7 @@
 
                 if (this.collision.CheckBoxCollision(globBounds, bossBounds)) {
                     this.boss.DoDamage(globDamage);
-                    this.honeyGlobHitSound.Play();
+                    // this.honeyGlobHitSound.Play();
                     this.camera.shake(0.3);
                     glob.SetHasHit(true);
 
@@ -337,7 +342,7 @@
 
                         if (this.collision.CheckBoxCollision(globBounds, bearBounds)) {
                             bear.DoDamage(globDamage);
-                            this.honeyGlobHitSound.Play();
+                            // this.honeyGlobHitSound.Play();
                             this.camera.shake(globDamage.isCrit ? 0.3 : 0.1);
                             glob.SetHasHit(true);
 
@@ -388,7 +393,7 @@
 
                     const beeBounds = bee.GetBounds();
 
-                    if (bee.GetIsAggressive() && !bee.GetIsDead() && this.collision.CheckBoxToRadius(beeBounds, blastCircle)) {
+                    if (bee.GetState() === BEE_STATE.AGGRESSIVE && this.collision.CheckBoxToRadius(beeBounds, blastCircle)) {
                         bee.DoDamage(blastDamage);
                     }
 
@@ -439,7 +444,7 @@
 
                     for (const hive of this.beeHives) {
                         for (const bee of hive.GetBees()) {
-                            const isAggressive = bee.GetIsAggressive();
+                            const isAggressive = bee.GetState() === BEE_STATE.AGGRESSIVE;
 
                             if (isAggressive) {
                                 bee.Reset();
@@ -505,12 +510,17 @@
         }
     }
 
-    CheckBeeAggression(bees) {
-
+    CheckBees(bees) {
         for (const bee of bees) {
 
+            // Sting player if the bees are stining
             if (bee.IsStinging() && !this.player.GetIsDead()) {
                 this.player.DoDamage(bee.GetDamage(), true);
+            }
+
+            // If the bees are dying, check collision
+            if (bee.GetState() === BEE_STATE.DYING) {
+                this.collision.CheckLineCollisionEntity(bee)
             }
         }
     }
@@ -518,15 +528,15 @@
     FadeOutSound() {
         const currentGameTime = GameTime.getCurrentGameTime();
 
-        if (this.backgroundMusic && this.backgroundMusic.FadeOut(currentGameTime)) {
-            this.backgroundMusic.Stop();
-            this.backgroundMusic = undefined;
-        }
+        // if (this.backgroundMusic && this.backgroundMusic.FadeOut(currentGameTime)) {
+        //     this.backgroundMusic.Stop();
+        //     this.backgroundMusic = undefined;
+        // }
 
-        if (this.birds && this.birds.FadeOut(currentGameTime)) {
-            this.birds.Stop();
-            this.birds = undefined;
-        }
+        // if (this.birds && this.birds.FadeOut(currentGameTime)) {
+        //     this.birds.Stop();
+        //     this.birds = undefined;
+        // }
     }
 
     UpdateCamera() {
@@ -574,7 +584,7 @@
         ****************************/
         if (!this.intoTransition.IsComplete()) {
             this.intoTransition.update(currentGameTime);
-            this.player.SetInputLock(true);
+            INPUT.SetLocked(true);
             return;
         }
 
@@ -582,7 +592,7 @@
         *****  PLAYER DEAD  *****
         ************************/
         if (this.player.GetIsDead()) {
-            this.player.SetInputLock(true);
+            INPUT.SetLocked(true);
             this.showDeathText = true;
 
             if (this.player.GetIsDeathDone()) {
@@ -594,8 +604,8 @@
         *****  GAME PLAY  *****
         **********************/
 
-        if (this.player.GetInputLock() && !this.isLevelEndSequence && !this.player.GetIsDead()) {
-            this.player.SetInputLock(false);
+        if (INPUT.IsLocked() && !this.isLevelEndSequence && !this.player.GetIsDead()) {
+            INPUT.SetLocked(false);
         }
 
         if (INPUT.GetInput(KEY_BINDINGS.RANDOM_POSITION)) {
@@ -684,7 +694,7 @@
                     beeHive.SetGroundState();
                 }
 
-                this.player.SetInputLock(false);
+                INPUT.SetLocked(false);
 
                 beeHive.Interact(INPUT.GetInput(KEY_BINDINGS.INTERACT));
                 
@@ -692,14 +702,13 @@
                     this.player.Heal(beeHive.GetHoneyPrize());
                 }
 
-                // Check if Bees are aggressive and within range. If so, do damage to the player
-                this.CheckBeeAggression(beeHive.GetBees());
+                this.CheckBees(beeHive.GetBees());
             }
 
             // EXIT
             if (this.collision.CheckBoxCollision(this.player.GetBounds(), this.exit)) {
                 this.isLevelEndSequence = true;
-                this.player.SetInputLock(true);
+                INPUT.SetLocked(true);
 
                 if (!this.exitTransition) {
                     const exitTransitionPosition = new Vector2(
@@ -717,6 +726,14 @@
                 }
             }
 
+        }
+
+        // Update our ability icons if our input source changes
+        if (this.inputType !== INPUT.GetInputType()) {
+            this.inputType = INPUT.GetInputType();
+
+            this.honeyGlobKeyIcon.SetImage(KEY_BINDINGS.SHOOT[this.inputType].path);
+            this.honeyBlastKeyIcon.SetImage(KEY_BINDINGS.SPECIAL[this.inputType].path);
         }
 
         DEBUG.Update('PLAYER', `Position X: ${this.player.GetPosition().x}`);
@@ -802,12 +819,14 @@
             this.globAbilityCooldownOverlay.Draw();
             this.globAbilityCooldown.Draw();
         }
+        this.honeyGlobKeyIcon.Draw();
         
         this.blastAbilityIcon.Draw();
         if (+this.player.GetHoneyBlastCooldown() > 0) {
             this.BlastAbilityCooldownOverlay.Draw();
             this.blastAbilityCooldown.Draw();
         }
+        this.honeyBlastKeyIcon.Draw();
 
         // Fade IN
         if (!this.intoTransition.IsComplete()) {

@@ -24,7 +24,7 @@ class SoundManager {
         this.isSFXOn = true;
         this.music = [];
         this.effects = [];
-        this.workingSounds = [];    // List of sounds currently in use
+        this.sounds = [];    // List of sounds currently in use
         this.gameState = undefined;
         this.gameSubState = undefined;
         this.muteAll = false;
@@ -76,8 +76,8 @@ class SoundManager {
         this.gameState = state;
     }
 
-    Add() {
-
+    Add(type, soundName) {
+        
     }
 
     Remove() {

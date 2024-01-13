@@ -101,7 +101,7 @@ class TreeMonster extends Character {
         }
 
         // Every 0.25 seconds, release an acorn
-        if (+(timeSincelastAcornDrop.toFixed(2)) === 0.25) {
+        if (+(timeSincelastAcornDrop.toFixed(2)) === 0.15) {
             this.previousAcornDropTime = currentGameTime;
 
             const position = new Vector2(random(this.worldBounds.x, this.worldBounds.x + CANVAS_WIDTH), -100);
@@ -117,7 +117,7 @@ class TreeMonster extends Character {
 
     BranchSmash() {
 
-        if (this.attackTimer.GetRemainder(1) === 2) {
+        if (this.attackTimer.GetRemainder(1) === 4) {
             const branchSmashHeight = this.size.y / 2;
             const branchSmashPosition = new Vector2(
                 this.bounds.center.x - (this.dir < 0 ? 300 : 0),

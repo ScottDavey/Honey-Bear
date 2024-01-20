@@ -55,9 +55,8 @@ class Collision {
     CheckLineCollisionEntity(entity) {
         const isMovingUp = entity.velocity.y < 0;
         const bounds = entity.GetBounds();
-
-        entity.isOnGround = false;
-        entity.isHittingWall = false;
+        let isOnGround = false;
+        let isHittingWall = false;
 
         // Lines
         for (const line of this.lines) {
@@ -77,7 +76,7 @@ class Collision {
                             ? line.startPos.x - bounds.width
                             : line.startPos.x;
                     entity.velocity.x = 0;
-                    entity.isHittingWall = true;
+                    isHittingWall = true;
                 }
 
             }
@@ -90,13 +89,13 @@ class Collision {
                 // FLOOR
                 if (line.collision === 'FLOOR' && !isMovingUp) {
 
-                    // If the bottom of the player is less than 10 pixels below the line, shoot him back up
+                    // If the bottom of the player is less than 15 pixels below the line, shoot him back up
                     if (Math.abs(y - bounds.bottom) <= 15) {
                         y = Math.floor(y);
                         entity.position.y = y - bounds.height;
 
                         entity.velocity.y = 0;
-                        entity.isOnGround = true;
+                        isOnGround = true;
                         entity.groundType = line.sound;
                     }
 
@@ -114,6 +113,22 @@ class Collision {
 
             }
         }
+
+        // Coyote time (for late jumps)
+        //  If the entity was on the ground before this function was called, and is now not on the ground
+        //  set variables to track that it was on the ground, and the timestamp.
+        if (entity.isOnGround && !isOnGround && !entity.wasOnGround) {
+            entity.wasOnGround = true;
+            entity.lastGroundTime = GameTime.getCurrentGameTime();
+        }
+
+        if (isOnGround) {
+            entity.wasOnGround = false;
+            entity.lastGroundTime = 0;
+        }
+
+        entity.isOnGround = isOnGround;
+        entity.isHittingWall = isHittingWall;
     }
 
     CheckLineCollisionRect(rectBounds) {

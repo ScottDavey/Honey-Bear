@@ -36,6 +36,9 @@ class Character {
         this.maxFallSpeed = 1000;
         this.jumpBurst = -900;
         this.isOnGround = false;
+        this.wasOnGround = false;
+        this.lastGroundTime = 0;
+        this.lateJumpMaxTime = 0.08;
         this.groundType = undefined;
         this.isJumping = false;
         this.maxJumpTime = 0.1;
@@ -242,7 +245,16 @@ class Character {
         const elapsed = GameTime.getElapsed();
 
         if (this.isJumping) {
-            if (this.isOnGround && this.jumpTime < this.maxJumpTime) {
+            // If character is on the ground or was recently on the ground (coyote time), and hasn't exceeded the jump time
+            if (
+                (
+                    this.isOnGround ||
+                    (this.wasOnGround && GameTime.getCurrentGameTime() - this.lastGroundTime <= this.lateJumpMaxTime)
+                ) &&
+                this.jumpTime < this.maxJumpTime
+            ) {
+                this.wasOnGround = false;
+                this.lastGroundTime = 0;
                 velY = this.jumpBurst;
             }
             this.jumpTime += elapsed;

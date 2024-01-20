@@ -271,6 +271,9 @@ class Player extends Character {
         if (this.blastCooldown && this.blastCooldown.IsComplete()) {
             this.blastCooldown = undefined;
         }
+
+        DEBUG.Update('WAS', `Was On Ground: ${this.wasOnGround}`);
+        DEBUG.Update('LAST', `Last Ground Time: ${this.lastGroundTime}`);
         
         super.Update();
     }

@@ -49,6 +49,7 @@ class Bee {
         this.aggressiveVolume = 0.3;
         this.stingDamage = random(5, 10);
         this.stingCooldownDuration = 2;
+
         this.stingDelay = +((this.stingCooldownDuration * (random(1, 100) / 100)).toFixed(1));
         this.isStinging = false;
         this.stingCooldown = undefined;

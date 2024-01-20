@@ -13,20 +13,37 @@ class Bear extends Character {
         this.meleeCooldown = undefined;
         this.meleeCooldownDuration = 5;
 
-        this.maxMoveSpeed = 100;
+        this.maxMoveSpeed = 75;
         this.isMoving = true;
 
         // Sprites
-        const spritesheet = 'images/spritesheets/Adventurer-1.5/adventurer-spritesheet.png';
-        this.runRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 6, 0, 0.15, 1, new Vector2(26, 7));
-        this.runLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 6, 1, 0.15, 1, new Vector2(26, 7));
-        this.idleRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 4, 2, 0.3, 1, new Vector2(26, 7));
-        this.idleLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 4, 3, 0.3, 1, new Vector2(26, 7));
-        this.jumpLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 4, 4, 0.25, 1, new Vector2(26, 7));
-        this.jumpRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 4, 5, 0.25, 1, new Vector2(26, 7));
-        this.fallLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 2, 6, 0.25, 1, new Vector2(26, 7));
-        this.fallRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 2, 7, 0.25, 1, new Vector2(26, 7));
-        this.sprite = this.idleSprite;
+        // const spritesheet = 'images/spritesheets/Adventurer-1.5/adventurer-spritesheet.png';
+        // this.runRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 6, 0, 0.15, 1, new Vector2(26, 7));
+        // this.runLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 6, 1, 0.15, 1, new Vector2(26, 7));
+        // this.idleRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 4, 2, 0.3, 1, new Vector2(26, 7));
+        // this.idleLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 4, 3, 0.3, 1, new Vector2(26, 7));
+        // this.jumpLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 4, 4, 0.25, 1, new Vector2(26, 7));
+        // this.jumpRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 4, 5, 0.25, 1, new Vector2(26, 7));
+        // this.fallLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 2, 6, 0.25, 1, new Vector2(26, 7));
+        // this.fallRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 2, 7, 0.25, 1, new Vector2(26, 7));
+        
+        const spritesheet = 'images/spritesheets/Bear.png';
+        this.runRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 0, 0.2, true, new Vector2(0, 0)),
+        this.runLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 1, 0.2, true, new Vector2(0, 0)),
+        this.idleRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 4, 2, 0.25, true, new Vector2(0, 0)),
+        this.idleLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 4, 3, 0.25, true, new Vector2(0, 0)),
+        this.jumpRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 2, 4, 0.2, false, new Vector2(0, 0)),
+        this.jumpLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 2, 5, 0.2, false, new Vector2(0, 0)),
+        this.fallRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 1, 6, 0.08, false, new Vector2(0, 0)),
+        this.fallLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 1, 7, 0.08, false, new Vector2(0, 0)),
+        // this.idleThrowRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 8, 0.02, false, new Vector2(0, 0)),
+        // this.idleThrowLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 9, 0.02, false, new Vector2(0, 0)),
+        // this.runThrowRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 10, 0.2, false, new Vector2(0, 0)),
+        // this.runThrowLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 11, 0.2, false, new Vector2(0, 0)),
+        this.deadRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 12, 0.05, false, new Vector2(0, 0)),
+        this.deadLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 13, 0.05, false, new Vector2(0, 0)),
+        
+        this.sprite = this.idleRightSprite;
     }
 
     Reset() {
@@ -65,7 +82,9 @@ class Bear extends Character {
     }
 
     SwitchDirections() {
-        this.dir = (this.dir === 1) ? -1 : 1;
+        if (!this.isDead){
+            this.dir = (this.dir === 1) ? -1 : 1;
+        }
     }
 
     TrackPlayer(isTracking) {
@@ -98,7 +117,7 @@ class Bear extends Character {
 
     HandleAnimations() {
         if (this.isDead) {
-            this.sprite = (this.dir === 1) ? this.idleRightSprite : this.idleLeftSprite;
+            this.sprite = (this.dir === 1) ? this.deadRightSprite : this.deadLeftSprite;
         } else if (this.isJumping) {
             this.sprite = (this.dir === 1) ? this.jumpRightSprite : this.jumpLeftSprite;
         } else if (!this.isOnGround) {

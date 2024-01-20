@@ -181,6 +181,7 @@
         // this.honeyGlobHitSound = new Sound('sounds/effects/splat.ogg', 'SFX', false, false, 0.2, 0);
 
         this.caveFront = new Sprite('images/backgrounds/FOREST_CAVE-FRONT.png', new Vector2(0, 0), new Vector2(123, 648));
+        this.forestForegroundFront = new Sprite('images/backgrounds/Forest_Foreground_Fronts.png', new Vector2(0, 0), new Vector2(10000, 648));
         this.twilightExit = new Texture(
             new Vector2(5877, 458),
             new Vector2(123, 170),
@@ -451,9 +452,11 @@
                             }
                         }
                     }
-                } else if (gen.name === 'PIT' && playerBounds.top >= gen.bounds.top) {
-                    this.player.DoDamage({ amount: this.player.GetCurrentHealth(), isCrit: false }, true);
                 }
+                
+                /*else if (gen.name === 'PIT' && playerBounds.top >= gen.bounds.top) {
+                    this.player.DoDamage({ amount: this.player.GetCurrentHealth(), isCrit: false }, true);
+                }*/
 
             }
 
@@ -630,6 +633,10 @@
         // Update Cooldown Text
         this.globAbilityCooldown.SetString(`${this.player.GetHoneyGlobCooldown() || ''}`);
         this.blastAbilityCooldown.SetString(`${this.player.GetHoneyBlastCooldown() || ''}`);
+        // Check if the player fell into a pit
+        if (this.player.GetBounds().top > this.worldHeight) {
+            this.player.DoDamage({ amount: this.player.GetCurrentHealth(), isCrit: true });
+        }
 
         // Check for Pitfalls
         this.CheckEntityPitfallCollision();
@@ -756,6 +763,7 @@
 
     Draw() {
         const cameraPos = this.camera.getlookat();
+        const cameraPlusCanvas = new Vector2(cameraPos.x + CANVAS_WIDTH, cameraPos.y + CANVAS_HEIGHT);
 
         this.camera.begin();
 
@@ -765,8 +773,11 @@
             this.collision.DrawCollisionLines(cameraPos);
         }
 
-        if (+this.selectedLevel === 0) {
-            this.exitLogBack.Draw();
+        if (+this.selectedLevel === 1) {
+            const exitLogPositionX = this.exitLogBack.GetPosition().x;
+            if (exitLogPositionX > cameraPos.x && exitLogPositionX < cameraPlusCanvas.x) {
+                this.exitLogBack.Draw();
+            }
         }
 
         if (this.isBossSequence) {
@@ -777,14 +788,19 @@
             // Bee Hive - before rummaged draw order
             for (const beeHive of this.beeHives) {
                 if (beeHive.GetDrawOrder() === 0) {
-                    beeHive.Draw();
+                    const beeHive0PositionX = beeHive.GetPosition().x;
+                    
+                    if (beeHive0PositionX > cameraPos.x && beeHive0PositionX < cameraPlusCanvas.x) {
+                        beeHive.Draw();
+                    }
                 }
             }
-        }
-
-        if (!this.isBossSequence) {
+        
             for (const bear of this.bears) {
-                bear.Draw();
+                const bearPositionX = bear.GetPosition().x;
+                if (bearPositionX > cameraPos.x && bearPositionX < cameraPlusCanvas.x) {
+                    bear.Draw();
+                }
             }
         }
 
@@ -794,15 +810,21 @@
             // Bee Hive - after rummaged draw order
             for (const beeHive of this.beeHives) {
                 if (beeHive.GetDrawOrder() === 1) {
-                    beeHive.Draw();
+                    const beeHive1PositionX = beeHive.GetPosition().x;
+                    
+                    if (beeHive1PositionX > cameraPos.x && beeHive1PositionX < cameraPlusCanvas.x) {
+                        beeHive.Draw();
+                    }
                 }
             }
         }
         
         if (+this.selectedLevel === 0) {
+            this.forestForegroundFront.Draw();
+        } else if (+this.selectedLevel === 1) {
             this.caveFront.Draw();
             this.exitLogFront.Draw();
-        } else if (+this.selectedLevel === 1) {
+        } else if (+this.selectedLevel === 2) {
             this.twilightExit.Draw();
         }
 

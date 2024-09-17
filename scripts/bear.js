@@ -16,17 +16,7 @@ class Bear extends Character {
         this.maxMoveSpeed = 75;
         this.isMoving = true;
 
-        // Sprites
-        // const spritesheet = 'images/spritesheets/Adventurer-1.5/adventurer-spritesheet.png';
-        // this.runRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 6, 0, 0.15, 1, new Vector2(26, 7));
-        // this.runLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 6, 1, 0.15, 1, new Vector2(26, 7));
-        // this.idleRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 4, 2, 0.3, 1, new Vector2(26, 7));
-        // this.idleLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 4, 3, 0.3, 1, new Vector2(26, 7));
-        // this.jumpLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 4, 4, 0.25, 1, new Vector2(26, 7));
-        // this.jumpRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 4, 5, 0.25, 1, new Vector2(26, 7));
-        // this.fallLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 2, 6, 0.25, 1, new Vector2(26, 7));
-        // this.fallRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 2, 7, 0.25, 1, new Vector2(26, 7));
-        
+        // Sprites        
         const spritesheet = 'images/spritesheets/Bear.png';
         this.runRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 0, 0.2, true, new Vector2(0, 0)),
         this.runLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 1, 0.2, true, new Vector2(0, 0)),
@@ -36,10 +26,6 @@ class Bear extends Character {
         this.jumpLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 2, 5, 0.2, false, new Vector2(0, 0)),
         this.fallRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 1, 6, 0.08, false, new Vector2(0, 0)),
         this.fallLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 1, 7, 0.08, false, new Vector2(0, 0)),
-        // this.idleThrowRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 8, 0.02, false, new Vector2(0, 0)),
-        // this.idleThrowLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 9, 0.02, false, new Vector2(0, 0)),
-        // this.runThrowRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 10, 0.2, false, new Vector2(0, 0)),
-        // this.runThrowLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 11, 0.2, false, new Vector2(0, 0)),
         this.deadRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 12, 0.05, false, new Vector2(0, 0)),
         this.deadLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 13, 0.05, false, new Vector2(0, 0)),
         
@@ -96,8 +82,8 @@ class Bear extends Character {
             this.runLeftSprite.SetSpeed(0.07);
         } else {
             this.SetMaxMoveSpeed(100);
-            this.runRightSprite.SetSpeed(0.5);
-            this.runLeftSprite.SetSpeed(0.5);
+            this.runRightSprite.SetSpeed(0.3);
+            this.runLeftSprite.SetSpeed(0.3);
         }
     }
 
@@ -116,6 +102,8 @@ class Bear extends Character {
     }
 
     HandleAnimations() {
+        let isRunning = false;
+
         if (this.isDead) {
             this.sprite = (this.dir === 1) ? this.deadRightSprite : this.deadLeftSprite;
         } else if (this.isJumping) {
@@ -124,8 +112,26 @@ class Bear extends Character {
             this.sprite = (this.dir === 1) ? this.fallRightSprite : this.fallLeftSprite;
         } else if (this.movement !== 0) {
             this.sprite = (this.dir === 1) ? this.runRightSprite : this.runLeftSprite;
+            isRunning = true;
         } else {
             this.sprite = (this.dir === 1) ? this.idleRightSprite : this.idleLeftSprite;
+        }
+
+        // If we're running, set the run animation speed by the velocity
+        if (isRunning) {
+            const velocityX = Math.abs(this.velocity.x);
+            let animationSpeed;
+            if (velocityX < 50) {
+                animationSpeed = 0.5;
+            } else if (velocityX < 150) {
+                animationSpeed = 0.1;
+            } else if (velocityX < 250) {
+                animationSpeed = 0.08;
+            } else {
+                animationSpeed = this.defaultRunAnimationSpeed;
+            }
+
+            this.sprite.SetSpeed(animationSpeed);
         }
     }
 

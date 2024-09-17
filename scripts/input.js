@@ -150,12 +150,18 @@ class Input {
                 const bindingByType = KEY_BINDINGS[binding][this.inputType];
                 if (code === bindingByType.value) {
                     // If we're pressing the key, set to true. Otherwise, false
-                    this.inputs[bindingByType.name] = type === 'keydown' || type === 'gamepadbuttondown';
+                    this.inputs[bindingByType.name] = (type === 'keydown' || type === 'gamepadbuttondown') ? 1.0 : 0;
                     break;
                 }
 
             }
 
+        }
+        
+        if (type === 'gamepadthumbstickhorizontal') {
+            const thumbstickDirection = +e.value > 0 ? 'MOVE_RIGHT' : 'MOVE_LEFT';
+            
+            this.inputs[KEY_BINDINGS[thumbstickDirection].GAMEPAD.name] = Math.abs(e.value);
         }
 
         if (type === 'mousemove') {
@@ -173,7 +179,7 @@ class Input {
             if (this.inputType !== INPUT_TYPE.KEYBOARD) {
                 this.SwitchInputType(INPUT_TYPE.KEYBOARD);
             }
-        } else if (type === 'gamepadbuttondown') {
+        } else if (type === 'gamepadbuttondown' || type === 'gamepadthumbstickhorizontal' || type === 'gamepadthumbstickvertical') {
             if (this.inputType !== INPUT_TYPE.GAMEPAD) {
                 this.SwitchInputType(INPUT_TYPE.GAMEPAD);
             }
@@ -215,11 +221,11 @@ class Input {
             const leftThumbstickVertical = +this.gamePad.axes[1].toFixed(2);
 
             if (Math.abs(leftThumbstickHorizontal) > 0.05) {
-                this.OnInputEvent({ index: 0, value: leftThumbstickHorizontal }, 'gamepadthumbstickhorizontal');
+                this.OnInputEvent({ keyCode: 0, value: leftThumbstickHorizontal }, 'gamepadthumbstickhorizontal');
             }
             
             if (Math.abs(leftThumbstickVertical) > 0.05) {
-                this.OnInputEvent({ index: 1, value: leftThumbstickVertical }, 'gamepadthumbstickvertical');
+                this.OnInputEvent({ keyCode: 1, value: leftThumbstickVertical }, 'gamepadthumbstickvertical');
             }
 
         }

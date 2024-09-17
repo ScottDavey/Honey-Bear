@@ -33,8 +33,8 @@ class BeeHive {
         this.isRummaging = false;
         this.rummageProgress = 0;
         this.rummageRate = 30;
-        // this.rummageSound = new Sound('sounds/effects/foliage_rustle.ogg', 'SFX', false, false, 0.1, 0);
-        // this.rummageSoundTimer = undefined;
+        this.rummageSound = new Sound('sounds/effects/foliage_rustle.ogg', 'SFX', false, false, 0.1, 0);
+        this.rummageSoundTimer = undefined;
 
         this.doesPhysicsApply = false;
         this.gravity = 9000;
@@ -200,7 +200,7 @@ class BeeHive {
 
         this.progressBar.Update(this.rummageProgress);
 
-        // this.rummageSound.Play();
+        this.rummageSound.Play();
     }
 
     HandleRummagedSequence() {

@@ -58,14 +58,16 @@ class Character {
         this.stunDuration = 1;
 
         // Sound Effects
-        // this.walkSounds = {
-        //     GRASS: new Sound('sounds/effects/WALK_Grass.OGG', 'SFX', false, true, 0.1, 0),
-        // };
+        this.walkSounds = {
+            GRASS: new Sound('sounds/effects/WALK_Grass.OGG', 'SFX', false, true, 0.5, 0),
+        };
     }
 
     UnloadContent() {
-        // this.walkSounds.GRASS.Stop();
-        // this.walkSounds.GRASS = undefined;
+        if (this.walkSounds) {
+            // this.walkSounds.GRASS.Stop();
+            this.walkSounds.GRASS = undefined;
+        }
         this.sprite = undefined;
     }
 
@@ -85,7 +87,6 @@ class Character {
 
     SetSize(size) {
         this.size = size;
-        // this.healthBar.SetSize(new Vector2(size.x, 3));
     }
 
     SetMaxMoveSpeed(speed) {
@@ -212,14 +213,15 @@ class Character {
 
     ApplyPhysics() {
         const elapsed = GameTime.getElapsed();
+        const dynamicMaxMoveSpeed = Math.abs(this.movement * this.maxMoveSpeed);
 
         // Horizontal Movement
-        this.velocity.x += this.movement * this.moveAcceleration;
+        this.velocity.x += Math.round(this.movement) * this.moveAcceleration;
         this.velocity.x *= this.friction;
         this.velocity.x = Clamp(
             this.velocity.x,
-            -this.maxMoveSpeed,
-            this.maxMoveSpeed
+            -dynamicMaxMoveSpeed,
+            dynamicMaxMoveSpeed
         );
         // Check if being knocked back
         this.velocity.x = (this.velocity.x < 5 && this.velocity.x > -5) ? 0 : this.velocity.x;
@@ -289,14 +291,16 @@ class Character {
 
     }
 
-    /*
     HandleSoundEffects() {
         if (this.isPlayer) {
             const walkSound = this.walkSounds[this.groundType];
 
+            DEBUG.Update('WALK SOUND:', `WALK SOUND OFF: ${this.groundType}`);
+
             // WALK
             if (walkSound) {
                 if (this.isOnGround && Math.abs(this.velocity.x) > 0) {
+                    DEBUG.Update('WALK SOUND:', 'WALK SOUND ON');
                     this.walkSounds[this.groundType].Play();
                 } else {
                     this.walkSounds[this.groundType].Stop();
@@ -304,7 +308,6 @@ class Character {
             }
         }
     }
-    */
 
     // UPDATE and DRAW
 
@@ -345,7 +348,7 @@ class Character {
                 this.HandleDeath();
             }
 
-            // this.HandleSoundEffects();
+            this.HandleSoundEffects();
         }
     }
 

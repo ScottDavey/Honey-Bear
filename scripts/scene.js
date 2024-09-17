@@ -155,14 +155,14 @@
         this.beeHives = [];
 
         // MUSIC
-        // this.backgroundMusic = undefined;
-        // this.backgroundMusicSources = [
-        //     { path: 'Seneca.mp3', defaultVolume: 0.4 },
-        //     { path: 'MUSIC_The-Forgotten_Forest.mp3', defaultVolume: 0.2 },
-        //     { path: 'BloodOnBlood.mp3', defaultVolume: 0.4 },
-        //     { path: 'Halloween.mp3', defaultVolume: 0.4 },
-        //     { path: 'MUSIC_The-Forgotten_Forest.mp3', defaultVolume: 0.2 }
-        // ];
+        this.backgroundMusic = undefined;
+        this.backgroundMusicSources = [
+            { path: 'Seneca.mp3', defaultVolume: 0.4 },
+            { path: 'BloodOnBlood.mp3', defaultVolume: 0.4 },
+            { path: 'MUSIC_The-Forgotten_Forest.mp3', defaultVolume: 0.2 },
+            { path: 'Halloween.mp3', defaultVolume: 0.4 },
+            { path: 'MUSIC_The-Forgotten_Forest.mp3', defaultVolume: 0.2 }
+        ];
 
         // SOUND_MANAGER.Add(
         //     new Sound(
@@ -177,10 +177,10 @@
         // );
 
         // Sounds Effects
-        // this.birds = undefined;
-        // this.honeyGlobHitSound = new Sound('sounds/effects/splat.ogg', 'SFX', false, false, 0.2, 0);
+        this.birds = undefined;
+        this.honeyGlobHitSound = new Sound('sounds/effects/splat.ogg', 'SFX', false, false, 0.2, 0);
 
-        this.caveFront = new Sprite('images/backgrounds/FOREST_CAVE-FRONT.png', new Vector2(0, 0), new Vector2(123, 648));
+        // this.caveFront = new Sprite('images/backgrounds/FOREST_CAVE-FRONT.png', new Vector2(0, 0), new Vector2(123, 648));
         this.forestForegroundFront = new Sprite('images/backgrounds/Forest_Foreground_Fronts.png', new Vector2(0, 0), new Vector2(10000, 648));
         this.twilightExit = new Texture(
             new Vector2(5877, 458),
@@ -250,33 +250,33 @@
         });
 
         // LOAD SONG
-        // const backgroundMusicChoice = this.backgroundMusicSources[this.selectedLevel];
-        // this.backgroundMusic = new Sound(
-        //     `sounds/music/${backgroundMusicChoice.path}`,
-        //     'MUSIC',
-        //     false,
-        //     true,
-        //     backgroundMusicChoice.defaultVolume,
-        //     1.0
-        // );
-        // this.backgroundMusic.Play();
+        const backgroundMusicChoice = this.backgroundMusicSources[this.selectedLevel];
+        this.backgroundMusic = new Sound(
+            `sounds/music/${backgroundMusicChoice.path}`,
+            'MUSIC',
+            false,
+            true,
+            backgroundMusicChoice.defaultVolume,
+            1.0
+        );
+        this.backgroundMusic.Play();
 
-        // if (+this.selectedLevel === 0) {
-        //     this.birds = new Sound('sounds/effects/birds.ogg', 'SFX', false, true, 0.2, 1.5);
-        //     this.birds.Play();
-        // }
+        if (+this.selectedLevel === 0) {
+            this.birds = new Sound('sounds/effects/birds.ogg', 'SFX', false, true, 0.2, 1.5);
+            this.birds.Play();
+        }
 
         return true;
     }
 
     UnloadContent() {
-        // if (this.backgroundMusic) {
-        //     this.backgroundMusic.Stop();
-        // }
+        if (this.backgroundMusic) {
+            this.backgroundMusic.Stop();
+        }
 
-        // if (this.birds) {
-        //     this.birds.Stop();
-        // }
+        if (this.birds) {
+            this.birds.Stop();
+        }
         
         this.player.UnloadContent();
         
@@ -322,7 +322,7 @@
 
                 if (this.collision.CheckBoxCollision(globBounds, bossBounds)) {
                     this.boss.DoDamage(globDamage);
-                    // this.honeyGlobHitSound.Play();
+                    this.honeyGlobHitSound.Play();
                     this.camera.shake(0.3);
                     glob.SetHasHit(true);
 
@@ -343,7 +343,7 @@
 
                         if (this.collision.CheckBoxCollision(globBounds, bearBounds)) {
                             bear.DoDamage(globDamage);
-                            // this.honeyGlobHitSound.Play();
+                            this.honeyGlobHitSound.Play();
                             this.camera.shake(globDamage.isCrit ? 0.3 : 0.1);
                             glob.SetHasHit(true);
 
@@ -385,6 +385,11 @@
                         bear.TrackPlayer(true);
                     }
                 }
+            }
+
+            // Check BOSS
+            if (this.isBossSequence && !this.isBossDefeated && this.collision.CheckBoxToRadius(this.boss.GetBounds(), blastCircle)) {
+                this.boss.DoDamage(blastDamage);
             }
 
             // Loop over Bee Hives, then Bees
@@ -516,8 +521,8 @@
     CheckBees(bees) {
         for (const bee of bees) {
 
-            // Sting player if the bees are stining
-            if (bee.IsStinging() && !this.player.GetIsDead()) {
+            // Sting player if the bees are stining and they're not dying or in a dying state
+            if (bee.GetState() < BEE_STATE.DYING && bee.IsStinging() && !this.player.GetIsDead()) {
                 this.player.DoDamage(bee.GetDamage(), true);
             }
 
@@ -531,10 +536,10 @@
     FadeOutSound() {
         const currentGameTime = GameTime.getCurrentGameTime();
 
-        // if (this.backgroundMusic && this.backgroundMusic.FadeOut(currentGameTime)) {
-        //     this.backgroundMusic.Stop();
-        //     this.backgroundMusic = undefined;
-        // }
+        if (this.backgroundMusic && this.backgroundMusic.FadeOut(currentGameTime)) {
+            this.backgroundMusic.Stop();
+            this.backgroundMusic = undefined;
+        }
 
         // if (this.birds && this.birds.FadeOut(currentGameTime)) {
         //     this.birds.Stop();
@@ -822,7 +827,7 @@
         if (+this.selectedLevel === 0) {
             this.forestForegroundFront.Draw();
         } else if (+this.selectedLevel === 1) {
-            this.caveFront.Draw();
+            // this.caveFront.Draw();
             this.exitLogFront.Draw();
         } else if (+this.selectedLevel === 2) {
             this.twilightExit.Draw();

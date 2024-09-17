@@ -35,7 +35,7 @@ class Player extends Character {
         this.sprite = this.animations.idleSprite;
 
         this.throwStartTime = 0;
-        // this.throwSound = new Sound('sounds/effects/throw.ogg', 'SFX', false, false, 0.2, 0);
+        this.throwSound = new Sound('sounds/effects/throw.ogg', 'SFX', false, false, 0.2, 0);
         this.globAnimationMaxTime = 0.12;
         this.globs = [];
         this.globCooldown = undefined;
@@ -83,13 +83,15 @@ class Player extends Character {
 
     GetInput() {
         const currentGameTime = GameTime.getCurrentGameTime();
+        const leftKeyBindingValue = INPUT.GetInput(KEY_BINDINGS.MOVE_LEFT);
+        const rightKeyBindingValue = INPUT.GetInput(KEY_BINDINGS.MOVE_RIGHT);
 
         // Horizontal Movement (Either keyboard WASD/Arrows |OR| Game Pad D-Pad |OR| Game Pad Sticks)
-        if (INPUT.GetInput(KEY_BINDINGS.MOVE_LEFT)) {
-            this.movement = -1.0;
+        if (leftKeyBindingValue || 0 !== 0) {
+            this.movement = -leftKeyBindingValue;
             this.SetDirection(-1);
-        } else if (INPUT.GetInput(KEY_BINDINGS.MOVE_RIGHT)) {
-            this.movement = 1.0;
+        } else if (rightKeyBindingValue || 0 !== 0) {
+            this.movement = rightKeyBindingValue;
             this.SetDirection(1);
         }
         
@@ -105,7 +107,7 @@ class Player extends Character {
                 const globPosX = (this.dir === 1) ? this.position.x + this.size.x - 10 : this.position.x;
                 this.globs.push(new HoneyGlob(new Vector2(globPosX, this.position.y + (this.size.y / 2)), this.dir, this.velocity.x));
                 this.globCooldown = new Timer(currentGameTime, this.globCooldownDuration);
-                // this.throwSound.Play();
+                this.throwSound.Play();
             }
 
         }

@@ -32,7 +32,15 @@ class Sound {
         return this.audEl.volume;
     }
 
-    SetVolumne(vol) {
+    GetCurrentTime() {
+        return this.audEl.currentTime;
+    }
+
+    GetDuration() {
+        return this.audEl.duration;
+    }
+
+    SetVolume(vol) {
         this.audEl.volume = vol;
     }
 
@@ -53,7 +61,7 @@ class Sound {
         const currentVolume = this.audEl.volume;
         const newVolumeRaw = currentVolume - (1 / (this.fadeOutDuration * 60));
         const newVolume = newVolumeRaw < 0 ? 0 : newVolumeRaw;
-        this.SetVolumne(newVolume);
+        this.SetVolume(newVolume);
 
         return elapsed >= this.fadeOutDuration;
     }

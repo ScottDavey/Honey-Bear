@@ -8,7 +8,7 @@ class TreeMonster extends Character {
         super(position, size, false);
         this.worldBounds = worldBounds;
         this.size = size;
-        this.initialHealth = 6000;
+        this.initialHealth = 500000;
         this.health = this.initialHealth;
         this.maxMoveSpeed = 100;
         this.isCloseToPlayer = false;
@@ -22,7 +22,7 @@ class TreeMonster extends Character {
         this.isAttacking = false;
         this.isMeleeAttack = false;
         this.branchSmashDamage = 0;
-        this.branchSmashDamageRange = [200, 300];
+        this.branchSmashDamageRange = [20000, 30000];
         this.currentAttack = undefined;
         this.attackTimer = undefined;
         this.attackCooldownDuration = [1, 3];
@@ -197,7 +197,7 @@ class TreeMonster extends Character {
                 this.canThrowAnimalFlurry = true;
             }
 
-            DEBUG.Update('NEXTATTACK', `Next Attack: ${this.currentAttack.name}`);
+            // DEBUG.Update('NEXTATTACK', `Next Attack: ${this.currentAttack.name}`);
         }
 
         // If we're not yet attacking but we have our next attack ready,
@@ -236,7 +236,7 @@ class TreeMonster extends Character {
             this.currentAttack.fn.apply(this);
         }
 
-        DEBUG.Update('COOLDOWN', `Cooldown: ${this.attackCooldown ? this.attackCooldown.GetRemainder(2) : 'N/A'}`);
+        // DEBUG.Update('COOLDOWN', `Cooldown: ${this.attackCooldown ? this.attackCooldown.GetRemainder(2) : 'N/A'}`);
 
     }
 

@@ -11,7 +11,7 @@ class HoneyBlast {
         this.startTime = GameTime.getCurrentGameTime();
         this.isComplete = false;
         this.blastGrowRate = 20;
-        this.damage = random(50, 100);
+        this.damage = random(500, 1000);
         this.critPercent = 50;
         this.critDamagePercent = 3;
         this.blast = new Circle(

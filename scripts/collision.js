@@ -96,7 +96,7 @@ class Collision {
 
                         entity.velocity.y = 0;
                         isOnGround = true;
-                        entity.groundType = line.sound;
+                        entity.SetGroundType(line.sound);
                     }
 
                 }

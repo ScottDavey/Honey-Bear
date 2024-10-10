@@ -24,6 +24,10 @@
         );
     }
 
+    GetPlayer() {
+        return this.player;
+    }
+
     GetTimer() {
         return Math.floor(this.timer);
     }

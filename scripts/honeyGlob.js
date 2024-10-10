@@ -8,7 +8,7 @@
             this.position = pos;
             this.dir = dir;
             this.size = new Vector2(4, 4);
-            this.damage = random(50, 100);
+            this.damage = random(5000, 10000);
             this.critPercent = 50;
             this.critDamagePercent = 3;
     

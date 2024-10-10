@@ -30,7 +30,7 @@ class Sprite {
     }
 
     Update(pos) {
-        this.pos = pos;
+        this.pos = new Vector2(pos.x, pos.y);
     };
 
     Draw() {

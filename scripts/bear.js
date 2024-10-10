@@ -9,7 +9,7 @@ class Bear extends Character {
         this.isTrackingPlayer = false;
         this.isAttacking = false;
         this.attackTimer = undefined;
-        this.meleeAttackDamage = 75;
+        this.meleeAttackDamage = 7500;
         this.meleeCooldown = undefined;
         this.meleeCooldownDuration = 5;
 
@@ -18,18 +18,22 @@ class Bear extends Character {
 
         // Sprites        
         const spritesheet = 'images/spritesheets/Bear.png';
-        this.runRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 0, 0.2, true, new Vector2(0, 0)),
-        this.runLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 1, 0.2, true, new Vector2(0, 0)),
-        this.idleRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 4, 2, 0.25, true, new Vector2(0, 0)),
-        this.idleLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 4, 3, 0.25, true, new Vector2(0, 0)),
-        this.jumpRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 2, 4, 0.2, false, new Vector2(0, 0)),
-        this.jumpLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 2, 5, 0.2, false, new Vector2(0, 0)),
-        this.fallRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 1, 6, 0.08, false, new Vector2(0, 0)),
-        this.fallLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 1, 7, 0.08, false, new Vector2(0, 0)),
-        this.deadRightSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 12, 0.05, false, new Vector2(0, 0)),
-        this.deadLeftSprite = new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 13, 0.05, false, new Vector2(0, 0)),
-        
-        this.sprite = this.idleRightSprite;
+        this.animations = {
+            runRightSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 0, 0.2, true, new Vector2(0, 0)),
+            runLeftSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 1, 0.2, true, new Vector2(0, 0)),
+            idleRightSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 4, 2, 0.25, true, new Vector2(0, 0)),
+            idleLeftSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 4, 3, 0.25, true, new Vector2(0, 0)),
+            idleSwipeRightSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 8, 0.5, false, new Vector2(0, 0)),
+            idleSwipeLeftSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 9, 0.5, false, new Vector2(0, 0)),
+            jumpRightSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 2, 4, 0.2, false, new Vector2(0, 0)),
+            jumpLeftSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 2, 5, 0.2, false, new Vector2(0, 0)),
+            fallRightSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 1, 6, 0.08, false, new Vector2(0, 0)),
+            fallLeftSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 1, 7, 0.08, false, new Vector2(0, 0)),
+            deadRightSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 12, 0.05, false, new Vector2(0, 0)),
+            deadLeftSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 13, 0.05, false, new Vector2(0, 0)),
+        };
+
+        this.sprite = this.animations.idleRightSprite;
     }
 
     Reset() {
@@ -78,12 +82,12 @@ class Bear extends Character {
 
         if (isTracking) {
             this.SetMaxMoveSpeed(150);
-            this.runRightSprite.SetSpeed(0.07);
-            this.runLeftSprite.SetSpeed(0.07);
+            this.animations.runRightSprite.SetSpeed(0.07);
+            this.animations.runLeftSprite.SetSpeed(0.07);
         } else {
             this.SetMaxMoveSpeed(100);
-            this.runRightSprite.SetSpeed(0.3);
-            this.runLeftSprite.SetSpeed(0.3);
+            this.animations.runRightSprite.SetSpeed(0.3);
+            this.animations.runLeftSprite.SetSpeed(0.3);
         }
     }
 
@@ -105,16 +109,18 @@ class Bear extends Character {
         let isRunning = false;
 
         if (this.isDead) {
-            this.sprite = (this.dir === 1) ? this.deadRightSprite : this.deadLeftSprite;
+            this.SetSprite((this.dir === 1) ? this.animations.deadRightSprite : this.animations.deadLeftSprite);
         } else if (this.isJumping) {
-            this.sprite = (this.dir === 1) ? this.jumpRightSprite : this.jumpLeftSprite;
+            this.SetSprite((this.dir === 1) ? this.animations.jumpRightSprite : this.animations.jumpLeftSprite);
         } else if (!this.isOnGround) {
-            this.sprite = (this.dir === 1) ? this.fallRightSprite : this.fallLeftSprite;
+            this.SetSprite((this.dir === 1) ? this.animations.fallRightSprite : this.animations.fallLeftSprite);
+        } else if (this.isAttacking) {
+            this.SetSprite((this.dir === 1) ? this.animations.idleSwipeRightSprite : this.animations.idleSwipeLeftSprite);
         } else if (this.movement !== 0) {
-            this.sprite = (this.dir === 1) ? this.runRightSprite : this.runLeftSprite;
+            this.SetSprite((this.dir === 1) ? this.animations.runRightSprite : this.animations.runLeftSprite);
             isRunning = true;
         } else {
-            this.sprite = (this.dir === 1) ? this.idleRightSprite : this.idleLeftSprite;
+            this.SetSprite((this.dir === 1) ? this.animations.idleRightSprite : this.animations.idleLeftSprite);
         }
 
         // If we're running, set the run animation speed by the velocity

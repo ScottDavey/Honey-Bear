@@ -27,14 +27,29 @@ class MainMenu {
                 obj: new TextButton(
                     'PLAY',
                     new Vector2(CANVAS_WIDTH - (CANVAS_WIDTH * 0.25), (CANVAS_HEIGHT / 2) + 50),
-                    { family: 'Raleway, "Century Gothic", sans-serif', size: 40, align: 'left' },
+                    { family: 'Raleway, "Century Gothic", sans-serif', size: 30, align: 'left' },
                     '#FFFFFF',
                     '#F4C430',
                     'transparent',
                     'transparent'
                 )
-            }
+            },
+            {
+                name: 'OPTIONS',
+                obj: new TextButton(
+                    'OPTIONS',
+                    new Vector2(CANVAS_WIDTH - (CANVAS_WIDTH * 0.25), (CANVAS_HEIGHT / 2) + 90),
+                    { family: 'Raleway, "Century Gothic", sans-serif', size: 30, align: 'left' },
+                    '#FFFFFF',
+                    '#F4C430',
+                    'transparent',
+                    'transparent'
+                )
+            },
         ];
+
+        // Set "PLAY" as selected
+        this.buttons[0].obj.SetIsSelected(true);
     }
 
     GetPlay() {

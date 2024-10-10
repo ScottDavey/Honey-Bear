@@ -12,7 +12,7 @@ class AnimalFlurry {
             position.y + this.size.y + 15
         );
         this.hasHitPlayer = false;
-        this.damage = random(50, 100);
+        this.damage = random(5000, 10000);
         
         this.moveSpeed = 300;
         this.acceleration = 1000;

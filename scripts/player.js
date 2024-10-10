@@ -43,6 +43,9 @@ class Player extends Character {
         this.blast = undefined;
         this.blastCooldown = undefined;
         this.blastCooldownDuration = 5;
+
+        this.health = 50000;
+        this.maxHealth = 50000;
     }
 
     Initialize(position, size) {

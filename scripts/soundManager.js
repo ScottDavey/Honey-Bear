@@ -1,17 +1,3 @@
-/*
-    WHAT DOES A SOUND MANAGER DO?
-
-        - It can hold all game sounds
-            - It can preload all game sounds
-
-        - It can be accessed from anywhere in the code
-
-        - It can interact with other game sounds
-            - Like crossfading, playing when another has finished, etc...
-
-        - It's a way to organize sounds within a game and 
-*/
-
 
 /********************************
 *****  SOUND MANAGER CLASS  *****
@@ -20,18 +6,22 @@
 class SoundManager {
 
     constructor() {
-        this.isMusicOn = true;
-        this.isSFXOn = true;
-        this.music = [];
-        this.effects = [];
-        this.sounds = [];    // List of sounds currently in use
+        this.previousGameState = undefined;
         this.gameState = undefined;
         this.gameSubState = undefined;
+        this.isGamePaused = false;
         this.muteAll = false;
-        this.isMusicPlaying = false;
 
-        this.currentSong = new Text(
-            'Music: Seneca',
+        // MUSIC
+        this.isMusicOn = true;
+        this.musicVolume = 0.3;
+        this.music = [];
+        this.isMusicPlaying = false;
+        this.currentSong = undefined;
+        this.nextSong = undefined;
+        this.currentSongIndex = -1;
+        this.currentSongHUB = new Text(
+            'Music: None',
             new Vector2(CANVAS_WIDTH - 30, 30),
             'Lobster, "Century Gothic", sans-serif',
             'normal',
@@ -39,6 +29,17 @@ class SoundManager {
             '#FFFFFF88',
             'right'
         );
+
+        // SFX
+        this.isSFXOn = true;
+        this.effects = [];
+        this.playerPosition = new Vector2(0, 0);
+
+        this.isFadeButtonLocked = false;
+        this.isFading = false;
+        this.fadeDirection = -1;
+        this.fadeDuration = 10;
+        this.fadeTimer = undefined;
     }
 
     Initialize(gameState) {
@@ -54,6 +55,7 @@ class SoundManager {
         }
 
         this.gameState = gameState;
+        this.previousGameState = this.gameState;
     }
 
     GetMusicOn() {
@@ -72,6 +74,14 @@ class SoundManager {
         this.isSFXOn = isOn;
     }
 
+    ToggleMusic() {
+
+    }
+
+    ToggleSFX() {
+        
+    }
+
     SetGameState(state) {
         this.gameState = state;
     }
@@ -85,6 +95,14 @@ class SoundManager {
     }
 
     StopAll() {
+        
+    }
+
+    StopMusic() {
+
+    }
+
+    StopSoundsFX() {
 
     }
 
@@ -96,11 +114,42 @@ class SoundManager {
         
     }
     
-    FadeIn() {
+    Fade() {
 
-    }
+        if (!this.fadeTimer) {
+            this.fadeTimer = new Timer(GameTime.getCurrentGameTime(), this.fadeDuration);
+        }
 
-    FadeOut() {
+        if (this.fadeTimer.IsComplete() || !this.currentSong) {
+            this.fadeTimer = undefined;
+            this.isFading = false;
+            this.fadeDirection = this.fadeDirection < 0 ? 1 : -1;
+            return;
+        }
+
+        const fadeTimerRemainder = this.fadeTimer.GetRemainder(5);
+        let newVolume;
+
+        if (this.fadeDirection < 0) {
+            // Fade Out by multiplying the total music volume by the percentage of remaining time
+            newVolume = +(this.musicVolume * (fadeTimerRemainder / this.fadeDuration));
+
+            if (newVolume < (0.01)) {
+                newVolume = 0;
+            }
+        } else {
+            // Fade in by multiplying the total volume by the percentage of time elapsed
+            const timeElapsed = this.fadeDuration - fadeTimerRemainder;
+            newVolume = +(this.musicVolume * (timeElapsed / this.fadeDuration));
+
+            // Cap the volume at the max level if we're close to 99% of it.
+            if (newVolume > (this.musicVolume * 0.99)) {
+                newVolume = this.musicVolume;
+            }
+
+        }
+
+        this.currentSong.SetVolume(newVolume);
 
     }
 
@@ -108,28 +157,131 @@ class SoundManager {
 
     }
 
-    Update() {
+    HandleMusic(gameState, isPaused) {
+        let song = undefined;
 
-        /* 
-            For music:
-                - What Game State are we in?
-                    - INTRO: Loop over 1 intro song
-                    - PLAYING:
-                        - LEVEL: Loop through, with crossfade, level music.
-                        Note that this could be further refined if we want
-                        a coupld a couple song specifid to a level.
-                            - PAUSED: Lower all sounds
-                        - BOSS: Fade out level music, loop over boss song
+        // MUSIC
 
-            For effects:
-                - 
-        */
+        // Check our state and set up an appropriate song
+        if (gameState === GAME_STATES.PRIMARY.MAIN_MENU) {
 
+            if (!this.currentSong) {
+                song = this.music.find(e => e.region === 'MAIN MENU');             
+            }
+
+        } else if (gameState === GAME_STATES.PRIMARY.PLAYING) {
+
+            if (this.currentSong) {
+                const songTimeRemaining = this.currentSong.GetDuration() - this.currentSong.GetCurrentTime();
+
+                // If our song is getting close to ending, fade it out
+                if (!this.isFading && this.currentSong && songTimeRemaining <= this.fadeDuration) {
+                    this.isFading = true;
+                    this.fadeDirection = -1;
+                }
+
+                // If our song has ended, set current song to undefined
+                if (this.currentSong && songTimeRemaining <= 0) {
+                    this.currentSong.Stop();
+                    this.currentSong = undefined;
+                    this.isMusicPlaying = false;
+                }
+            } else {
+                const possibleSongs = this.music
+                    .map((song, index) => (song.region === 'LEVEL' && this.currentSongIndex !== index) ? index : -1)
+                    .filter(index => index !== -1);
+
+                const randomSongIndex = possibleSongs[random(0, possibleSongs.length - 1)];
+                
+                song = this.music[randomSongIndex];
+
+                this.currentSongIndex = randomSongIndex;
+            }
+
+        }
+
+        // We've changed states, stop the music so a new song can start
+        if (this.previousGameState !== this.gameState && this.currentSong) {
+            this.currentSong.Stop();
+            this.isMusicPlaying = false;
+            this.currentSong = undefined;
+            this.nextSong = undefined;
+            this.currentSongHUB.SetString(`Music: None`);
+
+            // Keep track of the previous game state
+            this.previousGameState = this.gameState;
+        }
+
+        // If we don't have a current song, but we have one sorted out, create it
+        if (!this.currentSong && song) {
+            this.currentSong = new Sound(
+                `sounds/music/${song.path}`,
+                'MUSIC',
+                false,
+                song.isLooping,
+                this.musicVolume,
+                1.0
+            );
+    
+            this.currentSongHUB.SetString(`Music: ${song.name}`);
+        }
+
+        // If we're not playing, and we have a song queued up, play it.
+        if (!this.isMusicPlaying && this.currentSong) {
+            this.isMusicPlaying = true;
+            this.currentSong.Play();
+        }
+
+        // If we're paused, lower the music volume.
+        // If we were paused but have resumed, reset the volume to its original
+        if (this.isMusicPlaying && this.currentSong) {
+            if (isPaused !== this.isGamePaused) {
+                this.currentSong.SetVolume(this.musicVolume);
+            } else if (this.isGamePaused) {
+                this.currentSong.SetVolume((this.musicVolume / 3).toFixed(2));
+            }
+        }
+
+        this.isGamePaused = isPaused;
+
+        // Set our current game state
+        this.gameState = gameState;
+
+        if (this.currentSong) {
+            // DEBUG.Update('SONGDURATION', `SONG LENGTH: ${this.currentSong.GetDuration()}`);
+            // DEBUG.Update('SONGLEFT', `SONG REMAINING: ${(this.currentSong.GetDuration() - this.currentSong.GetCurrentTime()).toFixed(3)}`);
+            // DEBUG.Update('MUSICVOL', `MUSIC VOL: ${this.currentSong.GetVolume()}`);
+            // DEBUG.Update('FADETIMER', `FADE TIMER COMPLETE: ${this.fadeTimer ? this.fadeTimer.IsComplete() ? 'YES' : 'NO' : 'N/A'}`);
+        }
+    }
+
+    Update(gameState, isPaused, playerPosition) {
+
+        this.HandleMusic(gameState, isPaused);
+
+        // Check if FADE button is pressed
+        if (INPUT.GetInput(KEY_BINDINGS.FADE)) {
+            if (!this.isFadeButtonLocked && !this.isFading) {
+                this.isFadeButtonLocked = true;
+                this.isFading = true;
+            }
+        } else {
+            this.isFadeButtonLocked = false;
+        }
+
+        if (this.isFading) {
+            this.Fade();
+        }
+
+        // DEBUG.Update('FADE1', `Is Fade Locked: ${this.isFadeButtonLocked ? 'YES' : 'NO'}`);
+        // DEBUG.Update('FADE2', `Is Fading: ${this.isFading ? 'YES' : 'NO'}`);
+
+        // this.playerPosition = new Vector2(playerPosition.x, playerPosition.y);
 
     }
 
     Draw() {
-        this.currentSong.Draw();
+        this.currentSongHUB.Draw();
     }
 
 }

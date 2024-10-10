@@ -14,7 +14,7 @@ class Acorn {
         this.hasHitGround = false;
         this.hasHitPlayer = false;
 
-        this.damage = random(50, 100);
+        this.damage = random(5000, 10000);
 
         this.sprite = new Sprite(
             // this.spriteOptions[random(0, this.spriteOptions.length - 1)],

@@ -26,6 +26,10 @@ class Circle {
         this.center = center;
     }
 
+    Update(center) {
+        this.center = center;
+    }
+
     Draw() {
         CONTEXT.save();
         CONTEXT.beginPath();

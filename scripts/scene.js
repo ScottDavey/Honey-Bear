@@ -154,28 +154,6 @@
         // Collectibles
         this.beeHives = [];
 
-        // MUSIC
-        this.backgroundMusic = undefined;
-        this.backgroundMusicSources = [
-            { path: 'Seneca.mp3', defaultVolume: 0.4 },
-            { path: 'BloodOnBlood.mp3', defaultVolume: 0.4 },
-            { path: 'MUSIC_The-Forgotten_Forest.mp3', defaultVolume: 0.2 },
-            { path: 'Halloween.mp3', defaultVolume: 0.4 },
-            { path: 'MUSIC_The-Forgotten_Forest.mp3', defaultVolume: 0.2 }
-        ];
-
-        // SOUND_MANAGER.Add(
-        //     new Sound(
-        //         'BackgroundMusic_Level'
-        //         `sounds/music/Seneca.mp3`,
-        //         'MUSIC',
-        //         false,
-        //         true,
-        //         backgroundMusicChoice.defaultVolume,
-        //         1.0
-        //     )
-        // );
-
         // Sounds Effects
         this.birds = undefined;
         this.honeyGlobHitSound = new Sound('sounds/effects/splat.ogg', 'SFX', false, false, 0.2, 0);
@@ -249,20 +227,8 @@
             };
         });
 
-        // LOAD SONG
-        const backgroundMusicChoice = this.backgroundMusicSources[this.selectedLevel];
-        this.backgroundMusic = new Sound(
-            `sounds/music/${backgroundMusicChoice.path}`,
-            'MUSIC',
-            false,
-            true,
-            backgroundMusicChoice.defaultVolume,
-            1.0
-        );
-        this.backgroundMusic.Play();
-
         if (+this.selectedLevel === 0) {
-            this.birds = new Sound('sounds/effects/birds.ogg', 'SFX', false, true, 0.2, 1.5);
+            this.birds = new Sound('sounds/effects/birds.ogg', 'SFX', false, true, 0.1, 1.5);
             this.birds.Play();
         }
 
@@ -270,10 +236,6 @@
     }
 
     UnloadContent() {
-        if (this.backgroundMusic) {
-            this.backgroundMusic.Stop();
-        }
-
         if (this.birds) {
             this.birds.Stop();
         }
@@ -535,16 +497,6 @@
 
     FadeOutSound() {
         const currentGameTime = GameTime.getCurrentGameTime();
-
-        if (this.backgroundMusic && this.backgroundMusic.FadeOut(currentGameTime)) {
-            this.backgroundMusic.Stop();
-            this.backgroundMusic = undefined;
-        }
-
-        // if (this.birds && this.birds.FadeOut(currentGameTime)) {
-        //     this.birds.Stop();
-        //     this.birds = undefined;
-        // }
     }
 
     UpdateCamera() {
@@ -706,12 +658,12 @@
                     beeHive.SetGroundState();
                 }
 
-                INPUT.SetLocked(false);
+                //INPUT.SetLocked(false);
 
                 beeHive.Interact(INPUT.GetInput(KEY_BINDINGS.INTERACT));
                 
                 if (beeHive.IsCollecting()) {
-                    this.player.Heal(beeHive.GetHoneyPrize());
+                    this.player.Heal(beeHive.GetHoneyPrize(this.player.GetMaxHealth()));
                 }
 
                 this.CheckBees(beeHive.GetBees());
@@ -748,9 +700,9 @@
             this.honeyBlastKeyIcon.SetImage(KEY_BINDINGS.SPECIAL[this.inputType].path);
         }
 
-        DEBUG.Update('PLAYER', `Position X: ${this.player.GetPosition().x}`);
-        DEBUG.Update('ENEMIESLEFT', `Enemies Remaining: ${this.bears.length}`);
-        DEBUG.Update('BOSSSEQ', `Boss Sequence: ${this.isBossSequence ? 'YES' : 'NO'}`);
+        // DEBUG.Update('PLAYER', `Position X: ${this.player.GetPosition().x}`);
+        // DEBUG.Update('ENEMIESLEFT', `Enemies Remaining: ${this.bears.length}`);
+        // DEBUG.Update('BOSSSEQ', `Boss Sequence: ${this.isBossSequence ? 'YES' : 'NO'}`);
         
         const totalHives = this.beeHives.length;
         let hivesRumaged = 0;
@@ -762,7 +714,7 @@
             hivesCollected += hiveState === HIVE_STATE.EMPTY;
         }
         
-        DEBUG.Update('HIVES', `Hives T: ${totalHives} | R: ${hivesRumaged} | C: ${hivesCollected}`);
+        // DEBUG.Update('HIVES', `Hives T: ${totalHives} | R: ${hivesRumaged} | C: ${hivesCollected}`);
         
     }
 
@@ -795,9 +747,9 @@
                 if (beeHive.GetDrawOrder() === 0) {
                     const beeHive0PositionX = beeHive.GetPosition().x;
                     
-                    if (beeHive0PositionX > cameraPos.x && beeHive0PositionX < cameraPlusCanvas.x) {
+                    // if (beeHive0PositionX > cameraPos.x && beeHive0PositionX < cameraPlusCanvas.x) {
                         beeHive.Draw();
-                    }
+                    // }
                 }
             }
         
@@ -817,9 +769,9 @@
                 if (beeHive.GetDrawOrder() === 1) {
                     const beeHive1PositionX = beeHive.GetPosition().x;
                     
-                    if (beeHive1PositionX > cameraPos.x && beeHive1PositionX < cameraPlusCanvas.x) {
+                    // if (beeHive1PositionX > cameraPos.x && beeHive1PositionX < cameraPlusCanvas.x) {
                         beeHive.Draw();
-                    }
+                    // }
                 }
             }
         }

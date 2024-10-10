@@ -43,11 +43,12 @@ class Bee {
         this.gravity = 3000;
         this.fallSpeed = 1000;
         this.isOnGround = false;
+        this.groundType = undefined;
         this.isHittingWall = false;
 
         this.aggressiveSpeed = 200;
-        this.aggressiveVolume = 0.3;
-        this.stingDamage = random(3, 7);
+        this.aggressiveVolume = 0.2;
+        this.stingDamage = random(50, 100);
         this.stingCooldownDuration = 2;
 
         this.stingDelay = +((this.stingCooldownDuration * (random(1, 100) / 100)).toFixed(1));
@@ -59,7 +60,7 @@ class Bee {
         this.buzzSound = new Sound(`sounds/effects/bee_${random(1, 4)}.ogg`, 'SFX', true, true, 0, 0);
         this.buzzSound.Play();
         this.maxVolumneDistance = 400;
-        this.buzzDefaultVolume = 0.15;
+        this.buzzDefaultVolume = 0.1;
         this.buzzMaxVolume = this.buzzDefaultVolume;
     }
     
@@ -111,6 +112,10 @@ class Bee {
 
         this.moveSpeed = speed;
         this.buzzMaxVolume = volume;
+    }
+
+    SetGroundType(groundType) {
+        this.groundType = groundType;
     }
 
     StingAttack() {
@@ -249,7 +254,7 @@ class Bee {
         }
 
         // Based on the player's distance from the bee, set volume
-        this.buzzSound.SetVolumne(volume);
+        this.buzzSound.SetVolume(volume);
     }
 
     Update(hivePosition, hiveState, playerCenter) {

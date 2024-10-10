@@ -27,12 +27,17 @@ class TextButton {
             this.fontColor,
             this.align
         );
-        this.selectedIcon = new Texture(
+        // this.selectedIcon = new Texture(
+        //     new Vector2(this.buttonText.GetPosition().x - 30, this.buttonText.GetPosition().y - 10),
+        //     new Vector2(15, 15),
+        //     '#88000066',
+        //     1,
+        //     '#880000'
+        // );
+        this.selectedIcon = new Image(
+            'images/icons/menu-marker.png',
             new Vector2(this.buttonText.GetPosition().x - 30, this.buttonText.GetPosition().y - 10),
-            new Vector2(15, 15),
-            '#88000066',
-            1,
-            '#880000'
+            new Vector2(19, 19)
         );
         this.buttonTextWidth = 0;
 

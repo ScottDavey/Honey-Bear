@@ -11,11 +11,10 @@ class Character {
         this.isPlayer = isPlayer;
         this.sprite = undefined;
         this.bounds = new Rectangle(this.position.x, this.position.y, this.size.x, this.size.y);
-        this.headBounds = new Rectangle(this.position.x, this.position.y, this.headSize.x, this.headSize.y);
 
         // VITALITY
-        this.health = 500;
-        this.maxHealth = 500;
+        this.health = 50000;
+        this.maxHealth = 50000;
         this.isDead = false;
         this.deathStartTime = 0;
         this.deathMaxTime = 3;
@@ -48,9 +47,9 @@ class Character {
         this.isKnockingBack = false;
         this.knockBackDir = -1;
         this.knockBackTime = 0;
-        this.maxKnockBackTime = 0.3;
-        this.knockBackBurst = 500;
-        this.knockBackBurstAdj = new Vector2(this.knockBackBurst * this.dir, -500);
+        this.maxKnockBackTime = 0.1;
+        this.knockBackBurst = 1000;
+        this.knockBackBurstAdj = new Vector2(this.knockBackBurst * this.dir, -this.knockBackBurst);
 
         // STUN
         this.isStunned = false;
@@ -59,7 +58,19 @@ class Character {
 
         // Sound Effects
         this.walkSounds = {
-            GRASS: new Sound('sounds/effects/WALK_Grass.OGG', 'SFX', false, true, 0.5, 0),
+            GRASS: [
+                new Sound('sounds/effects/FOOTSTEPS/GRASS/GRASS_1.OGG', 'SFX', true, false, 0.15, 0),
+                new Sound('sounds/effects/FOOTSTEPS/GRASS/GRASS_2.OGG', 'SFX', true, false, 0.15, 0),
+                new Sound('sounds/effects/FOOTSTEPS/GRASS/GRASS_3.OGG', 'SFX', true, false, 0.15, 0),
+                new Sound('sounds/effects/FOOTSTEPS/GRASS/GRASS_4.OGG', 'SFX', true, false, 0.15, 0),
+                new Sound('sounds/effects/FOOTSTEPS/GRASS/GRASS_5.OGG', 'SFX', true, false, 0.15, 0),
+                new Sound('sounds/effects/FOOTSTEPS/GRASS/GRASS_6.OGG', 'SFX', true, false, 0.15, 0),
+                new Sound('sounds/effects/FOOTSTEPS/GRASS/GRASS_7.OGG', 'SFX', true, false, 0.15, 0),
+                new Sound('sounds/effects/FOOTSTEPS/GRASS/GRASS_8.OGG', 'SFX', true, false, 0.15, 0),
+                new Sound('sounds/effects/FOOTSTEPS/GRASS/GRASS_9.OGG', 'SFX', true, false, 0.15, 0),
+                new Sound('sounds/effects/FOOTSTEPS/GRASS/GRASS_10.OGG', 'SFX', true, false, 0.15, 0),
+                new Sound('sounds/effects/FOOTSTEPS/GRASS/GRASS_11.OGG', 'SFX', true, false, 0.15, 0)
+            ]
         };
     }
 
@@ -120,6 +131,10 @@ class Character {
         this.isStunned = stunned;
     }
 
+    SetGroundType(groundType) {
+        this.groundType = groundType;
+    }
+
     GetPosition() {
         return this.position;
     }
@@ -154,10 +169,6 @@ class Character {
 
     GetBounds() {
         return this.bounds;
-    }
-
-    GetHeadBounds() {
-        return this.headBounds;
     }
 
     GetCurrentHealth() {
@@ -317,7 +328,6 @@ class Character {
         this.ApplyPhysics();
 
         this.bounds.Update(this.position, this.size);
-        this.headBounds.Update(this.position, this.headSize);
 
         // Start some movement variables
         this.movement = 0;
@@ -348,7 +358,7 @@ class Character {
                 this.HandleDeath();
             }
 
-            this.HandleSoundEffects();
+            // this.HandleSoundEffects();
         }
     }
 

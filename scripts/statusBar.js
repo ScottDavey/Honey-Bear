@@ -28,7 +28,7 @@ class StatusBar {
             0,
             '#00000000'
         );
-        const statusText = `${this.currentValue} / ${this.maxValue}`;
+        const statusText = `${FormatNumber(this.currentValue)} / ${FormatNumber(this.maxValue)}`;
         this.statusText = new Text(
             statusText,
             new Vector2(this.position.x + (this.size.x / 2), this.position.y + (this.size.y / 2)),
@@ -95,7 +95,7 @@ class StatusBar {
         );
 
         if (this.hasText) {
-            const newStatusText = `${this.currentValue} / ${this.maxValue}`;
+            const newStatusText = `${FormatNumber(this.currentValue)} / ${FormatNumber(this.maxValue)}`;
             this.statusText.SetString(newStatusText);
         }
     }

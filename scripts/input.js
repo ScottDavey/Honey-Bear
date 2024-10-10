@@ -64,6 +64,10 @@ const KEY_BINDINGS = {
     DEBUG: {
         KEYBOARD: { name: 'CONTROL', value: 17, path: 'images/icons/KEYBOARD-Control.png' },
         GAMEPAD: { name: 'BACK', value: 8, path: 'images/icons/GAMEPAD-Back.png' },
+    },
+    FADE: {
+        KEYBOARD: { name: 'H', value: 72, path: '' },
+        GAMEPAD: { name: 'N/A', value: 1, path: '' },
     }
 };
 

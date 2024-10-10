@@ -46,8 +46,8 @@ class Game {
                     if (typeof this.mainMenu === 'undefined') this.mainMenu = new MainMenu();
                     this.mainMenu.Update();
                     if (this.mainMenu.GetPlay()) {
-                        this.state = GAME_STATES.PRIMARY.PLAYING;
                         this.mainMenu = undefined;
+                        this.state = GAME_STATES.PRIMARY.PLAYING;
                     }
                     break;
 
@@ -83,8 +83,11 @@ class Game {
                 this.level = undefined;
                 this.gameMenu.SetIsPaused(false);
                 this.gameMenu.SetState(GAME_MENU.MAIN);
+                INPUT.ClearInputs();
             }
         }
+
+        SOUND_MANAGER.Update(this.state, isPaused);
 
         if (INPUT.GetInput(KEY_BINDINGS.DEBUG)) {
             if (!this.debugKeyLocked) {

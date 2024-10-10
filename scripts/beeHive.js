@@ -42,7 +42,7 @@ class BeeHive {
         this.velocityY = 0;
 
         this.isPlayerInRange = false;
-        this.honeyPrize = random(50, 120);
+        this.honeyPrize = random(15, 30);
 
         this.progressBar = new StatusBar(
             new Vector2(this.position.x + 4, this.position.y - 50),
@@ -131,8 +131,8 @@ class BeeHive {
         return this.bees;
     }
 
-    GetHoneyPrize() {
-        return this.honeyPrize;
+    GetHoneyPrize(playerMaxHealth) {
+        return playerMaxHealth * (this.honeyPrize / 100);
     }
 
     GetDrawOrder() {

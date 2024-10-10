@@ -22,7 +22,7 @@ function main() {
     const WRAPPER_DIV = document.getElementById('wrapper');
     WRAPPER_DIV.style.width = `${CANVAS_WIDTH + 4}px`;
 
-    // Event Listeners (Keyboad / Mouse / Gamepad / Touch (phone/tablet))
+    // Event Listeners (Keyboad / Mouse / Gamepad )
     window.addEventListener('keyup', e => { INPUT.OnInputEvent(e, 'keyup'); }, false);
     window.addEventListener('keydown', e => { INPUT.OnInputEvent(e, 'keydown'); }, false);
     CANVAS.addEventListener('mousemove', e => { INPUT.OnInputEvent(e, 'mousemove'); }, false);
@@ -32,6 +32,11 @@ function main() {
     window.addEventListener('gamepadconnected', e => { INPUT.GamePadInit(); }, false);
     window.addEventListener('gamepaddisconnected', e => { INPUT.GamePadDeInit(); }, false);
 
+    const startButton = document.getElementById('startButton');
+    startButton.addEventListener('click', e => { e.target.style.display = 'none'; onStart(); }, false);
+}
+
+function onStart () {
     GAME.Initialize();
     run();
 }

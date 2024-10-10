@@ -47,6 +47,14 @@ function SecondsToTime(s) {
     return ((h > 0 ? h + ":" + (m < 10 ? "0" : "") : "") + m + ":" + (sec < 10 ? "0" : "") + sec);
 }
 
+/***********************
+***** FormatNumber *****
+***********************/
+
+function FormatNumber(n) {
+    return parseFloat(n).toLocaleString();
+}
+
 /************************************************
 ***** CLAMP GIVEN VALUE BETWEEN MIN and MAX *****
 ************************************************/

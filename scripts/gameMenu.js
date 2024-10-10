@@ -109,6 +109,8 @@ class GameMenu {
                 ), 
             }
         );
+
+        this.buttons[0].obj.SetIsSelected(true);
     }
 
     InitializeOptions() {
@@ -256,6 +258,8 @@ class GameMenu {
             }
 
         }
+
+        INPUT.ClearInputs();
 
         DEBUG.Update('MUSIC', `Music ON: ${SOUND_MANAGER.GetMusicOn() ? 'YES' : 'NO'}`);
         DEBUG.Update('SFX', `SFX ON: ${SOUND_MANAGER.GetSFXOn() ? 'YES' : 'NO'}`);

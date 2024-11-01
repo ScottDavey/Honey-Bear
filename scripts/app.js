@@ -1,6 +1,7 @@
 // GLOBAL VARIABLES
-const CANVAS_WIDTH = 1300;
 const CANVAS_HEIGHT = 500;
+const CANVAS_WIDTH = 1500;
+// let CANVAS_WIDTH = Clamp(window.innerWidth, 1300, 2000);
 
 const GAME = new Game();
 const INPUT = new Input();
@@ -33,7 +34,10 @@ function main() {
     window.addEventListener('gamepaddisconnected', e => { INPUT.GamePadDeInit(); }, false);
 
     const startButton = document.getElementById('startButton');
-    startButton.addEventListener('click', e => { e.target.style.display = 'none'; onStart(); }, false);
+    startButton.addEventListener('click', () => {
+        document.getElementById('startOverlay').remove();
+        onStart();
+    }, false);
 }
 
 function onStart () {

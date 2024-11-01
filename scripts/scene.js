@@ -6,6 +6,7 @@
     constructor(selectedLevel, player) {
         this.selectedLevel = selectedLevel;
         this.player = player;
+        this.playerSize = new Vector2(0, 0);
         this.isPlayerRandomPositionKeyLocked = false;
 
         this.level = STAGES[this.selectedLevel];
@@ -16,29 +17,10 @@
         this.collision = new Collision(this.level.collision);
         this.eventCollision = this.level.eventCollision;
 
-        this.boss = undefined;
         this.bossData = this.level.boss;
-        this.bossStart = new Vector2(this.bossData.start[0], this.bossData.start[1]);
-        this.bossSize = new Vector2(this.bossData.size[0], this.bossData.size[1]);
-        this.bossName = new Text(
-            this.bossData.name,
-            new Vector2(CANVAS_WIDTH / 2 - 200, 35),
-            'Lobster, Raleway',
-            'normal',
-            20,
-            '#FFFFFF',
-            'left'
-        );
-        this.bossHealth = new StatusBar(
-            new Vector2(CANVAS_WIDTH / 2 - 200, 50),
-            new Vector2(400, 30),
-            0,
-            '#990000',
-            2,
-            '#550000',
-            true,
-            '#FFFFFF'
-        );
+        this.boss = undefined;
+        this.bossName = undefined;
+        this.bossHealth = undefined;
         this.isBossSequence = false;
         this.bossSequenceIntro = undefined;
         this.bossSequenceIntroComplete = false;
@@ -52,8 +34,6 @@
             this.eventCollision.exit.size[1]
         );
         this.exitTransition = undefined;
-        this.exitLogBack = new Sprite('images/level_assets/FOREST_ExitLog_BACK.png', new Vector2(3801, 464), new Vector2(199, 94));
-        this.exitLogFront = new Sprite('images/level_assets/FOREST_ExitLog_FRONT.png', new Vector2(3801, 464), new Vector2(199, 94));
         this.isLevelEndSequence = false;
         this.intoTransition = new Transition('0, 0, 0', 3, 'in');
         this.introText = new Text(
@@ -66,8 +46,8 @@
             'center'
         );
         this.introTextBackground = new Texture(
-            new Vector2(0, CANVAS_HEIGHT / 2 - 50),
-            new Vector2(CANVAS_WIDTH, 100),
+            new Vector2(0, CANVAS_HEIGHT / 2 - 100),
+            new Vector2(CANVAS_WIDTH, 200),
             '#5831a0AA',
             1,
             '#FFC436'
@@ -78,6 +58,13 @@
 
         this.genericEventData = this.eventCollision.generic;
         this.genericEvents = [];
+        
+        this.checkpointEventData = this.eventCollision.checkpoints;
+        this.checkpoints = [];
+        this.checkpointReached = undefined;
+
+        this.enemyJumpData = this.eventCollision.enemyjump;
+        this.enemyJumps = [];
         
         this.camera = new Camera();
         this.parallax = new Parallax(this.level.backgrounds, this.worldWidth);
@@ -98,15 +85,15 @@
 
         this.showDeathText = false;
         this.deathTextBackground = new Texture(
-            new Vector2(0, (CANVAS_HEIGHT / 2) - 150),
-            new Vector2(CANVAS_WIDTH, 100),
+            new Vector2(0, (CANVAS_HEIGHT / 2) - 100),
+            new Vector2(CANVAS_WIDTH, 200),
             '#000000AA',
             1,
             '#990000'
         );
         this.deathText = new Text(
             'YOU DIED',
-            new Vector2(CANVAS_WIDTH / 2, (CANVAS_HEIGHT / 2) - 100),
+            new Vector2(CANVAS_WIDTH / 2, (CANVAS_HEIGHT / 2)),
             'Joesfin Sans, "Century Gothic", sans-serif',
             'normal',
             36,
@@ -158,15 +145,7 @@
         this.birds = undefined;
         this.honeyGlobHitSound = new Sound('sounds/effects/splat.ogg', 'SFX', false, false, 0.2, 0);
 
-        // this.caveFront = new Sprite('images/backgrounds/FOREST_CAVE-FRONT.png', new Vector2(0, 0), new Vector2(123, 648));
-        this.forestForegroundFront = new Sprite('images/backgrounds/Forest_Foreground_Fronts.png', new Vector2(0, 0), new Vector2(10000, 648));
-        this.twilightExit = new Texture(
-            new Vector2(5877, 458),
-            new Vector2(123, 170),
-            '#141414',
-            1,
-            '#141414'
-        );
+        this.fronts = [];
 
     }
 
@@ -185,13 +164,17 @@
         }
 
         this.player.Initialize(
-            new Vector2(this.level.player.start[0], this.level.player.start[1]),
-            new Vector2(this.level.player.size[0], this.level.player.size[1])
+            this.checkpointReached,
+            new Vector2(this.playerSize.x, this.playerSize.y)
         );
+
         this.showDeathText = false;
     }
 
-    LoadContent() {
+    LoadContent() {     
+        
+        this.playerSize = new Vector2(this.level.player.size[0], this.level.player.size[1]);
+
         // LOAD BEARS
         this.bears = this.level.bears.map(bear => {
             return new Bear(
@@ -226,11 +209,40 @@
                 name: gen.name
             };
         });
+        
+        // ENEMY JUMPS
+        this.enemyJumps = this.enemyJumpData.map(jump => {
+            return new Rectangle(jump.pos[0], jump.pos[1], jump.size[0], jump.size[1]);
+        });
+        
+        // CHECKPOINTS
+        this.checkpoints = this.checkpointEventData.map(checkpoint => {
+            return new Rectangle(checkpoint.pos[0], checkpoint.pos[1], checkpoint.size[0], checkpoint.size[1]);
+        });
 
         if (+this.selectedLevel === 0) {
             this.birds = new Sound('sounds/effects/birds.ogg', 'SFX', false, true, 0.1, 1.5);
             this.birds.Play();
         }
+
+        // BOSS
+        switch(this.bossData.name) {
+            case 'Tree Monster':
+                this.boss = new TreeMonster(
+                    new Vector2(this.bossData.start[0], this.bossData.start[1]),
+                    new Vector2(this.bossData.size[0], this.bossData.size[1]),
+                    this.camera.getlookat()
+                );
+        }
+        this.boss.Initialize();
+
+        // ENVIRONMENTAL ENTITIES (FRONTS)
+        this.fronts = this.level.environmental.map(front => {
+            return new Sprite(front.path, new Vector2(front.start[0], front.start[1]), new Vector2(front.size[0], front.size[1]));
+        });
+
+        // Clear level data from memory
+        this.level = undefined;
 
         return true;
     }
@@ -257,6 +269,10 @@
         return (this.player.GetIsDead() && this.player.GetIsDeathDone());
     }
 
+    GetBossSequence() {
+        return this.isBossSequence;
+    }
+
     // BEHAVIOURS
 
     CheckHoneyGlobCollisions() {
@@ -278,7 +294,8 @@
                 continue;
             }
 
-            if (this.isBossSequence) {
+            // Only if it's the boss sequence, and the boss isn't dying/dead
+            if (this.isBossSequence && this.boss.GetState() <= BOSS_STATE.STUNNED) {
                 
                 const bossBounds = this.boss.GetBounds();
 
@@ -287,11 +304,6 @@
                     this.honeyGlobHitSound.Play();
                     this.camera.shake(0.3);
                     glob.SetHasHit(true);
-
-                    if (this.boss.GetIsDead()) {
-                        this.isBossDefeated = true;
-                        this.isBossSequence = false;
-                    }
                 }
 
             } else {
@@ -380,8 +392,34 @@
                 const bearBounds = bear.GetBounds();
 
                 if (this.collision.CheckBoxCollision(bearBounds, pitfall)) {
-                    bear.SwitchDirections();
+
+                    if (!bear.GetIsTracking()) {
+                        bear.SwitchDirections();
+                    }
                 }
+            }
+
+        }
+
+    }
+
+    CheckEnemyJumpCollision() {
+
+        for (const bear of this.bears) {
+            // Only proceed if the bear is tracking the player
+            if (!bear.GetIsTracking()) {
+                continue;
+            }
+
+            for (const jump of this.enemyJumps) {
+
+                const bearBounds = bear.GetBounds();
+
+                // If the bear is colliding with a jump box: Jump
+                if (this.collision.CheckBoxCollision(bearBounds, jump)) {
+                    bear.SetIsJumping();
+                }
+
             }
 
         }
@@ -391,14 +429,13 @@
     CheckGenericEventCollision() {
         const playerBounds = this.player.GetBounds();
 
-        this.isBossSequence = false;
-
         for (const gen of this.genericEvents) {
 
             if (this.collision.CheckBoxCollision(playerBounds, gen.bounds)) {
 
                 if (gen.name === 'BOSS' && !this.isBossDefeated && !this.isBossSequence) {
                     this.isBossSequence = true;
+                    SOUND_MANAGER.SetBossSequence(true);
                     
                     // Set enemies to stop tracking player
                     for (const bear of this.bears) {
@@ -449,6 +486,22 @@
         }
     }
 
+    CheckCheckpointCollision() {
+
+        const playerBounds = this.player.GetBounds();
+
+        for (const checkpoint of this.checkpoints) {
+
+            if (this.collision.CheckBoxCollision(playerBounds, checkpoint)) {
+
+                this.checkpointReached = new Vector2(checkpoint.left, checkpoint.top);
+
+            }
+
+        }
+
+    }
+
     CheckAcornCollisionWithPlayer() {
 
         const acorns = this.boss.GetAcorns();
@@ -493,10 +546,6 @@
                 this.collision.CheckLineCollisionEntity(bee)
             }
         }
-    }
-
-    FadeOutSound() {
-        const currentGameTime = GameTime.getCurrentGameTime();
     }
 
     UpdateCamera() {
@@ -597,32 +646,33 @@
 
         // Check for Pitfalls
         this.CheckEntityPitfallCollision();
+        // Check for enemy jumping
+        this.CheckEnemyJumpCollision();
         // Check for Generic Events
         this.CheckGenericEventCollision();
+        // Check for Checkpoints
+        this.CheckCheckpointCollision();
 
         if (this.isBossSequence) {
 
-            if (!this.boss) {
-                this.boss = new TreeMonster(
-                    this.bossStart,
-                    this.bossSize,
-                    this.camera.getlookat()
-                );
-                this.bossHealth.SetMaxValue(this.boss.GetCurrentHealth());
-            }
+            const bossState = this.boss.GetState();
 
             this.boss.Update(this.player.GetBounds());
-            this.bossHealth.Update(this.boss.GetCurrentHealth());
-            this.collision.CheckLineCollisionEntity(this.boss);
 
-            this.CheckAcornCollisionWithPlayer();
-            this.CheckAnimalFlurryCollisionWithPlayer();
+            if (bossState === BOSS_STATE.PREINTRO || bossState === BOSS_STATE.INTRO) {
+                INPUT.ClearInputs();
+                INPUT.SetLocked(true);
 
-            const branchSmashBounds = this.boss.GetBranchSmashBounds();
+                if (bossState === BOSS_STATE.INTRO) {
+                    this.camera.shake(0.5);
+                }
 
-            if (branchSmashBounds && this.collision.CheckBoxCollision(branchSmashBounds, this.player.GetBounds())) {
-                this.player.DoDamage(this.boss.GetBranchSmashDamage());
+            } else if (bossState === BOSS_STATE.DEAD) {
+                this.isBossSequence = false;
+                this.isBossDefeated = true;
+                SOUND_MANAGER.SetBossSequence(false);
             }
+            
         } else {
 
             // BEARS
@@ -684,7 +734,6 @@
 
                 if (!this.exitTransition.IsComplete()) {
                     this.exitTransition.update(currentGameTime);
-                    this.FadeOutSound();
                 } else {
                     this.isLevelComplete = true;
                 }
@@ -700,9 +749,9 @@
             this.honeyBlastKeyIcon.SetImage(KEY_BINDINGS.SPECIAL[this.inputType].path);
         }
 
-        // DEBUG.Update('PLAYER', `Position X: ${this.player.GetPosition().x}`);
-        // DEBUG.Update('ENEMIESLEFT', `Enemies Remaining: ${this.bears.length}`);
-        // DEBUG.Update('BOSSSEQ', `Boss Sequence: ${this.isBossSequence ? 'YES' : 'NO'}`);
+        DEBUG.Update('PLAYER', `Position X: ${this.player.GetPosition().x}`);
+        DEBUG.Update('ENEMIESLEFT', `Enemies Remaining: ${this.bears.length}`);
+        DEBUG.Update('BOSSSEQ', `Boss Sequence: ${this.isBossSequence ? 'YES' : 'NO'}`);
         
         const totalHives = this.beeHives.length;
         let hivesRumaged = 0;
@@ -713,8 +762,11 @@
             hivesRumaged += hiveState >= HIVE_STATE.FALLING ? 1 : 0;
             hivesCollected += hiveState === HIVE_STATE.EMPTY;
         }
-        
-        // DEBUG.Update('HIVES', `Hives T: ${totalHives} | R: ${hivesRumaged} | C: ${hivesCollected}`);
+
+        // Next Level Cheat
+        if (INPUT.GetInput(KEY_BINDINGS.NEXTLEVEL)) {
+            this.isLevelComplete = true;
+        }
         
     }
 
@@ -730,16 +782,9 @@
             this.collision.DrawCollisionLines(cameraPos);
         }
 
-        if (+this.selectedLevel === 1) {
-            const exitLogPositionX = this.exitLogBack.GetPosition().x;
-            if (exitLogPositionX > cameraPos.x && exitLogPositionX < cameraPlusCanvas.x) {
-                this.exitLogBack.Draw();
-            }
-        }
-
-        if (this.isBossSequence) {
+        // if (this.isBossSequence) {
             this.boss.Draw();
-        }
+        // }
         
         if (!this.isBossSequence) {
             // Bee Hive - before rummaged draw order
@@ -775,21 +820,17 @@
                 }
             }
         }
-        
-        if (+this.selectedLevel === 0) {
-            this.forestForegroundFront.Draw();
-        } else if (+this.selectedLevel === 1) {
-            // this.caveFront.Draw();
-            this.exitLogFront.Draw();
-        } else if (+this.selectedLevel === 2) {
-            this.twilightExit.Draw();
+
+        // FRONT BGs
+        for (const front of this.fronts) {
+            front.Draw();
         }
 
         this.camera.end();
 
         if (this.isBossSequence) {
-            this.bossName.Draw();
-            this.bossHealth.Draw();
+            this.boss.GetNameBar().Draw();
+            this.boss.GetHealthBar().Draw();
         }
 
         this.playerHealthBar.Draw();

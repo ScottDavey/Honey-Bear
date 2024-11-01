@@ -306,12 +306,9 @@ class Character {
         if (this.isPlayer) {
             const walkSound = this.walkSounds[this.groundType];
 
-            DEBUG.Update('WALK SOUND:', `WALK SOUND OFF: ${this.groundType}`);
-
             // WALK
             if (walkSound) {
                 if (this.isOnGround && Math.abs(this.velocity.x) > 0) {
-                    DEBUG.Update('WALK SOUND:', 'WALK SOUND ON');
                     this.walkSounds[this.groundType].Play();
                 } else {
                     this.walkSounds[this.groundType].Stop();

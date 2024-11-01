@@ -119,8 +119,11 @@ const GameTime = {
     elapsed: 0,
     lastUpdate: 0,
     totalGameTime: 0,
+    highestElapsed: 0,
+    isResetLocked: false,
     getElapsed() {
-        return this.elapsed;
+        const maxElapsedTime = 0.02;    // 1/30th of a second to rougly match 60FPS
+        return Math.min(this.elapsed, maxElapsedTime);
     },
     getLastUpdate() {
         return this.lastUpdate;
@@ -136,6 +139,22 @@ const GameTime = {
         this.elapsed = curTime - this.lastUpdate;
         this.totalGameTime = curTime - this.startTime;
         this.lastUpdate = curTime;
+
+        if (this.elapsed > this.highestElapsed && this.elapsed < 1) {
+            this.highestElapsed = this.elapsed;
+        }
+
+        // We're keeping track of the highest elapsed time. But this can allow us to reset that value
+        if (INPUT.GetInput(KEY_BINDINGS.RESETELAPSED)) {
+            if (!this.isResetLocked) {
+                this.isResetLocked = true;
+                this.highestElapsed = 0;
+            }
+        } else {
+            this.isResetLocked = false;
+        }
+
+        DEBUG.Update('ELAPSED', `Highest Elapsed: ${this.highestElapsed}`);
     }
 }
 

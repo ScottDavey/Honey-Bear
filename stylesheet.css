@@ -19,14 +19,14 @@ body {
     position: absolute;
     top: 0;
     left: 0;
-    background-color: #00000033;
+    background-color: #00000055;
 }
 
 #startOverlay #startButton {
     width: 200px;
     padding: 10px 0px;
     position:relative;
-    top: 40%;
+    top: 25%;
     left: 45%;
     border: 1px solid #000000;
     border-radius: 5px;
@@ -67,6 +67,7 @@ a:hover {
     background-color: #000000;
     border: 2px solid #f8b61d;
     border-radius: 10px;
+    cursor: none;
 }
 
 #GamePad {

@@ -37,6 +37,10 @@ class HintText {
         this.texture.SetBorder(color);
     }
 
+    SetString(str) {
+        this.captionText.SetString(str);
+    }
+
     Update(position) {
 
         this.position = position;
@@ -53,8 +57,6 @@ class HintText {
     }
 
     Draw() {
-        DEBUG.Update('ICON', `Key Binding: ${this.keyBinding.name}`);
-
         this.keyBinding = this.icon[INPUT.GetInputType()];
         this.sprite.SetImage(this.keyBinding.path);
 

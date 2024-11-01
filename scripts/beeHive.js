@@ -60,10 +60,9 @@ class BeeHive {
             active: '#F8B61D'
         };
         const hintKey = KEY_BINDINGS.INTERACT;
-        this.hintTextRummage = new HintText(hintKey, 'Rummage', new Vector2(this.position.x, this.position.y), new Vector2(4, -40));
-        this.showRummageHint = false;
-        this.hintTextCollect = new HintText(hintKey, 'Collect Honey (+)', new Vector2(this.position.x, this.position.y), new Vector2(4, -40));
-        this.showCollectHint = false;
+        this.hiveHint = new HintText(hintKey, 'Rummage', new Vector2(this.position.x, this.position.y), new Vector2(4, -40));
+        this.shouldShowHint = false;
+        this.isInteractKeyReleased = true;
 
         this.LoadBees();
     }
@@ -85,8 +84,7 @@ class BeeHive {
     }
 
     SetHintPosition() {
-        this.hintTextRummage.Update(this.position);
-        this.hintTextCollect.Update(this.position);
+        this.hiveHint.Update(this.position);
 
         this.progressBar.SetPosition(new Vector2(
             this.position.x + 2.5,
@@ -151,36 +149,30 @@ class BeeHive {
         return this.state === HIVE_STATE.COLLECTING;
     }
 
-    Interact(isPresseingActionButton = false) {
-
-        this.showRummageHint = false;
-        this.showCollectHint = false;
+    Interact(isPressingActionButton = false) {
 
         if (!this.isPlayerInRange) {
             return;
         }
 
-        if (this.state < HIVE_STATE.FALLING) {
+        if (isPressingActionButton) {
 
-            this.showRummageHint = true;
-
-            if (isPresseingActionButton) {
+            if (this.state < HIVE_STATE.FALLING) {
                 this.Rummage();
-                this.hintTextRummage.SetBorder(this.hintBorder.active, 1);
-            } else {
-                this.hintTextRummage.SetBorder(this.hintBorder.normal, 1);
+            } else if (this.state === HIVE_STATE.ON_GROUND) {
+                if (this.isInteractKeyReleased) {
+                    this.state = HIVE_STATE.COLLECTING;
+                }
+            } else if (this.state === HIVE_STATE.COLLECTING) {
+                this.state = HIVE_STATE.EMPTY;
             }
 
-        } else if (this.state === HIVE_STATE.ON_GROUND) {
+            this.isInteractKeyReleased = false;
 
-            this.showCollectHint = true;
+        } else {
 
-            if (isPresseingActionButton) {
-                this.state = HIVE_STATE.COLLECTING;
-            }
+            this.isInteractKeyReleased = true;
 
-        } else if (this.state === HIVE_STATE.COLLECTING) {
-            this.state = HIVE_STATE.EMPTY;
         }
     }
 
@@ -188,6 +180,7 @@ class BeeHive {
         
         if (this.rummageProgress >= 100) {
             this.state = HIVE_STATE.FALLING;
+            this.hiveHint.SetString('Collect Honey (+)');
             return;
         }
 
@@ -201,6 +194,16 @@ class BeeHive {
         this.progressBar.Update(this.rummageProgress);
 
         this.rummageSound.Play();
+    }
+
+    HandleHintVisibility() {
+
+        if (this.isPlayerInRange && this.state !== HIVE_STATE.EMPTY) {
+            this.shouldShowHint = true;
+        } else {
+            this.shouldShowHint = false;
+        }
+
     }
 
     HandleRummagedSequence() {
@@ -230,6 +233,8 @@ class BeeHive {
         );
         this.isPlayerInRange = (diffPos.x < 75 && diffPos.y < 75);
 
+        this.HandleHintVisibility();
+
         if (this.state === HIVE_STATE.FALLING) {
             this.HandleRummagedSequence();
         }
@@ -257,17 +262,12 @@ class BeeHive {
             this.sprite.Draw();
         }
 
-        if (this.showRummageHint) {
-
-            this.hintTextRummage.Draw();
+        if (this.shouldShowHint) {
+            this.hiveHint.Draw();
 
             if (this.state < HIVE_STATE.FALLING) {
                 this.progressBar.Draw();
             }
-        }
-
-        if (this.showCollectHint) {
-            this.hintTextCollect.Draw();
         }
 
         for (const bee of this.bees) {

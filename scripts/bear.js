@@ -14,6 +14,8 @@ class Bear extends Character {
         this.meleeCooldownDuration = 5;
 
         this.maxMoveSpeed = 75;
+        this.maxRunSpeed = 215;
+        this.maxWalkSpeed = 75;
         this.isMoving = true;
 
         // Sprites        
@@ -23,8 +25,8 @@ class Bear extends Character {
             runLeftSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 1, 0.2, true, new Vector2(0, 0)),
             idleRightSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 4, 2, 0.25, true, new Vector2(0, 0)),
             idleLeftSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 4, 3, 0.25, true, new Vector2(0, 0)),
-            idleSwipeRightSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 8, 0.5, false, new Vector2(0, 0)),
-            idleSwipeLeftSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 9, 0.5, false, new Vector2(0, 0)),
+            idleSwipeRightSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 8, 1.5, false, new Vector2(0, 0)),
+            idleSwipeLeftSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 9, 1.5, false, new Vector2(0, 0)),
             jumpRightSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 2, 4, 0.2, false, new Vector2(0, 0)),
             jumpLeftSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 2, 5, 0.2, false, new Vector2(0, 0)),
             fallRightSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 1, 6, 0.08, false, new Vector2(0, 0)),
@@ -57,6 +59,10 @@ class Bear extends Character {
         this.isTrackingPlayer = isTracking;
     }
 
+    SetIsJumping() {
+        this.isJumping = true;
+    }
+
     GetIsTracking() {
         return this.isTrackingPlayer;
     }
@@ -81,11 +87,11 @@ class Bear extends Character {
         this.isTrackingPlayer = isTracking;
 
         if (isTracking) {
-            this.SetMaxMoveSpeed(150);
+            this.SetMaxMoveSpeed(this.maxRunSpeed);
             this.animations.runRightSprite.SetSpeed(0.07);
             this.animations.runLeftSprite.SetSpeed(0.07);
         } else {
-            this.SetMaxMoveSpeed(100);
+            this.SetMaxMoveSpeed(this.maxWalkSpeed);
             this.animations.runRightSprite.SetSpeed(0.3);
             this.animations.runLeftSprite.SetSpeed(0.3);
         }
@@ -165,7 +171,7 @@ class Bear extends Character {
                     this.isMoving = false;
                 }
 
-                // Attach if tracking and in striking distance
+                // Attack if tracking and in striking distance
                 if (isCloseToPlayer) {
                     this.MeleeAttack();
                 } else {
@@ -177,14 +183,12 @@ class Bear extends Character {
                     this.TrackPlayer(false);
                 }
 
-                if (this.isHittingWall && !this.isKnockingBack && !this.GetIsStunned()) this.isJumping = true;
-
             } else {
 
                 // We could see if the enemy is outside of their region and, if so, send them back.
                 // Obviously this depends on how far they travelled and whether or not it's even possible to get back.
 
-                // If 
+                // If the player gets too close, go after them
                 if (Math.abs(posDiff.x < 300 && Math.abs(posDiff.y < 300))) {
                     this.TrackPlayer(true);
                 }

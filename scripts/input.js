@@ -68,6 +68,14 @@ const KEY_BINDINGS = {
     FADE: {
         KEYBOARD: { name: 'H', value: 72, path: '' },
         GAMEPAD: { name: 'N/A', value: 1, path: '' },
+    },
+    NEXTLEVEL: {
+        KEYBOARD: { name: 'N', value: 78, path: '' },
+        GAMEPAD: { name: 'N/A', value: 1, path: '' },
+    },
+    RESETELAPSED: {
+        KEYBOARD: { name: 'R', value: 82, path: '' },
+        GAMEPAD: { name: 'N/A', value: 1, path: '' },
     }
 };
 
@@ -138,6 +146,8 @@ class Input {
     }
 
     OnInputEvent(e, type) {
+
+        DEBUG.Update('KEYCODE', `Key Code: ${e.keyCode}`);
 
         if (this.isLocked) {
             this.ClearInputs();

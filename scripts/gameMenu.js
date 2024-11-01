@@ -35,7 +35,7 @@ class GameMenu {
         this.overlay = new Texture(
             new Vector2(0, 0),
             new Vector2(CANVAS_WIDTH, CANVAS_HEIGHT),
-            '#00000066',
+            '#00000099',
             0,
             '#00000000'
         );
@@ -260,9 +260,6 @@ class GameMenu {
         }
 
         INPUT.ClearInputs();
-
-        DEBUG.Update('MUSIC', `Music ON: ${SOUND_MANAGER.GetMusicOn() ? 'YES' : 'NO'}`);
-        DEBUG.Update('SFX', `SFX ON: ${SOUND_MANAGER.GetSFXOn() ? 'YES' : 'NO'}`);
 
     }
 

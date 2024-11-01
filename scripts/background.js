@@ -3,14 +3,15 @@
 *****************************/
 class Background {
 
-    constructor(path, pos, size, isRepeating = false, parallax = new Vector2(0, 0), worldWidth) {
+    constructor(path, pos, size, isRepeating = false, parallaxMultiplier = new Vector2(0, 0), worldWidth) {
         this.path = path;
 		this.pos = pos;
 		this.size = size;
 		this.isRepeating = isRepeating;
-		this.parallax = parallax;
+		this.parallaxMultiplier = parallaxMultiplier;
 		this.sprites = [];
         this.worldWidth = worldWidth;
+		this.cameraPos = new Vector2(0, 0);
 
 		this.refreshRepeatingSprites();
     }
@@ -23,12 +24,18 @@ class Background {
         return this.size;
     }
 
-	Update(pos) {
+	GetParallaxMultiplier() {
+		return this.parallaxMultiplier;
+	}
+
+	Update(cameraPos, adjustedCameraPosition) {
+		this.cameraPos = cameraPos;
+
 		for (let i = 0; i < this.sprites.length; i++) {
 			this.sprites[i].Update(
 				new Vector2(
-					pos.x + (i * this.size.x),
-					pos.y
+					adjustedCameraPosition.x + (i * this.size.x),
+					adjustedCameraPosition.y
 				)
 			);
 		}
@@ -57,8 +64,18 @@ class Background {
 	}
 
 	Draw() {
+
 		for (const sprite of this.sprites) {
-			sprite.Draw();
+			const spritePosition = sprite.GetPosition();
+
+			// Only draw if it's in view
+			if ((spritePosition.x < this.cameraPos.x && spritePosition.x + this.size.x > this.cameraPos.x) ||
+				(spritePosition.x >= this.cameraPos.x && spritePosition.x < this.cameraPos.x + CANVAS_WIDTH) ||
+				!this.isRepeating
+			) {
+				sprite.Draw();
+			}
+
 		}
 	}
 

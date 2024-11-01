@@ -11,13 +11,19 @@ class SoundManager {
         this.gameSubState = undefined;
         this.isGamePaused = false;
         this.muteAll = false;
+        this.isBossSequence = false;
 
         // MUSIC
         this.isMusicOn = true;
-        this.musicVolume = 0.3;
+        this.defaultVolume = 0.3;
+        this.pauseVolume = (this.defaultVolume / 3).toFixed(2);
+        this.musicVolume = this.defaultVolume;
         this.music = [];
         this.isMusicPlaying = false;
         this.currentSong = undefined;
+        this.currentSongName = 'None';
+        this.bossMusic = undefined;
+        this.bossMusicName = undefined;
         this.nextSong = undefined;
         this.currentSongIndex = -1;
         this.currentSongHUB = new Text(
@@ -56,6 +62,17 @@ class SoundManager {
 
         this.gameState = gameState;
         this.previousGameState = this.gameState;
+
+        const bossMusic = this.music.find(e => e.region === 'BOSS');
+        this.bossMusicName = bossMusic.name;
+        this.bossMusic = new Sound(
+            `sounds/music/${bossMusic.path}`,
+            'MUSIC',
+            false,
+            bossMusic.isLooping,
+            this.musicVolume,
+            3.0
+        )
     }
 
     GetMusicOn() {
@@ -64,6 +81,10 @@ class SoundManager {
 
     GetSFXOn() {
         return this.isSFXOn;
+    }
+
+    SetBossSequence(isBossSequence) {
+        this.isBossSequence = isBossSequence;
     }
 
     SetMusicOn(isOn) {
@@ -114,13 +135,17 @@ class SoundManager {
         
     }
     
-    Fade() {
+    Fade(song) {
+
+        if (!song) {
+            return;
+        }
 
         if (!this.fadeTimer) {
             this.fadeTimer = new Timer(GameTime.getCurrentGameTime(), this.fadeDuration);
         }
 
-        if (this.fadeTimer.IsComplete() || !this.currentSong) {
+        if (this.fadeTimer.IsComplete() || !song) {
             this.fadeTimer = undefined;
             this.isFading = false;
             this.fadeDirection = this.fadeDirection < 0 ? 1 : -1;
@@ -128,11 +153,12 @@ class SoundManager {
         }
 
         const fadeTimerRemainder = this.fadeTimer.GetRemainder(5);
+        const musicVolume = song.GetVolume();
         let newVolume;
 
         if (this.fadeDirection < 0) {
             // Fade Out by multiplying the total music volume by the percentage of remaining time
-            newVolume = +(this.musicVolume * (fadeTimerRemainder / this.fadeDuration));
+            newVolume = +(musicVolume * (fadeTimerRemainder / this.fadeDuration));
 
             if (newVolume < (0.01)) {
                 newVolume = 0;
@@ -140,16 +166,16 @@ class SoundManager {
         } else {
             // Fade in by multiplying the total volume by the percentage of time elapsed
             const timeElapsed = this.fadeDuration - fadeTimerRemainder;
-            newVolume = +(this.musicVolume * (timeElapsed / this.fadeDuration));
+            newVolume = +(musicVolume * (timeElapsed / this.fadeDuration));
 
             // Cap the volume at the max level if we're close to 99% of it.
-            if (newVolume > (this.musicVolume * 0.99)) {
-                newVolume = this.musicVolume;
+            if (newVolume > (musicVolume * 0.99)) {
+                newVolume = musicVolume;
             }
 
         }
 
-        this.currentSong.SetVolume(newVolume);
+        song.SetVolume(newVolume);
 
     }
 
@@ -166,11 +192,69 @@ class SoundManager {
         if (gameState === GAME_STATES.PRIMARY.MAIN_MENU) {
 
             if (!this.currentSong) {
-                song = this.music.find(e => e.region === 'MAIN MENU');             
+                song = this.music.find(e => e.region === 'MAIN MENU');
+            } else {
+                const songTimeRemaining = this.currentSong.GetDuration() - this.currentSong.GetCurrentTime();
+
+                // If our song is getting close to ending, fade it out
+                if (!this.isFading && this.currentSong && songTimeRemaining <= this.fadeDuration) {
+                    this.isFading = true;
+                    this.fadeDirection = -1;
+                }
+
+                // After fasing out, we need to reset the volume 
+                if (this.isFading && songTimeRemaining <= 0) {
+                    this.isFading = false;
+                    this.currentSong.SetVolume(this.musicVolume);
+                }
             }
 
         } else if (gameState === GAME_STATES.PRIMARY.PLAYING) {
 
+            if (this.isBossSequence) {
+
+                if (this.currentSong.IsPlaying()) {
+                    if (this.currentSong.GetVolume() > 0) {
+                        this.Fade(this.currentSong);
+                    } else {
+                        this.currentSong.Stop();
+                    }
+                } else {
+
+                    if (!this.bossMusic.IsPlaying()) {
+                        this.bossMusic.SetVolume(this.musicVolume);
+                        this.bossMusic.Play();
+                    }
+
+                }
+
+                this.currentSongHUB.SetString(`Music: ${this.bossMusicName}`);
+
+                return;
+            }
+
+            // If the boss music is playing, it shouldn't be. Fade it out and start the currentSong back up once it's done
+            if (this.bossMusic.IsPlaying()) {
+
+                this.fadeDirection = -1;
+
+                if (this.bossMusic.GetVolume() > 0) {
+                    this.Fade(this.bossMusic);
+                } else {
+                    this.bossMusic.Stop();
+                }
+
+            } else if (this.currentSong && !this.currentSong.IsPlaying()) {
+
+                this.fadeDirection = 1;
+                this.currentSong.Play();
+
+                if (this.currentSong.GetVolume() < this.musicVolume) {
+                    this.Fade(this.currentSong);
+                }
+
+            }
+        
             if (this.currentSong) {
                 const songTimeRemaining = this.currentSong.GetDuration() - this.currentSong.GetCurrentTime();
 
@@ -206,7 +290,7 @@ class SoundManager {
             this.isMusicPlaying = false;
             this.currentSong = undefined;
             this.nextSong = undefined;
-            this.currentSongHUB.SetString(`Music: None`);
+            this.currentSongName = 'None';
 
             // Keep track of the previous game state
             this.previousGameState = this.gameState;
@@ -222,8 +306,7 @@ class SoundManager {
                 this.musicVolume,
                 1.0
             );
-    
-            this.currentSongHUB.SetString(`Music: ${song.name}`);
+            this.currentSongName = song.name;
         }
 
         // If we're not playing, and we have a song queued up, play it.
@@ -232,13 +315,11 @@ class SoundManager {
             this.currentSong.Play();
         }
 
-        // If we're paused, lower the music volume.
-        // If we were paused but have resumed, reset the volume to its original
         if (this.isMusicPlaying && this.currentSong) {
-            if (isPaused !== this.isGamePaused) {
-                this.currentSong.SetVolume(this.musicVolume);
-            } else if (this.isGamePaused) {
-                this.currentSong.SetVolume((this.musicVolume / 3).toFixed(2));
+            if (isPaused) {
+                this.currentSong.SetVolume(this.pauseVolume);
+            } else {
+                this.currentSong.SetVolume(this.defaultVolume);
             }
         }
 
@@ -247,12 +328,7 @@ class SoundManager {
         // Set our current game state
         this.gameState = gameState;
 
-        if (this.currentSong) {
-            // DEBUG.Update('SONGDURATION', `SONG LENGTH: ${this.currentSong.GetDuration()}`);
-            // DEBUG.Update('SONGLEFT', `SONG REMAINING: ${(this.currentSong.GetDuration() - this.currentSong.GetCurrentTime()).toFixed(3)}`);
-            // DEBUG.Update('MUSICVOL', `MUSIC VOL: ${this.currentSong.GetVolume()}`);
-            // DEBUG.Update('FADETIMER', `FADE TIMER COMPLETE: ${this.fadeTimer ? this.fadeTimer.IsComplete() ? 'YES' : 'NO' : 'N/A'}`);
-        }
+        this.currentSongHUB.SetString(`Music: ${this.currentSongName}`);
     }
 
     Update(gameState, isPaused, playerPosition) {
@@ -272,11 +348,6 @@ class SoundManager {
         if (this.isFading) {
             this.Fade();
         }
-
-        // DEBUG.Update('FADE1', `Is Fade Locked: ${this.isFadeButtonLocked ? 'YES' : 'NO'}`);
-        // DEBUG.Update('FADE2', `Is Fading: ${this.isFading ? 'YES' : 'NO'}`);
-
-        // this.playerPosition = new Vector2(playerPosition.x, playerPosition.y);
 
     }
 

@@ -2,245 +2,181 @@
 *****  TREE MONSTER (Level 1 Boss)  *****
 ****************************************/
 
-class TreeMonster extends Character {
+class TreeMonster {
 
     constructor(position, size, worldBounds) {
-        super(position, size, false);
-        this.worldBounds = worldBounds;
+        this.position = position;
         this.size = size;
-        this.initialHealth = 500000;
+        this.worldBounds = worldBounds;
+        this.state = BOSS_STATE.PREINTRO;
+        this.bounds = new Rectangle(this.position.x + 365, this.position.y + 240, 200, 150);
+        this.initialHealth = 100000;
         this.health = this.initialHealth;
-        this.maxMoveSpeed = 100;
         this.isCloseToPlayer = false;
         this.playerBounds = undefined;
-        this.shouldMoveTowardsPlayer = false;
 
-        this.state = BOSS_STATE.IDLE;
+        // STATE DURATIONS
+        this.stateTimer = undefined;
+        this.preIntroDuration = 3;
+        this.introDuration = 2;
 
-        const currentGameTime = GameTime.getCurrentGameTime();
-        this.idleTimer = new Timer(currentGameTime, 5);
-        this.isAttacking = false;
-        this.isMeleeAttack = false;
-        this.branchSmashDamage = 0;
-        this.branchSmashDamageRange = [20000, 30000];
-        this.currentAttack = undefined;
-        this.attackTimer = undefined;
-        this.attackCooldownDuration = [1, 3];
-        this.attackCooldown = new Timer(currentGameTime, 5);
-        this.moveList = [
-            {
-                name: 'ACORN_DROP',
-                fn: this.AcornDrop,
-                duration: 5,
-                isProximityBased: false,
-            },
-            {
-                name: 'BRANCH_SMASH',
-                fn: this.BranchSmash,
-                duration: 5,
-                isProximityBased: true,
-            },
-            // Doubling up to increase its chance of being chosen
-            {
-                name: 'BRANCH_SMASH',
-                fn: this.BranchSmash,
-                duration: 5,
-                isProximityBased: true,
-            },
-            {
-                name: 'ANIMAL_FLURRY',
-                fn: this.AnimalFlurry,
-                duration: 3,
-                isProximityBased: false,
-            }
-        ];
-        this.branchSmashBounds = undefined;
-        this.branchSmashTimer = undefined;
-        this.branchSmashDuration = 0.5;
-        this.acorns = [];
-        this.previousAcornDropTime = 0;
-        this.animalFlurry = undefined;
-        this.canThrowAnimalFlurry = false;
+        this.dyingDuration = 3;
 
-        this.spritesheet = 'images/spritesheets/TreeMonster.png';
+        // NAME AND HEALTH
+        this.name = new Text(
+            'Tree Monster',
+            new Vector2(CANVAS_WIDTH / 2 - 200, 35),
+            'Lobster, Raleway',
+            'normal',
+            20,
+            '#FFFFFF',
+            'left'
+        );
+        this.healthBar = new StatusBar(
+            new Vector2(CANVAS_WIDTH / 2 - 200, 50),
+            new Vector2(400, 30),
+            0,
+            '#990000',
+            2,
+            '#550000',
+            true,
+            '#FFFFFF'
+        );
+        this.healthBar.SetMaxValue(this.initialHealth);
+        this.statusText = [];
+
+        // SPRITE
+        const spritesheet = 'images/spritesheets/TreeMonster_Spritesheet.png';
+
+        // path, pos, frameHeight, frameWidth, totalFrames, animationSeq, speed, isLooping, offset
         this.animations = {
-            idleLeft: new Nimation(
-                this.spritesheet,
-                new Vector2(this.position.x, this.position.y),
-                300,
-                300,
-                6,
-                0,
-                0.1,
-                true,
-                new Vector2(0, 0)),
-            idleRight: new Nimation(
-                this.spritesheet,
-                new Vector2(this.position.x, this.position.y),
-                300,
-                300,
-                6,
-                1,
-                0.1,
-                true,
-                new Vector2(0, 0))
+            preIntro: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 439, 936, 1, 0, 0.1, false, new Vector2(0, 0)),
+            intro: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 439, 936, 11, 1, 0.15, false, new Vector2(0, 0)),
+            idle: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 439, 936, 2, 2, 0.5, true, new Vector2(0, 0)),
+            dying: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 439, 936, 6, 3, 0.15, false, new Vector2(0, 0)),
+            dead: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 439, 936, 1, 4, 0.5, true, new Vector2(0, 0)),
         };
+        this.sprite = undefined;
+
+        this.eyesPositionCenter = new Vector2(this.bounds.x + 42, this.bounds.y + 45);
+        this.eyes = new Sprite('images/entities/TreeMonster_Eyes.png', this.eyesPositionCenter, new Vector2(113, 21));
+        this.eyeWhites = new Texture(
+            new Vector2(this.bounds.x, this.bounds.y + 20),
+            new Vector2(200, 75),
+            '#FFFFFF',
+            1,
+            '#FFFFFF'
+        );
+    }
+
+    Initialize() {
+        this.sprite = this.animations.preIntro;
+    }
+
+    GetNameBar() {
+        return this.name;
+    }
+
+    GetHealthBar() {
+        return this.healthBar;
+    }
+
+    GetBounds() {
+        return this.bounds;
+    }
+
+    GetIsDead() {
+        return this.state === BOSS_STATE.DEAD;
+    }
+
+    GetState() {
+        return this.state;
+    }
+
+    SetIsDying() {
+        this.state = BOSS_STATE.DYING;
+    }
+
+    SetIsDead() {
+        this.state = BOSS_STATE.DEAD;
     }
 
     ResetHealth() {
         this.health = this.initialHealth;
     }
 
-    AcornDrop() {
+    DoDamage(initialDamage) {
+        this.health -= initialDamage.amount;
+        this.health = (this.health < 0) ? 0 : this.health;
 
-        const currentGameTime = GameTime.getCurrentGameTime();
-        const timeSincelastAcornDrop = +(currentGameTime - this.previousAcornDropTime);
-
-        if (this.previousAcornDropTime === 0) {
-            this.previousAcornDropTime = currentGameTime;
-        }
-
-        // Every 0.25 seconds, release an acorn
-        if (+(timeSincelastAcornDrop.toFixed(2)) === 0.15) {
-            this.previousAcornDropTime = currentGameTime;
-
-            const position = new Vector2(random(this.worldBounds.x, this.worldBounds.x + CANVAS_WIDTH), -100);
-            this.acorns.push(
-                new Acorn(position)
+        this.statusText.push(
+            new StatusText(
+                'DAMAGE',
+                initialDamage.amount,
+                initialDamage.isCrit,
+                new Vector2(this.bounds.x + (this.bounds.width / 2) - 30, this.bounds.y),
+                this.isPlayer
             )
+        );
+
+        if (this.state <= BOSS_STATE.STUNNED && this.health <= 0) {
+            this.SetIsDying();
+            this.deathStartTime = GameTime.getCurrentGameTime();
         }
     }
 
-    GetAcorns() {
-        return this.acorns;
+    HandleEyeMovement() {
+
+        this.eyes.Update(
+            new Vector2(
+                Clamp(this.playerBounds.x, this.eyesPositionCenter.x - 12, this.eyesPositionCenter.x + 12),
+                Clamp(this.playerBounds.y, this.eyesPositionCenter.y - 4, this.eyesPositionCenter.y + 7)
+            )
+        );
+
     }
 
-    BranchSmash() {
+    HandleAnimations() {
 
-        if (this.attackTimer.GetRemainder(1) === 4) {
-            const branchSmashHeight = this.size.y / 2;
-            const branchSmashPosition = new Vector2(
-                this.bounds.center.x - (this.dir < 0 ? 300 : 0),
-                this.position.y + this.size.y - branchSmashHeight
-            );
-
-            this.branchSmashBounds = new Texture(
-                branchSmashPosition,
-                new Vector2(300, branchSmashHeight),
-                '#88000088',
-                1,
-                '#880000'
-            );
-            this.branchSmashTimer = new Timer(GameTime.getCurrentGameTime(), this.branchSmashDuration);
-            this.branchSmashDamage = random(this.branchSmashDamageRange[0], this.branchSmashDamageRange[1]);
-        }
-    }
-
-    GetBranchSmashBounds() {
-        const branchSmashBounds = this.branchSmashBounds ? this.branchSmashBounds.GetRect() : undefined;
-        return branchSmashBounds;
-    }
-
-    GetBranchSmashDamage() {
-        return {
-            amount: this.branchSmashDamage,
-            isCrit: false
-        };
-    }
-
-    AnimalFlurry() {
-        if (!this.animalFlurry && this.canThrowAnimalFlurry) {
-            this.animalFlurry = new AnimalFlurry(
-                this.position,
-                this.dir
-            );
-            this.canThrowAnimalFlurry = false;
-        }
-    }
-
-    GetAnimalFlurry() {
-        return this.animalFlurry;
-    }
-
-    HandleAttack() {
-        const currentGameTime = GameTime.getCurrentGameTime();
-
-        // COOLDOWN & NEW ATTACK
-        if (this.attackCooldown && this.attackCooldown.IsComplete()) {
-            this.attackCooldown = undefined;
-
-            // Choose a random move.
-            // To provide a wider range of numbers, it'll be a random number out of 1000
-
-            // Get the total move list length
-            const moveListLength = this.moveList.length;
-            // Get the percetange range each move will have of being chosen. ex: out of 3 moves, each will have 33%
-            const moveListSpreadPercentage = Math.floor(1000 / moveListLength);
-            // Choose random number out of 1000
-            const randomNumber = random(1, 1000);
-            // Go through the move list to find the move that falls inside the random number range
-            const randomMove = this.moveList.find((move, index) => {
-                // Get upper range of percentage based on the move's index value
-                const upperPercentRange = (index + 1) * moveListSpreadPercentage;
-                // Also get the lower range. This will just be the index * the max range - the range spread
-                // ex: index 0, range spread 33% -> { lower: 0, upper: 33 }
-                const movePercentRange = { lower: upperPercentRange - moveListSpreadPercentage, upper: upperPercentRange };
-                // Check to see if the random number falls within the range
-                const isInRange = (randomNumber > movePercentRange.lower && randomNumber <= movePercentRange.upper);
-
-                return isInRange;
-            });
-
-            this.currentAttack = randomMove;
-
-            if (this.currentAttack.name === 'ANIMAL_FLURRY') {
-                this.canThrowAnimalFlurry = true;
-            }
-
-            // DEBUG.Update('NEXTATTACK', `Next Attack: ${this.currentAttack.name}`);
+        if (!this.sprite) {
+            this.sprite = this.animations.intro;
         }
 
-        // If we're not yet attacking but we have our next attack ready,
-        //  check to see if it's proximity based. If so, move towards player
-        //  before starting. Else, start attack
-        if (!this.isAttacking && this.currentAttack) {
-            if (this.currentAttack.isProximityBased) {
-                if (this.isCloseToPlayer) {
-                    this.attackTimer = new Timer(currentGameTime, this.currentAttack.duration);                
-                    this.shouldMoveTowardsPlayer = false;
-                    this.isAttacking = true;
-                } else {
-                    this.shouldMoveTowardsPlayer = true;
-                }
+        if (this.state === BOSS_STATE.PREINTRO) {
+            this.sprite = this.animations.preIntro;
+        } else if (this.state === BOSS_STATE.INTRO) {
+            this.sprite = this.animations.intro;
+        } else if (this.state === BOSS_STATE.IDLE) {
+            this.sprite = this.animations.idle;
+            this.HandleEyeMovement();
+        } else if (this.state === BOSS_STATE.DYING) {
+            this.sprite = this.animations.dying;
+        } else if (this.state === BOSS_STATE.DEAD) {
+            this.sprite = this.animations.dead;
+        } else {
+            this.sprite = this.animations.idle;
+        }
+
+        this.sprite.Update(this.position);
+
+    }
+
+    HandleHealthAndStatusText(currentGameTime) {
+        this.healthBar.Update(this.health);
+
+        for (let d = 0; d < this.statusText.length; d ++) {
+            const dt = this.statusText[d];
+
+            if (!dt.IsComplete()) {
+                dt.Update(currentGameTime);
             } else {
-                this.attackTimer = new Timer(currentGameTime, this.currentAttack.duration);
-                this.isAttacking = true;
-            }            
+                this.statusText.splice(d, 1);
+            }
         }
-
-        // If attacking and the timer has completed, reset attack and start cooldown
-        if (this.isAttacking && this.attackTimer && this.attackTimer.IsComplete()) {
-            this.isAttacking = false;
-            this.isMeleeAttack = false;
-            this.branchSmashDamage = 0;
-            this.animalFlurry = undefined;
-            this.previousAcornDropTime = 0;
-            this.attackTimer = undefined;
-            this.currentAttack = undefined;
-
-            this.attackCooldown = new Timer(currentGameTime, random(this.attackCooldownDuration[0], this.attackCooldownDuration[1]));
-        }
-
-        // WE'RE ATTACKING. call the attack function
-        if (this.isAttacking && this.attackTimer && !this.attackTimer.IsComplete() && this.currentAttack) {
-            this.currentAttack.fn.apply(this);
-        }
-
-        // DEBUG.Update('COOLDOWN', `Cooldown: ${this.attackCooldown ? this.attackCooldown.GetRemainder(2) : 'N/A'}`);
-
     }
 
     Update(playerBounds) {
+        const currentGameTime = GameTime.getCurrentGameTime();
 
         this.playerBounds = playerBounds;
 
@@ -251,71 +187,76 @@ class TreeMonster extends Character {
 
         this.isCloseToPlayer = (Math.abs(playerPosDiff.x) < 250);
 
-        this.movement = 0;
+        // HANDLE STATES
 
-        // Always face the player, unless the current attack is "BRANCH_SMASH" and the attack has begun
-        if (!(this.currentAttack && this.currentAttack.name === 'BRANCH_SMASH' && this.isAttacking)) {
-            if (playerPosDiff.x < 0) {
-                this.sprite = this.animations.idleRight;
-                this.dir = 1;
-            } else {
-                this.sprite = this.animations.idleLeft;
-                this.dir = -1;
+        if (!this.state) {
+            this.state = BOSS_STATE.PREINTRO;
+        }
+
+        if (this.state === BOSS_STATE.PREINTRO) {
+            
+            if (!this.stateTimer) {
+                this.stateTimer = new Timer(currentGameTime, this.preIntroDuration);
+            }
+
+            if (this.stateTimer.IsComplete()) {
+                this.state = BOSS_STATE.INTRO;
+                this.stateTimer = undefined;
+            }
+
+        } else if (this.state === BOSS_STATE.INTRO) {
+
+            if (!this.stateTimer) {
+                this.stateTimer = new Timer(currentGameTime, this.introDuration);
+            }
+
+            if (this.stateTimer.IsComplete()) {
+                this.state = BOSS_STATE.IDLE;
+                this.stateTimer = undefined;
+            }
+
+        } else if (this.state === BOSS_STATE.INTRO) {
+
+
+
+        } else if (this.state === BOSS_STATE.DYING) {
+            if (!this.stateTimer) {
+                this.stateTimer = new Timer(currentGameTime, this.dyingDuration);
+            }
+
+            if (this.stateTimer.IsComplete()) {
+                this.state = BOSS_STATE.DEAD;
+                this.stateTimer = undefined;
             }
         }
 
-        if (this.shouldMoveTowardsPlayer) {
-            this.movement = this.dir;
+        this.HandleAnimations();
+
+        this.HandleHealthAndStatusText(currentGameTime);
+
+        // DEBUG
+
+        DEBUG.Update('BOSSSTATE', `Boss State: ${Object.keys(BOSS_STATE).find(key => BOSS_STATE[key] === this.state)}`);
+        if (this.stateTimer) {
+            DEBUG.Update('INTROTIMER', `BOSS Timer: ${this.stateTimer.GetRemainder(2)}`);
         }
 
-        // Handle attacks
-        this.HandleAttack();
-
-        if (this.branchSmashBounds && this.branchSmashTimer && this.branchSmashTimer.IsComplete()) {
-            this.branchSmashBounds = undefined;
-            this.branchSmashTimer = undefined;
-        }
-
-        for (let a = 0; a < this.acorns.length; a++) {
-            const acorn = this.acorns[a];
-
-            acorn.Update();
-
-            if (acorn.GetPosition().y > this.worldBounds.y + CANVAS_HEIGHT || acorn.GetHasHitPlayer()) {
-                this.acorns.splice(a, 1);
-            }
-        }
-
-        if (this.animalFlurry) {
-            const animalFlurryPositionX = this.animalFlurry.GetPosition().x;
-
-            this.animalFlurry.Update();
-
-            if (this.animalFlurry.GetHasHitPlayer() ||
-                animalFlurryPositionX < this.worldBounds.x ||
-                this.animalFlurryPositionX > this.worldBounds.x + CANVAS_WIDTH
-            ) {
-                this.animalFlurry = undefined;
-            }
-        }
-
-        super.Update();
     }
 
-    Draw() {
-        super.Draw();
+    Draw () {
 
-        for (const acorn of this.acorns) {
-            acorn.Draw();
+        if (this.sprite) {  
+            if (this.state === BOSS_STATE.IDLE) {
+                this.eyeWhites.Draw();
+                this.eyes.Draw();
+            }
+            this.sprite.Draw();
         }
 
-        if (this.animalFlurry) {
-            this.animalFlurry.Draw();
+        for (const dt of this.statusText) {
+            dt.Draw();
         }
 
-        if (this.branchSmashBounds) {
-            this.branchSmashBounds.Draw();
-        }
     }
 
 }

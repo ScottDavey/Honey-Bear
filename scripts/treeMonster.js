@@ -19,54 +19,50 @@ class TreeMonster {
         this.stateTimer = undefined;
         this.preIntroDuration = 3;
         this.introDuration = 2;
-
+        this.attackIntroDuration = 0;   // Determined by the attack type
         this.dyingDuration = 3;
-
-        // NAME AND HEALTH
-        this.name = new Text(
-            'Tree Monster',
-            new Vector2(CANVAS_WIDTH / 2 - 200, 35),
-            'Lobster, Raleway',
-            'normal',
-            20,
-            '#FFFFFF',
-            'left'
-        );
-        this.healthBar = new StatusBar(
-            new Vector2(CANVAS_WIDTH / 2 - 200, 50),
-            new Vector2(400, 30),
-            0,
-            '#990000',
-            2,
-            '#550000',
-            true,
-            '#FFFFFF'
-        );
-        this.healthBar.SetMaxValue(this.initialHealth);
-        this.statusText = [];
 
         // SPRITE
         const spritesheet = 'images/spritesheets/TreeMonster_Spritesheet.png';
 
         // path, pos, frameHeight, frameWidth, totalFrames, animationSeq, speed, isLooping, offset
         this.animations = {
-            preIntro: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 439, 936, 1, 0, 0.1, false, new Vector2(0, 0)),
-            intro: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 439, 936, 11, 1, 0.15, false, new Vector2(0, 0)),
-            idle: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 439, 936, 2, 2, 0.5, true, new Vector2(0, 0)),
-            dying: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 439, 936, 6, 3, 0.15, false, new Vector2(0, 0)),
-            dead: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 439, 936, 1, 4, 0.5, true, new Vector2(0, 0)),
+            preIntro: new Nimation(spritesheet,     new Vector2(this.position.x, this.position.y),      439, 936, 1,    0, 0.1,     false,  new Vector2(0, 0)),
+            intro: new Nimation(spritesheet,        new Vector2(this.position.x, this.position.y),      439, 936, 11,   1, 0.15,    false,  new Vector2(0, 0)),
+            idle: new Nimation(spritesheet,         new Vector2(this.position.x, this.position.y),      439, 936, 2,    2, 0.5,     true,   new Vector2(0, 0)),
+            dying: new Nimation(spritesheet,        new Vector2(this.position.x, this.position.y),      439, 936, 6,    3, 0.15,    false,  new Vector2(0, 0)),
+            dead: new Nimation(spritesheet,         new Vector2(this.position.x, this.position.y),      439, 936, 1,    4, 0.5,     true,   new Vector2(0, 0)),
+            acornDrop: new Nimation(spritesheet,    new Vector2(this.position.x, this.position.y),      439, 936, 1,    5, 0.5,     true,   new Vector2(0, 0)),
         };
         this.sprite = undefined;
 
         this.eyesPositionCenter = new Vector2(this.bounds.x + 42, this.bounds.y + 45);
         this.eyes = new Sprite('images/entities/TreeMonster_Eyes.png', this.eyesPositionCenter, new Vector2(113, 21));
-        this.eyeWhites = new Texture(
-            new Vector2(this.bounds.x, this.bounds.y + 20),
-            new Vector2(200, 75),
-            '#FFFFFF',
-            1,
-            '#FFFFFF'
-        );
+        this.eyeWhites = new Texture(new Vector2(this.bounds.x, this.bounds.y + 20), new Vector2(200, 75), '#FFFFFF', 1, '#FFFFFF');
+
+        // ATTACKS
+        this.moveList = [
+            {
+                name: 'ACORN_DROP',
+                fn: this.AcornDrop,
+                duration: 5,
+                isProximityBased: false,
+                animationSprite: this.animations.acornDrop
+            },
+            {
+                name: 'BRANCH_SMASH',
+                fn: this.BranchSmash,
+                duration: 5,
+                isProximityBased: true,
+                animationSprite: this.animations.acornDrop
+            },
+        ];
+
+        // NAME AND HEALTH
+        this.name = new Text('Tree Monster', new Vector2(CANVAS_WIDTH / 2 - 200, 35), 'Lobster, Raleway', 'normal', 20, '#FFFFFF', 'left');
+        this.healthBar = new StatusBar(new Vector2(CANVAS_WIDTH / 2 - 200, 50), new Vector2(400, 30), 0, '#990000', 2, '#550000', true, '#FFFFFF');
+        this.healthBar.SetMaxValue(this.initialHealth);
+        this.statusText = [];
     }
 
     Initialize() {
@@ -127,6 +123,16 @@ class TreeMonster {
 
     HandleEyeMovement() {
 
+        // const currentEyePosition = this.eyes.GetPosition();
+        // const targetEyePosition = this.playerBounds;
+        // const diff = currentEyePosition.subtract(targetEyePosition);
+        // const newEyePosition = new Vector2(
+        //     currentEyePosition.x += diff.x * 0.8,
+        //     currentEyePosition.y += diff.y * 0.8
+        // );
+
+        DEBUG.Update('NEWEYE', `Boss Eyes: X${this.eyes.GetPosition().x} Y${this.eyes.GetPosition().y}`);
+
         this.eyes.Update(
             new Vector2(
                 Clamp(this.playerBounds.x, this.eyesPositionCenter.x - 12, this.eyesPositionCenter.x + 12),
@@ -149,6 +155,12 @@ class TreeMonster {
         } else if (this.state === BOSS_STATE.IDLE) {
             this.sprite = this.animations.idle;
             this.HandleEyeMovement();
+        } else if (this.state === BOSS_STATE.ATTACKINTRO) {
+            // this.sprite = this.animations.acornDrop;
+            // These are set during the attack
+        } else if (this.state === BOSS_STATE.ATTACK) {
+            // this.sprite = this.animations.acornDrop;
+            // These are set during the attack
         } else if (this.state === BOSS_STATE.DYING) {
             this.sprite = this.animations.dying;
         } else if (this.state === BOSS_STATE.DEAD) {
@@ -215,7 +227,10 @@ class TreeMonster {
                 this.stateTimer = undefined;
             }
 
-        } else if (this.state === BOSS_STATE.INTRO) {
+        } else if (this.state === BOSS_STATE.ATTACKINTRO) {
+        
+        
+        } else if (this.state === BOSS_STATE.ATTACKING) {
 
 
 

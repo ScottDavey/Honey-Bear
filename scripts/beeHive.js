@@ -33,7 +33,8 @@ class BeeHive {
         this.isRummaging = false;
         this.rummageProgress = 0;
         this.rummageRate = 30;
-        this.rummageSound = new Sound('sounds/effects/foliage_rustle.ogg', 'SFX', false, false, 0.1, 0);
+        this.rummageSoundID = `rummage_${random(10000, 90000)}`;
+        SOUND_MANAGER.AddEffect(this.rummageSoundID, new Sound('sounds/effects/foliage_rustle.ogg', 'SFX', false, null, false, 0.1, false));
         this.rummageSoundTimer = undefined;
 
         this.doesPhysicsApply = false;
@@ -68,6 +69,8 @@ class BeeHive {
     }
 
     UnloadContent() {
+        SOUND_MANAGER.RemoveEffect(this.rummageSoundID);
+
         for (const bee of this.bees) {
             bee.UnloadContent();
         }
@@ -181,6 +184,7 @@ class BeeHive {
         if (this.rummageProgress >= 100) {
             this.state = HIVE_STATE.FALLING;
             this.hiveHint.SetString('Collect Honey (+)');
+            SOUND_MANAGER.RemoveEffect(this.rummageSoundID);
             return;
         }
 
@@ -193,7 +197,7 @@ class BeeHive {
 
         this.progressBar.Update(this.rummageProgress);
 
-        this.rummageSound.Play();
+        SOUND_MANAGER.PlayEffect(this.rummageSoundID);
     }
 
     HandleHintVisibility() {

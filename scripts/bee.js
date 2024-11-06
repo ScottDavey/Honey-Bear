@@ -47,6 +47,7 @@ class Bee {
         this.isHittingWall = false;
 
         this.aggressiveSpeed = 200;
+        this.passiveVolume = 0.1;
         this.aggressiveVolume = 0.2;
         this.stingDamage = random(50, 100);
         this.stingCooldownDuration = 2;
@@ -57,16 +58,13 @@ class Bee {
 
         this.deathTimer = undefined;
 
-        this.buzzSound = new Sound(`sounds/effects/bee_${random(1, 4)}.ogg`, 'SFX', true, true, 0, 0);
-        this.buzzSound.Play();
-        this.maxVolumneDistance = 400;
-        this.buzzDefaultVolume = 0.1;
-        this.buzzMaxVolume = this.buzzDefaultVolume;
+        const buzzSoundIndex = random(1, 4);
+        this.buzzSoundID = `buzz_${random(10000, 90000)}`;
+        SOUND_MANAGER.AddEffect(this.buzzSoundID, new Sound(`sounds/effects/bee_${buzzSoundIndex}.ogg`, 'SFX', true, 400, true, 0.1, false));
     }
     
     UnloadContent() {
-        this.buzzSound.Stop();
-        this.buzzSound = undefined;
+        SOUND_MANAGER.RemoveEffect(this.buzzSoundID);
     }
 
     Reset() {
@@ -98,7 +96,8 @@ class Bee {
     }
 
     SetAggressive(isAggressive) {
-        let speed, volume;
+        let speed = this.wanderSpeed;
+        let volume = this.passiveVolume;
         
         if (isAggressive) {
             this.state = BEE_STATE.AGGRESSIVE;
@@ -107,11 +106,11 @@ class Bee {
         } else if (this.state === BEE_STATE.AGGRESSIVE) {
             this.state = BEE_STATE.HOME.HIGH_ALERT;
             speed = this.wanderSpeed;
-            volume = this.buzzDefaultVolume;
+            volume = this.passiveVolume;
         }
 
         this.moveSpeed = speed;
-        this.buzzMaxVolume = volume;
+        SOUND_MANAGER.SetEffectMaxVolume(this.buzzSoundID, volume);
     }
 
     SetGroundType(groundType) {
@@ -146,8 +145,7 @@ class Bee {
         );
 
         if (this.health <= 0 && this.state !== BEE_STATE.DEAD) {
-            this.buzzSound.Stop();
-            this.buzzSound = undefined;
+            SOUND_MANAGER.RemoveEffect(this.buzzSoundID);
             this.state = BEE_STATE.DYING;
         }
     }
@@ -227,36 +225,6 @@ class Bee {
         }
     }
 
-    UpdateProximityVolume() {
-
-        if (!this.buzzSound) {
-            return;
-        }
-
-        const deltaX = Math.pow(this.position.x - this.playerCenter.x, 2);
-        const deltaY = Math.pow(this.position.y - this.playerCenter.y, 2);
-        const delta = Math.sqrt(deltaX + deltaY);
-
-        let volume = 0;
-
-        if (delta < this.maxVolumneDistance) {
-
-            if (!this.buzzSound.IsPlaying()) {
-                this.buzzSound.Play();
-            }
-
-            volume = this.buzzMaxVolume - (this.buzzMaxVolume * (delta / this.maxVolumneDistance));
-            volume = (volume >= this.buzzMaxVolume) ? this.buzzMaxVolume : volume;
-        } else {
-
-            this.buzzSound.Stop();
-
-        }
-
-        // Based on the player's distance from the bee, set volume
-        this.buzzSound.SetVolume(volume);
-    }
-
     Update(hivePosition, hiveState, playerCenter) {
         this.hivePosition = hivePosition;
         this.playerCenter = playerCenter;
@@ -299,7 +267,7 @@ class Bee {
         this.ApplyMovement();
         this.bounds.Update(new Vector2(this.position.x, this.position.y), this.size);
 
-        this.UpdateProximityVolume();
+        SOUND_MANAGER.PlayEffect(this.buzzSoundID, this.position);
     }
 
     Draw() {

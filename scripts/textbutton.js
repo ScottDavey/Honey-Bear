@@ -3,7 +3,7 @@
 ************************************************/
 class TextButton {
 
-    constructor(text, pos, font = { family: '"Century Gothic", sans-serif', size: 12, align: 'left' }, color, hoverColor, BGColor, hoverBGColor) {
+    constructor(text, pos, font = { family: '"Century Gothic", sans-serif', size: 12, align: 'left' }, color, hoverColor, BGColor, hoverBGColor, isSelected = false) {
         this.text = text;
         this.pos = new Vector2(pos.x, pos.y);
         this.fontFamily = font.family;
@@ -17,7 +17,7 @@ class TextButton {
         this.hoverBGColor = hoverBGColor;
         this.isLeftClickLocked = false;
         this.isPushed = false;
-        this.isSelected = false;
+        this.isSelected = isSelected;
         this.buttonText = new Text(
             this.text,
             new Vector2(this.pos.x, this.pos.y),

@@ -36,6 +36,8 @@ class Bear extends Character {
         };
 
         this.sprite = this.animations.idleRightSprite;
+
+        super.LoadSoundEffects();
     }
 
     Reset() {

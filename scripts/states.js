@@ -29,6 +29,11 @@ const GAME_MENU = {
     SOUND: 2
 };
 
+const MAIN_MENU = {
+    MAIN: 0,
+    OPTIONS: 1,
+};
+
 const HIVE_STATE = {
     NEW: 0,
     PARTIALLY_RUMMAGED: 1,
@@ -52,9 +57,10 @@ const BOSS_STATE = {
     PREINTO: 0,
     INTRO: 1,
     IDLE: 2,
-    ATTACKING: 3,
-    CHASING: 4,
-    STUNNED: 5,
-    DYING: 6,
-    DEAD: 7
+    ATTACKINTRO: 3,
+    ATTACKING: 4,
+    CHASING: 5,
+    STUNNED: 6,
+    DYING: 7,
+    DEAD: 8
 };

@@ -14,7 +14,7 @@ class Vector2 {
     }
 
     subtract(vector) {
-        return new Vector2(this.x - vector, this.y - vector);
+        return new Vector2(this.x - vector.x, this.y - vector.y);
     }
 
     subtract(vector) {
@@ -162,9 +162,15 @@ const GameTime = {
 ***** DRAW TEXT CLASS *****
 **************************/
 class Timer {
-    constructor(startTime, duration) {
+    constructor(startTime, duration = 10000000) {
         this.startTime = startTime;
         this.duration = duration;
+    }
+
+    GetElapsed() {
+        const currentGameTime = GameTime.getCurrentGameTime();
+
+        return +((currentGameTime - this.startTime).toFixed(2));
     }
 
     GetRemainder(precision = 0) {

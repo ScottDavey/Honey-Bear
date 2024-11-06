@@ -1,3 +1,4 @@
+
 /*******************************************
 **************  PLAYER CLASS  **************
 *******************************************/
@@ -35,7 +36,7 @@ class Player extends Character {
         this.sprite = this.animations.idleSprite;
 
         this.throwStartTime = 0;
-        this.throwSound = new Sound('sounds/effects/throw.ogg', 'SFX', false, false, 0.2, 0);
+        this.throwSoundID = 0;
         this.globAnimationMaxTime = 0.12;
         this.globs = [];
         this.globCooldown = undefined;
@@ -46,18 +47,35 @@ class Player extends Character {
 
         this.health = 50000;
         this.maxHealth = 50000;
+        
+        this.LoadSoundEffects();
     }
 
-    Initialize(position, size) {
+    Reset(position) {
         if (this.isDead) {
             this.ResetHealth();
         }
         this.SetPosition(position);
-        this.SetSize(size);
         this.SetIsDead(false);
         this.SetIsDeathDone(false);
         this.animations.deadLeftSprite.Reset();
         this.animations.deadRightSprite.Reset();
+        this.SetDirection(1);
+    }
+
+    LoadSoundEffects() {
+        super.LoadSoundEffects();
+
+        this.throwSoundID = `throw_${random(10000, 90000)}`;
+        SOUND_MANAGER.AddEffect(this.throwSoundID, new Sound('sounds/effects/throw.ogg', 'SFX', false, null, false, 0.2, true));
+    }
+
+    UnloadContent() {
+        
+        SOUND_MANAGER.RemoveEffect(this.throwSoundID);
+
+        super.UnloadContent();
+
     }
 
     // GETTERS AND SETTERS
@@ -110,7 +128,7 @@ class Player extends Character {
                 const globPosX = (this.dir === 1) ? this.position.x + this.size.x - 10 : this.position.x;
                 this.globs.push(new HoneyGlob(new Vector2(globPosX, this.position.y + (this.size.y / 2)), this.dir, this.velocity.x));
                 this.globCooldown = new Timer(currentGameTime, this.globCooldownDuration);
-                this.throwSound.Play();
+                SOUND_MANAGER.PlayEffect(this.throwSoundID, this.position);
             }
 
         }

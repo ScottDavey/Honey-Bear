@@ -11,7 +11,6 @@
         this.selectedLevel = 0;
         this.scene = undefined;
         this.sceneIsLoaded = false;
-        this.player = new Player(new Vector2(0, 0), new Vector2(0, 0));
         this.levelName = STAGES[this.selectedLevel].levelName;
         this.selectedLevelText = new Text(
             `LEVEL ${this.selectedLevel + 1} - ${this.levelName}`,
@@ -22,10 +21,7 @@
             '#FFFFFF',
             'left'
         );
-    }
-
-    GetPlayer() {
-        return this.player;
+        this.playerHealth = 0;
     }
 
     GetTimer() {
@@ -48,16 +44,18 @@
 
                 // If the scene is undefined, initiate it and capture the level start time
                 if (!this.scene) {
-                    this.scene = new Scene(this.selectedLevel, this.player);
-                    this.sceneIsLoaded = this.scene.LoadContent();
+                    this.scene = new Scene(this.selectedLevel);
+                    this.sceneIsLoaded = this.scene.LoadContent(this.playerHealth);
                     this.levelStartTime = this.timer;
                 }
 
                 if (this.sceneIsLoaded) {
                     this.scene.Update();
+                    SOUND_MANAGER.SetPlayerPosition(this.scene.GetPlayerPosition());
                 }
 
                 if (this.scene.isLevelComplete) {
+                    this.playerHealth = this.scene.GetPlayerHealth();
                     this.scene.UnloadContent();
                     this.selectedLevel = this.selectedLevel + 1 || 0;
                     this.selectedLevelText.SetString(`LEVEL ${this.selectedLevel + 1} - ${STAGES[this.selectedLevel].levelName}`);

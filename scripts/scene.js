@@ -3,10 +3,9 @@
 *************************************************/
 
  class Scene {
-    constructor(selectedLevel, player) {
+    constructor(selectedLevel) {
         this.selectedLevel = selectedLevel;
-        this.player = player;
-        this.playerSize = new Vector2(0, 0);
+        this.player = undefined;
         this.isPlayerRandomPositionKeyLocked = false;
 
         this.level = STAGES[this.selectedLevel];
@@ -69,19 +68,7 @@
         this.camera = new Camera();
         this.parallax = new Parallax(this.level.backgrounds, this.worldWidth);
 
-        this.player.Initialize(
-            new Vector2(this.level.player.start[0], this.level.player.start[1]),
-            new Vector2(this.level.player.size[0], this.level.player.size[1])
-        );
-        this.playerHealthBar = new StatusBar(
-            new Vector2(10, 35),
-            new Vector2(200, 30),
-            this.player.GetMaxHealth(),
-            '#f8b61d',
-            1,
-            '#5831a0',
-            true
-        );
+        this.playerHealthBar = undefined;
 
         this.showDeathText = false;
         this.deathTextBackground = new Texture(
@@ -141,9 +128,9 @@
         // Collectibles
         this.beeHives = [];
 
-        // Sounds Effects
-        this.birds = undefined;
-        this.honeyGlobHitSound = new Sound('sounds/effects/splat.ogg', 'SFX', false, false, 0.2, 0);
+        // Sounds Effect IDs
+        this.birdSoundID = `birds_${random(10000, 90000)}`;
+        this.honeyGlobHitSoundID = `glob_${random(10000, 90000)}`;
 
         this.fronts = [];
 
@@ -163,17 +150,38 @@
             this.boss.ResetHealth();
         }
 
-        this.player.Initialize(
-            this.checkpointReached,
-            new Vector2(this.playerSize.x, this.playerSize.y)
-        );
+        this.player.Reset(this.checkpointReached);
 
         this.showDeathText = false;
     }
 
-    LoadContent() {     
+    LoadContent(playerHealth) {
+        this.player = new Player(
+            new Vector2(this.level.player.start[0], this.level.player.start[1]),
+            new Vector2(this.level.player.size[0], this.level.player.size[1])
+        );
+
+        const playerMaxHealth = this.player.GetMaxHealth();
+
+        this.playerHealthBar = new StatusBar(
+            new Vector2(10, 35),
+            new Vector2(200, 30),
+            playerMaxHealth,
+            '#f8b61d',
+            1,
+            '#5831a0',
+            true
+        );
+
+        // SOUNDS
+        SOUND_MANAGER.AddEffect(this.honeyGlobHitSoundID, new Sound('sounds/effects/splat.ogg', 'SFX', true, CANVAS_WIDTH, false, 0.2, true));
         
-        this.playerSize = new Vector2(this.level.player.size[0], this.level.player.size[1]);
+        if (this.level.levelName === 'The Forest') {
+            SOUND_MANAGER.AddEffect(this.birdSoundID, new Sound('sounds/effects/birds.ogg', 'SFX', false, null, true, 0.1, false));
+            SOUND_MANAGER.PlayEffect(this.birdSoundID);
+        }
+
+        this.player.SetCurrentHealth(playerHealth || playerMaxHealth);
 
         // LOAD BEARS
         this.bears = this.level.bears.map(bear => {
@@ -220,11 +228,6 @@
             return new Rectangle(checkpoint.pos[0], checkpoint.pos[1], checkpoint.size[0], checkpoint.size[1]);
         });
 
-        if (+this.selectedLevel === 0) {
-            this.birds = new Sound('sounds/effects/birds.ogg', 'SFX', false, true, 0.1, 1.5);
-            this.birds.Play();
-        }
-
         // BOSS
         switch(this.bossData.name) {
             case 'Tree Monster':
@@ -247,11 +250,7 @@
         return true;
     }
 
-    UnloadContent() {
-        if (this.birds) {
-            this.birds.Stop();
-        }
-        
+    UnloadContent() {        
         this.player.UnloadContent();
         
         for (const bear of this.bears) {
@@ -262,11 +261,22 @@
             hive.UnloadContent();
         }
 
+        SOUND_MANAGER.RemoveEffect(this.honeyGlobHitSoundID);
+        SOUND_MANAGER.RemoveEffect(this.birdSoundID);
+
         return;
     }
 
     IsPlayerDead() {
         return (this.player.GetIsDead() && this.player.GetIsDeathDone());
+    }
+
+    GetPlayerPosition() {
+        return this.player.GetPosition();
+    }
+    
+    GetPlayerHealth() {
+        return this.player.GetCurrentHealth();
     }
 
     GetBossSequence() {
@@ -301,7 +311,7 @@
 
                 if (this.collision.CheckBoxCollision(globBounds, bossBounds)) {
                     this.boss.DoDamage(globDamage);
-                    this.honeyGlobHitSound.Play();
+                    SOUND_MANAGER.PlayEffect(this.honeyGlobHitSoundID, glob.position);
                     this.camera.shake(0.3);
                     glob.SetHasHit(true);
                 }
@@ -317,7 +327,7 @@
 
                         if (this.collision.CheckBoxCollision(globBounds, bearBounds)) {
                             bear.DoDamage(globDamage);
-                            this.honeyGlobHitSound.Play();
+                            SOUND_MANAGER.PlayEffect(this.honeyGlobHitSoundID, glob.position);
                             this.camera.shake(globDamage.isCrit ? 0.3 : 0.1);
                             glob.SetHasHit(true);
 
@@ -680,6 +690,7 @@
                 const bear = this.bears[b];
 
                 if (bear.GetIsDead() && bear.GetIsDeathDone()) {
+                    bear.UnloadContent();
                     this.bears.splice(b, 1);
                     continue;
                 }

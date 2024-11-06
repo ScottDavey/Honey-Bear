@@ -26,11 +26,14 @@ class GameMenu {
         this.backbutton = undefined;
 
         this.buttons = [];
+        this.buttonDefaultColor = '#333333';
+        this.buttonActiveColor = '#F4C430';
 
         this.selectedButtonIndex = 0;
         this.isConfirmInputLocked = false;
         this.isDownInputLocked = false;
         this.isUpInputLocked = false;
+        this.isSelectButtonLocked = false;
 
         this.overlay = new Texture(
             new Vector2(0, 0),
@@ -48,6 +51,11 @@ class GameMenu {
             '#FFFFFF',
             'center'
         );
+
+        this.gameMenuItemMoveSoundID = 'gamemenuitem';
+        this.gameMenuPlaySoundID = 'gamemenuplay';
+        SOUND_MANAGER.AddEffect(this.gameMenuItemMoveSoundID, new Sound('sounds/effects/menu_item_move.ogg', 'SFX', false, null, false, 0.3, true));
+        SOUND_MANAGER.AddEffect(this.gameMenuPlaySoundID, new Sound('sounds/effects/menu_start.ogg', 'SFX', false, null, false, 0.3, true));
 
         this.InitializeMain();
     }
@@ -72,10 +80,11 @@ class GameMenu {
                     'Resume Game',
                     new Vector2(this.center.x, this.initialOptionYPos + ((this.buttons.length - 1) * this.buttonHeight)),
                     this.buttonFont,
-                    '#FFFFFF',
-                    '#5831a0',
+                    this.buttonDefaultColor,
+                    this.buttonActiveColor,
                     '',
-                    ''
+                    '',
+                    true
                 ), 
             }
         );
@@ -87,10 +96,11 @@ class GameMenu {
                     'Options',
                     new Vector2(this.center.x, this.initialOptionYPos + ((this.buttons.length - 1) * this.buttonHeight)),
                     this.buttonFont,
-                    '#FFFFFF',
-                    '#5831a0',
+                    this.buttonDefaultColor,
+                    this.buttonActiveColor,
                     '',
-                    ''
+                    '',
+                    false
                 ), 
             }
         );
@@ -102,10 +112,11 @@ class GameMenu {
                     'Exit',
                     new Vector2(this.center.x, this.initialOptionYPos + ((this.buttons.length - 1) * this.buttonHeight)),
                     this.buttonFont,
-                    '#FFFFFF',
-                    '#5831a0',
+                    this.buttonDefaultColor,
+                    this.buttonActiveColor,
                     '',
-                    ''
+                    '',
+                    false
                 ), 
             }
         );
@@ -117,8 +128,8 @@ class GameMenu {
         this.state = GAME_MENU.OPTIONS;
         this.selectedButtonIndex = 0;
         this.buttons = [];
-        const isMusicOn = SOUND_MANAGER.GetMusicOn() ? 'Yes' : 'No';
-        const isSFXOn = SOUND_MANAGER.GetSFXOn() ? 'Yes' : 'No';
+        const isMusicOn = SOUND_MANAGER.GetMusicOn() ? 'YES' : 'NO';
+        const isSFXOn = SOUND_MANAGER.GetSFXOn() ? 'YES' : 'NO';
 
         this.buttons.push(
             {
@@ -127,10 +138,11 @@ class GameMenu {
                     `Music: ${isMusicOn}`,
                     new Vector2(this.center.x, this.initialOptionYPos + ((this.buttons.length - 1) * this.buttonHeight)),
                     this.buttonFont,
-                    '#FFFFFF',
-                    '#5831a0',
+                    this.buttonDefaultColor,
+                    this.buttonActiveColor,
                     '',
-                    ''
+                    '',
+                    true
                 ),
             }
         );
@@ -142,10 +154,11 @@ class GameMenu {
                     `SFX: ${isSFXOn}`,
                     new Vector2(this.center.x, this.initialOptionYPos + ((this.buttons.length - 1) * this.buttonHeight)),
                     this.buttonFont,
-                    '#FFFFFF',
-                    '#5831a0',
+                    this.buttonDefaultColor,
+                    this.buttonActiveColor,
                     '',
-                    ''
+                    '',
+                    false
                 ),
             }
         );
@@ -163,10 +176,11 @@ class GameMenu {
                     'Back',
                     new Vector2(this.center.x, yPosition),
                     this.buttonFont,
-                    '#FFFFFF',
-                    '#5831a0',
+                    this.buttonDefaultColor,
+                    this.buttonActiveColor,
                     '',
-                    ''
+                    '',
+                    false
                 ),
             }
         );
@@ -194,6 +208,8 @@ class GameMenu {
                 
                 this.selectedButtonIndex = nextSelectedIndex;
                 this.isDownInputLocked = true;
+
+                SOUND_MANAGER.PlayEffect(this.gameMenuItemMoveSoundID);
             }
         } else {
             this.isDownInputLocked = false;
@@ -201,15 +217,62 @@ class GameMenu {
         
         if (INPUT.GetInput(KEY_BINDINGS.UP)) {
             if (!this.isUpInputLocked) {
-                const nextSelectedIndex = this.selectedButtonIndex - 1 < 0 ? 0 : this.selectedButtonIndex - 1;
+                const nextSelectedIndex = this.selectedButtonIndex - 1 < 0 ? this.buttons.length - 1 : this.selectedButtonIndex - 1;
                 this.buttons[this.selectedButtonIndex].obj.SetIsSelected(false);
                 this.buttons[nextSelectedIndex].obj.SetIsSelected(true);
                 
                 this.selectedButtonIndex = nextSelectedIndex;
                 this.isUpInputLocked = true;
+
+                SOUND_MANAGER.PlayEffect(this.gameMenuItemMoveSoundID);
             }
         } else {
             this.isUpInputLocked = false;
+        }
+
+
+        if (INPUT.GetInput(KEY_BINDINGS.CONFIRM)) {
+            if (!this.isSelectButtonLocked) {
+
+                SOUND_MANAGER.PlayEffect(this.gameMenuPlaySoundID);
+
+                // Loop over buttons to see which one is selected
+                for (const button of this.buttons) {
+                    if (button.obj.GetIsSelected()) {
+
+                        // MAIN
+                        if (button.name === 'RESUME') {
+                            this.SetIsPaused(false);
+                        } else if (button.name === 'OPTIONS') {
+                            this.InitializeOptions();
+                        } else if (button.name === 'EXIT') {
+                            this.state = GAME_MENU.EXIT;
+                        }
+
+                        // OPTIONS
+                        if (button.name === 'MUSIC') {
+                            const isMusicOn = SOUND_MANAGER.GetMusicOn();
+                            SOUND_MANAGER.SetMusicOn(!isMusicOn);
+                            button.obj.SetText(`Music: ${SOUND_MANAGER.GetMusicOn() ? 'YES' : 'NO'}`);
+                        } else if (button.name === 'SFX') {
+                            const isSFXOn = SOUND_MANAGER.GetSFXOn();
+                            SOUND_MANAGER.SetSFXOn(!isSFXOn);
+                            button.obj.SetText(`SFX: ${SOUND_MANAGER.GetSFXOn() ? 'YES' : 'NO'}`);
+                        }
+
+                        // BACK
+                        if (button.name === 'BACK') {
+                            this.InitializeMain();
+                        }
+
+                        break;
+                    }
+                }
+
+                this.isSelectButtonLocked = true;
+            }
+        } else {
+            this.isSelectButtonLocked = false;
         }
 
     }
@@ -220,46 +283,11 @@ class GameMenu {
 
         for (const button of this.buttons) {
             button.obj.Update();
-
-            if (button.obj.IsPushed()) {
-
-                if (!this.isConfirmInputLocked) {
-                    this.isConfirmInputLocked = true;
-
-                     // MAIN
-                    if (button.name === 'RESUME') {
-                        this.SetIsPaused(false);
-                    } else if (button.name === 'OPTIONS') {
-                        this.InitializeOptions();
-                    } else if (button.name === 'EXIT') {
-                        this.state = GAME_MENU.EXIT;
-                    }
-                    
-                    // OPTIONS
-                    if (button.name === 'MUSIC') {
-                        const isMusicOn = SOUND_MANAGER.GetMusicOn();
-                        SOUND_MANAGER.SetMusicOn(!isMusicOn);
-                        button.obj.SetText(`Music: ${isMusicOn ? 'YES' : 'NO'}`);
-                    } else if (button.name === 'SFX') {
-                        const isSFXOn = SOUND_MANAGER.GetSFXOn();
-                        SOUND_MANAGER.SetSFXOn(!isSFXOn);
-                        button.obj.SetText(`SFX: ${isSFXOn ? 'YES' : 'NO'}`);
-                    }
-
-                    // BACK
-                    if (button.name === 'BACK') {
-                        this.InitializeMain();
-                    }
-                    
-                } else {
-                    this.isConfirmInputLocked = false;
-                }
-
-            }
-
         }
 
-        INPUT.ClearInputs();
+        if (this.state === GAME_MENU.EXIT) {
+            INPUT.ClearInputs();
+        }
 
     }
 

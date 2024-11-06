@@ -57,28 +57,35 @@ class Character {
         this.stunDuration = 1;
 
         // Sound Effects
-        this.walkSounds = {
-            GRASS: [
-                new Sound('sounds/effects/FOOTSTEPS/GRASS/GRASS_1.OGG', 'SFX', true, false, 0.15, 0),
-                new Sound('sounds/effects/FOOTSTEPS/GRASS/GRASS_2.OGG', 'SFX', true, false, 0.15, 0),
-                new Sound('sounds/effects/FOOTSTEPS/GRASS/GRASS_3.OGG', 'SFX', true, false, 0.15, 0),
-                new Sound('sounds/effects/FOOTSTEPS/GRASS/GRASS_4.OGG', 'SFX', true, false, 0.15, 0),
-                new Sound('sounds/effects/FOOTSTEPS/GRASS/GRASS_5.OGG', 'SFX', true, false, 0.15, 0),
-                new Sound('sounds/effects/FOOTSTEPS/GRASS/GRASS_6.OGG', 'SFX', true, false, 0.15, 0),
-                new Sound('sounds/effects/FOOTSTEPS/GRASS/GRASS_7.OGG', 'SFX', true, false, 0.15, 0),
-                new Sound('sounds/effects/FOOTSTEPS/GRASS/GRASS_8.OGG', 'SFX', true, false, 0.15, 0),
-                new Sound('sounds/effects/FOOTSTEPS/GRASS/GRASS_9.OGG', 'SFX', true, false, 0.15, 0),
-                new Sound('sounds/effects/FOOTSTEPS/GRASS/GRASS_10.OGG', 'SFX', true, false, 0.15, 0),
-                new Sound('sounds/effects/FOOTSTEPS/GRASS/GRASS_11.OGG', 'SFX', true, false, 0.15, 0)
-            ]
-        };
+        this.stepTimer = undefined;
+        this.previousStepTime = 0;
+        this.previousStepID = undefined;
+        this.stepSpeed = 0.3;
+
+        // Add all sound effects to SOUND_MANAGER
+        this.walkSounds = [];
+        this.walkSoundTypes = ['GRASS', 'WOOD', 'STONE'];
+        
+    }
+
+    LoadSoundEffects() {
+        const stepVolume = this.isPlayer ? 0.3 : 0.2;
+
+        for (const type of this.walkSoundTypes) {
+            for(let i = 1; i <= 4; i++) {
+                const id = `${type}-${random(10000, 90000)}`;
+                SOUND_MANAGER.AddEffect(id, new Sound(`sounds/effects/FOOTSTEPS/${type}_${i}.OGG`, 'SFX', true, 750, false, stepVolume, true));
+                this.walkSounds.push({ id, groundType: type });
+            }
+        }
     }
 
     UnloadContent() {
-        if (this.walkSounds) {
-            // this.walkSounds.GRASS.Stop();
-            this.walkSounds.GRASS = undefined;
+        
+        for (const walkSound of this.walkSounds) {
+            SOUND_MANAGER.RemoveEffect(walkSound.id);
         }
+
         this.sprite = undefined;
     }
 
@@ -133,6 +140,10 @@ class Character {
 
     SetGroundType(groundType) {
         this.groundType = groundType;
+    }
+    
+    SetCurrentHealth(health) {
+        this.health = health;
     }
 
     GetPosition() {
@@ -303,17 +314,34 @@ class Character {
     }
 
     HandleSoundEffects() {
-        if (this.isPlayer) {
-            const walkSound = this.walkSounds[this.groundType];
 
-            // WALK
-            if (walkSound) {
-                if (this.isOnGround && Math.abs(this.velocity.x) > 0) {
-                    this.walkSounds[this.groundType].Play();
-                } else {
-                    this.walkSounds[this.groundType].Stop();
-                }
+        // WALKING - note that it will always be an array of sounds (even if 1)
+
+        const stepsArray = this.walkSounds.filter(effect => effect.groundType === this.groundType);
+
+        if (stepsArray && stepsArray.length > 0) {
+
+            if (!this.stepTimer) {
+                this.stepTimer = new Timer(GameTime.getCurrentGameTime());
             }
+
+            const walkTimerElapsed = this.stepTimer.GetElapsed();
+
+            if (walkTimerElapsed - this.previousStepTime >= this.stepSpeed) {
+                
+                if (this.isOnGround && Math.abs(this.velocity.x) > 0) {
+
+                    // Get a random step, but make sure it's not the same as the previous one
+                    const stepsExcludingPrevious = stepsArray.filter(step => step.id !== this.previousStepID || this.walkSounds[0].id);
+                    const randomStepSoundID = stepsExcludingPrevious[random(0, stepsArray.length - 1)].id;
+                    this.previousStepID = randomStepSoundID;
+                
+                    SOUND_MANAGER.PlayEffect(randomStepSoundID, this.position);
+                    this.previousStepTime = walkTimerElapsed;
+                }
+
+            }
+
         }
     }
 
@@ -355,7 +383,7 @@ class Character {
                 this.HandleDeath();
             }
 
-            // this.HandleSoundEffects();
+            this.HandleSoundEffects();
         }
     }
 

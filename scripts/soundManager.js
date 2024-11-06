@@ -12,6 +12,7 @@ class SoundManager {
         this.isGamePaused = false;
         this.muteAll = false;
         this.isBossSequence = false;
+        this.wasBossSequence = false;
 
         // MUSIC
         this.isMusicOn = true;
@@ -50,28 +51,28 @@ class SoundManager {
 
     Initialize(gameState) {
         const music = SOUNDS.music;
-        const effects = SOUNDS.effects;
 
         for (const song of music) {
             this.music.push(song);
         }
 
-        for (const sfx of effects) {
-            this.effects.push(sfx);
-        }
-
         this.gameState = gameState;
         this.previousGameState = this.gameState;
+    }
 
+    LoadBossMusic() {
         const bossMusic = this.music.find(e => e.region === 'BOSS');
+        
         this.bossMusicName = bossMusic.name;
+        
         this.bossMusic = new Sound(
             `sounds/music/${bossMusic.path}`,
             'MUSIC',
             false,
+            null,
             bossMusic.isLooping,
             this.musicVolume,
-            3.0
+            false
         )
     }
 
@@ -83,56 +84,209 @@ class SoundManager {
         return this.isSFXOn;
     }
 
+    GetEffects() {
+        return this.effects;
+    }
+
+    SetPlayerPosition(position) {
+        this.playerPosition = position;
+    }
+
     SetBossSequence(isBossSequence) {
         this.isBossSequence = isBossSequence;
+    }
+    
+    SetEffectMaxVolume(id, vol) {
+        const effect = this.FindEffectByID(id);
+        
+        if (effect) {
+            effect.sound.SetMaxVolume(vol);
+        }
     }
 
     SetMusicOn(isOn) {
         this.isMusicOn = isOn;
+
+        // Turn off/on the music
+        if (!this.isMusicOn) {
+            if (this.currentSong && this.currentSong.IsPlaying()) {
+                this.currentSong.Stop();
+            }
+
+            if (this.bossMusic && this.bossMusic.IsPlaying()) {
+                this.bossMusic.Stop();
+            }
+
+            this.currentSongHUB.SetString(`Music: None`);
+        } else {
+
+            if (this.currentSong && !this.currentSong.IsPlaying()) {
+                this.currentSong.Play();
+
+                this.currentSongHUB.SetString(`Music: ${this.currentSongName}`);
+            }
+
+            if (this.bossMusic && !this.bossMusic.IsPlaying()) {
+                this.bossMusic.Play();
+                
+                this.currentSongHUB.SetString(`Music: ${this.bossMusicName}`);
+            }
+
+        }
     }
 
     SetSFXOn(isOn) {
         this.isSFXOn = isOn;
-    }
 
-    ToggleMusic() {
+        // Instead of turning sound effect on/off, we'll just reduce their volume
+        //  and prevent them from starting in the PlayEffect function
+        for (const sfx of this.effects) {
 
-    }
+            if (!this.isSFXOn) {
+                sfx.sound.SetMaxVolume(0);
+            } else {
+                sfx.sound.SetMaxVolume(sfx.sound.GetDefaultVolume());
+            }
 
-    ToggleSFX() {
-        
+        }
+
     }
 
     SetGameState(state) {
         this.gameState = state;
     }
 
-    Add(type, soundName) {
-        
+    AddEffect(id, sound) {
+
+        // Don't add if we already have one with the same id
+        if (this.DoesEffectExist(id)) {
+            return;
+        }
+
+        this.effects.push({ id, sound });
     }
 
-    Remove() {
-
+    RemoveEffect(id) {
+        const effect = this.FindEffectByID(id);
+        
+        if (effect) {
+            effect.sound.Stop();
+            effect.sound = undefined;
+            this.effects.splice(this.effects.findIndex(effect => effect.id === id), 1);
+        }
     }
 
-    StopAll() {
-        
+    RemoveAllEffects() {
+        for (const ind in this.effects) {
+            const effect = this.effects[ind];
+            
+            if (effect.id !== 'gamemenuitem' && effect.id !== 'gamemenuplay') {
+                this.effects[ind].sound.Unload();
+                this.effects[ind].sound = undefined;
+                this.effects.splice(ind, 1);
+            }
+        }
     }
 
     StopMusic() {
-
+        if (this.bossMusic && this.isBossSequence) {
+            this.bossMusic.Stop();
+        } else if (this.currentSong) {
+            this.currentSong.Stop();
+        }
     }
 
-    StopSoundsFX() {
-
+    ResumeMusic() {
+        if (this.bossMusic && this.isBossSequence) {
+            this.bossMusic.Play();
+        } else if (this.currentSong) {
+            this.currentSong.Play();
+        }
     }
 
-    MuteAll() {
+    PlayEffect(id, sourcePosition = new Vector2(0, 0)) {
 
-    }
+        // If the user has turned off the sound, abort
+        if (!this.isSFXOn) {
+            return;
+        }
 
-    PlayAll() {
+        const effect = this.FindEffectByID(id);
+
+        if (!effect) {
+            return;
+        }
+
+        const maxVolumeDistance = effect.sound.GetProximityMaxDistance();
         
+        if (effect.sound.GetIsProximityBased()) {
+        
+            const deltaX = Math.pow(sourcePosition.x - this.playerPosition.x, 2);
+            const deltaY = Math.pow(sourcePosition.y - this.playerPosition.y, 2);
+            const delta = Math.sqrt(deltaX + deltaY);
+
+            if (!isFinite(delta)) {
+                console.error(
+                    'Play Effect Error: Delta is non-finite',
+                    { sourcePosition, playerPosition: this.playerPosition, deltaX, deltaY, delta }
+                );
+                return;
+            }
+
+            let volume = 0;
+
+            if (maxVolumeDistance > 0 && delta < maxVolumeDistance) {
+
+                const maxVolume = effect.sound.GetMaxVolume()
+
+                // Calculate the volume based on the distance from the player.
+                //  Ensure it doesn't go outside of the volume limits
+                volume = maxVolume - (maxVolume * (delta / maxVolumeDistance));
+                volume = Clamp(volume, 0, maxVolume);
+
+                if (!isFinite(volume)) {
+                    console.error(
+                        'Play Effect Error: Volume is non-finite',
+                        { maxVolume, delta, volume }
+                    );
+                    return;
+                }
+
+                if (!effect.sound.IsPlaying()) {
+                    effect.sound.Play();
+                }
+
+                effect.sound.SetVolume(volume);
+            } else {
+                effect.sound.SetVolume(0);
+                effect.sound.Stop();
+            }
+            
+        } else {
+            effect.sound.Play();
+        }
+        
+        if (effect.sound.IsPlaying() && effect.sound.CanInterrupt()) {
+            effect.sound.StartOver();
+        }
+        
+    }
+
+    DoesEffectExist(id) {
+        let doesExist = false;
+
+        for (const effect of this.effects) {
+            if (effect.id === id) {
+                doesExist = true;
+                break;
+            }
+        }
+
+        return doesExist;
+    }
+
+    FindEffectByID(id) {
+        return this.effects.find(effect => effect.id === id);
     }
     
     Fade(song) {
@@ -179,11 +333,13 @@ class SoundManager {
 
     }
 
-    CrossFade() {
-
-    }
-
     HandleMusic(gameState, isPaused) {
+
+        // If the user has turned music off, don't continue
+        if (!this.isMusicOn) {
+            return;
+        }
+
         let song = undefined;
 
         // MUSIC
@@ -213,6 +369,10 @@ class SoundManager {
 
             if (this.isBossSequence) {
 
+                if (!this.bossMusic) {
+                    this.LoadBossMusic();
+                }
+
                 if (this.currentSong.IsPlaying()) {
                     if (this.currentSong.GetVolume() > 0) {
                         this.Fade(this.currentSong);
@@ -230,11 +390,17 @@ class SoundManager {
 
                 this.currentSongHUB.SetString(`Music: ${this.bossMusicName}`);
 
+                if (isPaused) {
+                    this.bossMusic.SetVolume(this.pauseVolume);
+                } else {
+                    this.bossMusic.SetVolume(this.defaultVolume);
+                }
+
                 return;
             }
 
             // If the boss music is playing, it shouldn't be. Fade it out and start the currentSong back up once it's done
-            if (this.bossMusic.IsPlaying()) {
+            if (this.bossMusic && this.bossMusic.IsPlaying()) {
 
                 this.fadeDirection = -1;
 
@@ -242,16 +408,24 @@ class SoundManager {
                     this.Fade(this.bossMusic);
                 } else {
                     this.bossMusic.Stop();
+                    this.bossMusic = undefined;
                 }
 
-            } else if (this.currentSong && !this.currentSong.IsPlaying()) {
+                // This is so we can resume the previous song when the boss sequence is finished.
+                this.wasBossSequence = true;
+
+            } else if (this.currentSong && !this.currentSong.IsPlaying() && this.wasBossSequence) {
 
                 this.fadeDirection = 1;
                 this.currentSong.Play();
 
                 if (this.currentSong.GetVolume() < this.musicVolume) {
                     this.Fade(this.currentSong);
+                } else {
+                    // Once the previous song is back up and running, we're out of the transition
+                    this.wasBossSequence = false;
                 }
+
 
             }
         
@@ -291,6 +465,11 @@ class SoundManager {
             this.currentSong = undefined;
             this.nextSong = undefined;
             this.currentSongName = 'None';
+            if (this.bossMusic && this.bossMusic.IsPlaying()) {
+                this.bossMusic.Stop();
+                this.bossMusic = undefined;
+                this.isBossSequence = false;
+            }
 
             // Keep track of the previous game state
             this.previousGameState = this.gameState;
@@ -302,9 +481,10 @@ class SoundManager {
                 `sounds/music/${song.path}`,
                 'MUSIC',
                 false,
+                null,
                 song.isLooping,
                 this.musicVolume,
-                1.0
+                false
             );
             this.currentSongName = song.name;
         }
@@ -331,7 +511,7 @@ class SoundManager {
         this.currentSongHUB.SetString(`Music: ${this.currentSongName}`);
     }
 
-    Update(gameState, isPaused, playerPosition) {
+    Update(gameState, isPaused) {
 
         this.HandleMusic(gameState, isPaused);
 
@@ -348,6 +528,8 @@ class SoundManager {
         if (this.isFading) {
             this.Fade();
         }
+
+        DEBUG.Update('SFXCOUNT', `SFX Count: ${this.effects.length}`);
 
     }
 

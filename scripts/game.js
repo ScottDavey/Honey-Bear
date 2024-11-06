@@ -9,7 +9,7 @@ class Game {
         this.intro = undefined;
         this.mainMenu = undefined;
         this.level = undefined;
-        this.gameMenu = new GameMenu();
+        this.gameMenu = undefined;
         this.isPauseLocked = false;
         this.debugKeyLocked = false;
     }
@@ -18,6 +18,7 @@ class Game {
         this.state = GAME_STATES.PRIMARY.INTRO;
         this.intro = new Introduction();
         SOUND_MANAGER.Initialize(this.state);
+        this.gameMenu = new GameMenu();
     };
 
     Update() {
@@ -46,6 +47,7 @@ class Game {
                     if (typeof this.mainMenu === 'undefined') this.mainMenu = new MainMenu();
                     this.mainMenu.Update();
                     if (this.mainMenu.GetPlay()) {
+                        this.mainMenu.UnloadContent();
                         this.mainMenu = undefined;
                         this.state = GAME_STATES.PRIMARY.PLAYING;
                     }
@@ -124,6 +126,11 @@ class Game {
             case GAME_STATES.PRIMARY.PLAYING:
                 if (typeof this.level !== 'undefined') {
                     this.level.Draw();
+                    
+                    if (this.gameMenu.GetIsPaused()) {
+                        this.gameMenu.Draw();
+                    }
+
                     DEBUG.Update('TIME', `Time: ${SecondsToTime(this.level.GetTimer())}`);
                 }
 
@@ -136,10 +143,6 @@ class Game {
 
         // Put Music Song Name on screen
         SOUND_MANAGER.Draw();
-
-        if (this.gameMenu.GetIsPaused()) {
-            this.gameMenu.Draw();
-        }
 
         // DEBUG
         DEBUG.Draw();

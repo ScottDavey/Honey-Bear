@@ -24,6 +24,8 @@ class Collision {
                 collision.b                                 // Y Intercept (or, the b in y = mx + b)
             );
         });
+
+        this.collisionData = [];
     }
 
     GetLineYCollisionFromPosition(position) {
@@ -131,7 +133,7 @@ class Collision {
         entity.isHittingWall = isHittingWall;
     }
 
-    CheckLineCollisionRect(rectBounds) {
+    CheckLineCollisionRect(rectBounds, returnGroundType = false) {
 
         for (const line of this.lines) {
             const slope = line.slope;
@@ -141,7 +143,7 @@ class Collision {
             if ((line.collision == 'FLOOR' || line.collision == 'CEILING') && rectBounds.center.x >= line.startPos.x && rectBounds.center.x <= line.endPos.x) {
 
                 if (Math.abs(yc - rectBounds.center.y) <= rectBounds.halfSize.y + 5) {
-                    return true;
+                    return returnGroundType ? line.sound : true;
                 }
 
             } else if (line.collision == 'WALL' && rectBounds.center.y > line.startPos.y && rectBounds.center.y < line.endPos.y) {

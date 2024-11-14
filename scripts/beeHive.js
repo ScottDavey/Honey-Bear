@@ -42,6 +42,9 @@ class BeeHive {
         this.maxFallSpeed = 500;
         this.velocityY = 0;
 
+        this.hiveThudSoundID = `hive-thud-${random(10000, 90000)}`;
+
+        this.playerCenter = new Vector2(0, 0);
         this.isPlayerInRange = false;
         this.honeyPrize = random(15, 30);
 
@@ -70,6 +73,7 @@ class BeeHive {
 
     UnloadContent() {
         SOUND_MANAGER.RemoveEffect(this.rummageSoundID);
+        SOUND_MANAGER.RemoveEffect(this.hiveThudSoundID);
 
         for (const bee of this.bees) {
             bee.UnloadContent();
@@ -105,8 +109,10 @@ class BeeHive {
         }
     }
 
-    SetGroundState() {
+    SetGroundState(groundType = 'STONE') {
         if (this.state !== HIVE_STATE.ON_GROUND) {
+            SOUND_MANAGER.AddEffect(this.hiveThudSoundID, new Sound(`sounds/effects/FOOTSTEPS/${groundType}_4.ogg`, 'SFX', true, 500, false, 0.5, false));
+            SOUND_MANAGER.PlayEffect(this.hiveThudSoundID, this.playerCenter);
             this.state = HIVE_STATE.ON_GROUND;
             this.SetBeeAggression(true);
         }
@@ -231,6 +237,7 @@ class BeeHive {
         this.isRummaging = false;
 
         // Check if the player is within rummaging distance
+        this.playerCenter = playerCenter;
         const diffPos = new Vector2(
             Math.abs(playerCenter.x - this.bounds.center.x),
             Math.abs(playerCenter.y - this.bounds.center.y)
@@ -254,7 +261,7 @@ class BeeHive {
             bee.Update(this.position, this.state, playerCenter);
         }
 
-        this.bounds.Update(this.position, this.size);
+        this.bounds.Update(this.position);
         this.sprite.Update(this.position);
 
     }

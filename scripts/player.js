@@ -12,41 +12,48 @@ class Player extends Character {
         this.invincibilityTimer = undefined;
 
         // Nimation: img, pos, frameHeight, frameWidth, totalFrames, animationSeq, speed, isLooping, offset
-        const spritesheet = 'images/spritesheets/Adventurer-1.5/adventurer-spritesheet.png';
-        const honeyBearSpriteSheet = 'images/spritesheets/HoneyBear.png';
+        const spritesheet = 'images/spritesheets/HoneyBear.png';
         this.defaultRunAnimationSpeed = 0.09;
         this.animations = {
-            runRightSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 0, this.defaultRunAnimationSpeed, true, new Vector2(0, 0)),
-            runLeftSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 1, this.defaultRunAnimationSpeed, true, new Vector2(0, 0)),
-            idleRightSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 65, 45, 4, 2, 0.25, true, new Vector2(0, 0)),
-            idleLeftSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 65, 45, 4, 3, 0.25, true, new Vector2(0, 0)),
-            jumpRightSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 65, 45, 2, 4, 0.2, false, new Vector2(0, 0)),
-            jumpLeftSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 65, 45, 2, 5, 0.2, false, new Vector2(0, 0)),
-            fallRightSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 65, 45, 1, 6, 0.08, false, new Vector2(0, 0)),
-            fallLeftSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 65, 45, 1, 7, 0.08, false, new Vector2(0, 0)),
-            idleThrowRightSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 8, 0.02, false, new Vector2(0, 0)),
-            idleThrowLeftSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 9, 0.02, false, new Vector2(0, 0)),
-            runThrowRightSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 10, this.defaultRunAnimationSpeed, false, new Vector2(0, 0)),
-            runThrowLeftSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 11, this.defaultRunAnimationSpeed, false, new Vector2(0, 0)),
-            deadRightSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 12, 0.05, false, new Vector2(0, 0)),
-            deadLeftSprite: new Nimation(honeyBearSpriteSheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 13, 0.05, false, new Vector2(0, 0)),
-            hurtLeftSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 3, 8, 0.25, false, new Vector2(26, 13)),
-            hurtRightSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 74, 100, 3, 9, 0.25, false, new Vector2(26, 13)),
+            runRightSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 0, this.defaultRunAnimationSpeed, true, new Vector2(0, 0)),
+            runLeftSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 1, this.defaultRunAnimationSpeed, true, new Vector2(0, 0)),
+            idleRightSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 4, 2, 0.25, true, new Vector2(0, 0)),
+            idleLeftSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 4, 3, 0.25, true, new Vector2(0, 0)),
+            jumpRightSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 2, 4, 0.2, false, new Vector2(0, 0)),
+            jumpLeftSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 2, 5, 0.2, false, new Vector2(0, 0)),
+            fallRightSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 1, 6, 0.08, false, new Vector2(0, 0)),
+            fallLeftSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 1, 7, 0.08, false, new Vector2(0, 0)),
+            idleThrowRightSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 8, 0.02, false, new Vector2(0, 0)),
+            idleThrowLeftSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 9, 0.02, false, new Vector2(0, 0)),
+            runThrowRightSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 10, this.defaultRunAnimationSpeed, false, new Vector2(0, 0)),
+            runThrowLeftSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 11, this.defaultRunAnimationSpeed, false, new Vector2(0, 0)),
+            deadRightSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 12, 0.05, false, new Vector2(0, 0)),
+            deadLeftSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 13, 0.05, false, new Vector2(0, 0)),
+            idleBlastRightSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 3, 14, 0.04, false, new Vector2(0, 0)),
+            idleBlastLeftSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 3, 15, 0.04, false, new Vector2(0, 0)),
+            runBlastRightSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 16, this.defaultRunAnimationSpeed, false, new Vector2(0, 0)),
+            runBlastLeftSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 17, this.defaultRunAnimationSpeed, false, new Vector2(0, 0)),
         };
         this.sprite = this.animations.idleSprite;
 
         this.throwStartTime = 0;
         this.throwSoundID = 0;
-        this.globAnimationMaxTime = 0.12;
+        // this.globAnimationMaxTime = 0.12;
+        this.globAnimationMaxTime = 0.5;
         this.globs = [];
         this.globCooldown = undefined;
         this.globCooldownDuration = 1;
         this.blast = undefined;
+        this.blastStartTime = 0;
+        this.blastAnimationMaxTime = 0.6;
+        this.isBlasting = false;
         this.blastCooldown = undefined;
         this.blastCooldownDuration = 5;
 
-        this.health = 50000;
-        this.maxHealth = 50000;
+        this.maxHealth = HEALTH.HONEY_BEAR;
+        this.health = this.maxHealth;
+
+        this.hurtSounds = [];
         
         this.LoadSoundEffects();
     }
@@ -68,11 +75,21 @@ class Player extends Character {
 
         this.throwSoundID = `throw_${random(10000, 90000)}`;
         SOUND_MANAGER.AddEffect(this.throwSoundID, new Sound('sounds/effects/throw.ogg', 'SFX', false, null, false, 0.2, true));
+
+        for (let i = 1; i <= 4; i++) {
+            const id = `hurt-${random(10000, 90000)}`;
+            SOUND_MANAGER.AddEffect(id, new Sound(`sounds/effects/PLAYER_HIT_${i}.ogg`, 'SFX', false, null, false, 0.1, true));
+            this.hurtSounds.push(id);
+        }
     }
 
     UnloadContent() {
         
         SOUND_MANAGER.RemoveEffect(this.throwSoundID);
+
+        for (const glob of this.globs) {
+            glob.UnloadContent();
+        }
 
         super.UnloadContent();
 
@@ -100,6 +117,10 @@ class Player extends Character {
     GetHoneyBlastCooldown() {
         const remainder = this.blastCooldown ? this.blastCooldown.GetRemainder() : 0;
         return remainder;
+    }
+
+    GetIsInvincible() {
+        return this.isInvincible;
     }
 
     GetInput() {
@@ -131,25 +152,40 @@ class Player extends Character {
                 SOUND_MANAGER.PlayEffect(this.throwSoundID, this.position);
             }
 
+        } else {
+            this.isGlobLocked = false;
         }
         
         if (INPUT.GetInput(KEY_BINDINGS.SPECIAL)) {
 
             if (!this.blastCooldown || this.blastCooldown.IsComplete()) {
+                this.blastStartTime = currentGameTime;
+                this.isBlasting = true;
                 this.blast = new HoneyBlast(this.GetBounds());
                 this.isBlastLocked = true;
                 this.blastCooldown = new Timer(currentGameTime, this.blastCooldownDuration);
             }
             
+        } else {
+            this.isBlastLocked = false;
         }
     }
 
     // BEHAVIOURS
 
+    PlayHurtSound() {
+        // Choose a random sound:
+        const randomSoundID = this.hurtSounds[random(0, this.hurtSounds.length)];
+
+        SOUND_MANAGER.PlayEffect(randomSoundID);
+    }
+
     DoDamage(damage, ignoreInvincibility = false) {
 
         if (!this.isInvincible && !this.isDead) {
             super.DoDamage(damage);
+
+            this.PlayHurtSound();
             
             if (!ignoreInvincibility) {
                 // Apply invincibility
@@ -200,6 +236,8 @@ class Player extends Character {
         } else if (this.velocity.x !== 0) {
             if (this.isThrowing) {
                 this.SetSprite((this.dir === 1) ? this.animations.runThrowRightSprite : this.animations.runThrowLeftSprite);
+            } else if (this.isBlasting) {
+                this.SetSprite((this.dir === 1) ? this.animations.runBlastRightSprite : this.animations.runBlastLeftSprite);
             } else {
                 this.SetSprite((this.dir === 1) ? this.animations.runRightSprite : this.animations.runLeftSprite);
             }
@@ -207,6 +245,8 @@ class Player extends Character {
         } else {
             if (this.isThrowing) {
                 this.SetSprite((this.dir === 1) ? this.animations.idleThrowRightSprite : this.animations.idleThrowLeftSprite);
+            } else if (this.isBlasting) {
+                this.SetSprite((this.dir === 1) ? this.animations.idleBlastRightSprite : this.animations.idleBlastLeftSprite);
             } else {
                 this.SetSprite((this.dir === 1) ? this.animations.idleRightSprite : this.animations.idleLeftSprite);
             }
@@ -239,7 +279,7 @@ class Player extends Character {
             this.GetInput();
         } else {
             this.movement = 0;
-            this.velocity = new Vector2(0, 0);
+            this.velocity = new Vector2(0, this.velocity.y);
         }
 
         if (this.isThrowing) {
@@ -255,6 +295,19 @@ class Player extends Character {
                 this.animations.runThrowRightSprite.Reset();
             } else if (throwElapsedTime >= 0.05 && !this.isGlobLocked) {
                 // Dp mptj
+            }
+        }
+
+        if (this.isBlasting) {
+            const blastElapsedTime = currentGameTime - this.blastStartTime;
+
+            if (blastElapsedTime >= this.blastAnimationMaxTime) {
+                this.isBlasting = false;
+                this.blastStartTime = 0;
+                this.animations.idleBlastRightSprite.Reset();
+                this.animations.idleBlastLeftSprite.Reset();
+                this.animations.runBlastRightSprite.Reset();
+                this.animations.runBlastLeftSprite.Reset();
             }
         }
 
@@ -279,9 +332,10 @@ class Player extends Character {
         for (let g = 0; g < this.globs.length; g++) {
             const glob = this.globs[g];
 
-            if (!glob.GetHasHit()) {
+            if (!glob.GetIsDone()) {
                 glob.Update();
             } else {
+                glob.UnloadContent();
                 this.globs.splice(g, 1);
             }
         }

@@ -33,17 +33,23 @@ class Rectangle {
         return new Vector2(depthX, depthY);
     }
 
-    Update(pos, size) {
-        this.x = pos.x;
-        this.y = pos.y;
+    SetSize(size) {
         this.width = size.x;
         this.height = size.y;
+        this.right = this.x + this.width;
+        this.bottom = this.y + this.height;
+        this.center = new Vector2((this.x + (this.width / 2)), (this.y + (this.height / 2)));
+        this.halfSize = new Vector2((this.width / 2), (this.height / 2));
+    }
+
+    Update(pos) {
+        this.x = pos.x;
+        this.y = pos.y;
         this.left = this.x;
         this.top = this.y;
         this.right = this.x + this.width;
         this.bottom = this.y + this.height;
         this.center = new Vector2((this.x + (this.width / 2)), (this.y + (this.height / 2)));
-        this.halfSize = new Vector2((this.width / 2), (this.height / 2));
     }
 
 }

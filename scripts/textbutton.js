@@ -27,13 +27,6 @@ class TextButton {
             this.fontColor,
             this.align
         );
-        // this.selectedIcon = new Texture(
-        //     new Vector2(this.buttonText.GetPosition().x - 30, this.buttonText.GetPosition().y - 10),
-        //     new Vector2(15, 15),
-        //     '#88000066',
-        //     1,
-        //     '#880000'
-        // );
         this.selectedIcon = new Image(
             'images/icons/menu-marker.png',
             new Vector2(this.buttonText.GetPosition().x - 30, this.buttonText.GetPosition().y - 10),
@@ -105,10 +98,7 @@ class TextButton {
             this.buttonText.GetCenteredTextPosition() :
             new Vector2(this.pos.x, this.pos.y - this.fontSize / 2);
 
-        this.bounds.Update(
-            buttonPosition,
-            new Vector2(this.buttonTextWidth, this.size.y)
-        );
+        this.bounds.Update(buttonPosition);
 
         this.selectedIcon.Update(new Vector2(buttonPosition.x - 30, this.pos.y - 10));
 

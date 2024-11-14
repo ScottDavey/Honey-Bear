@@ -52,7 +52,9 @@ function SecondsToTime(s) {
 ***********************/
 
 function FormatNumber(n) {
-    return parseFloat(n).toLocaleString();
+    let num = parseFloat(n).toLocaleString();
+
+    return num;
 }
 
 /************************************************
@@ -141,7 +143,7 @@ const GameTime = {
         this.lastUpdate = curTime;
 
         if (this.elapsed > this.highestElapsed && this.elapsed < 1) {
-            this.highestElapsed = this.elapsed;
+            this.highestElapsed = this.elapsed.toFixed(4);
         }
 
         // We're keeping track of the highest elapsed time. But this can allow us to reset that value

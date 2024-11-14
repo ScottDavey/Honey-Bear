@@ -37,16 +37,16 @@ class SoundManager {
             'right'
         );
 
-        // SFX
-        this.isSFXOn = true;
-        this.effects = [];
-        this.playerPosition = new Vector2(0, 0);
-
-        this.isFadeButtonLocked = false;
         this.isFading = false;
         this.fadeDirection = -1;
         this.fadeDuration = 10;
         this.fadeTimer = undefined;
+
+        // SFX
+        this.isSFXOn = true;
+        this.effects = [];
+        this.effectsToRemove = [];  // If we remove an entity but it still has a sound to play
+        this.playerPosition = new Vector2(0, 0);
     }
 
     Initialize(gameState) {
@@ -141,13 +141,7 @@ class SoundManager {
         // Instead of turning sound effect on/off, we'll just reduce their volume
         //  and prevent them from starting in the PlayEffect function
         for (const sfx of this.effects) {
-
-            if (!this.isSFXOn) {
-                sfx.sound.SetMaxVolume(0);
-            } else {
-                sfx.sound.SetMaxVolume(sfx.sound.GetDefaultVolume());
-            }
-
+            sfx.sound.ToggleMute(this.isSFXOn);
         }
 
     }
@@ -166,13 +160,38 @@ class SoundManager {
         this.effects.push({ id, sound });
     }
 
-    RemoveEffect(id) {
+    RemoveEffect(id, whenDone = false) {
         const effect = this.FindEffectByID(id);
         
         if (effect) {
-            effect.sound.Stop();
-            effect.sound = undefined;
-            this.effects.splice(this.effects.findIndex(effect => effect.id === id), 1);
+
+            // If the effect is still playing, add it to a queue that will be removed when it's done
+            if (whenDone) {
+                this.effectsToRemove.push(effect);
+            } else {
+                effect.sound.Stop();
+                effect.sound = undefined;
+                this.effects.splice(this.effects.findIndex(effect => effect.id === id), 1);
+            }
+
+        }
+    }
+
+    RemoveQueuedEffects() {
+        for (const ind in this.effectsToRemove) {
+            const effect = this.effectsToRemove[ind];
+
+            // If it's done playing, remove it
+            if (!effect.sound.IsPlaying()) {
+                effect.sound.Stop();
+                effect.sound = undefined;
+
+                // Remove from our main effects array
+                this.effects.splice(this.effects.findIndex(mainFX => mainFX.id === effect.id), 1);
+
+                // Remove from our queue
+                this.effectsToRemove.splice(ind, 1);
+            }
         }
     }
 
@@ -515,19 +534,8 @@ class SoundManager {
 
         this.HandleMusic(gameState, isPaused);
 
-        // Check if FADE button is pressed
-        if (INPUT.GetInput(KEY_BINDINGS.FADE)) {
-            if (!this.isFadeButtonLocked && !this.isFading) {
-                this.isFadeButtonLocked = true;
-                this.isFading = true;
-            }
-        } else {
-            this.isFadeButtonLocked = false;
-        }
-
-        if (this.isFading) {
-            this.Fade();
-        }
+        // Make sure to clean up any effects that need removing
+        this.RemoveQueuedEffects();
 
         DEBUG.Update('SFXCOUNT', `SFX Count: ${this.effects.length}`);
 

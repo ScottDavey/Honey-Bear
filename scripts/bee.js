@@ -29,7 +29,7 @@ class Bee {
         this.pauseChance = 5;
         this.pauseTimer = undefined;
 
-        this.health = 800;
+        this.health = HEALTH.BEE;
         this.statusText = [];
 
         this.dirX = 1;
@@ -49,7 +49,7 @@ class Bee {
         this.aggressiveSpeed = 200;
         this.passiveVolume = 0.1;
         this.aggressiveVolume = 0.2;
-        this.stingDamage = random(50, 100);
+        this.stingDamage = random(DAMAGE.BEE_STING[0], DAMAGE.BEE_STING[1]);
         this.stingCooldownDuration = 2;
 
         this.stingDelay = +((this.stingCooldownDuration * (random(1, 100) / 100)).toFixed(1));
@@ -250,10 +250,8 @@ class Bee {
         }
         
         // Regardless of state, make sure we reset bee's stinging
-        if (this.isStinging) {
-            if (this.stingCooldown && this.stingCooldown.IsComplete()) {
-                this.isStinging = false; // Reset after the cooldown
-            }
+        if (!isCloseToPlayer || (this.isStinging && this.stingCooldown && this.stingCooldown.IsComplete())) {
+            this.isStinging = false; // Reset after the cooldown
         }
         
         if (isCloseToPlayer && this.state === BEE_STATE.HOME.HIGH_ALERT) {
@@ -265,7 +263,7 @@ class Bee {
         }
 
         this.ApplyMovement();
-        this.bounds.Update(new Vector2(this.position.x, this.position.y), this.size);
+        this.bounds.Update(new Vector2(this.position.x, this.position.y));
 
         SOUND_MANAGER.PlayEffect(this.buzzSoundID, this.position);
     }

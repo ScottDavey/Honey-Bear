@@ -9,7 +9,7 @@ class Bear extends Character {
         this.isTrackingPlayer = false;
         this.isAttacking = false;
         this.attackTimer = undefined;
-        this.meleeAttackDamage = 7500;
+        this.meleeAttackDamage = DAMAGE.BEAR_MELEE;
         this.meleeCooldown = undefined;
         this.meleeCooldownDuration = 5;
 

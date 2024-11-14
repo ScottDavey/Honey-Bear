@@ -40,7 +40,7 @@ class Texture {
 
     Update(pos) {
         this.pos = pos;
-        this.rect.Update(this.pos, this.size);
+        this.rect.Update(this.pos);
     };
 
     Draw() {

@@ -14,6 +14,9 @@ class Acorn {
         this.hasHitGround = false;
         this.hasHitPlayer = false;
 
+        this.timer = undefined;
+        this.postHitDuration = 2;
+
         this.damage = random(5000, 10000);
 
         this.sprite = new Sprite(
@@ -23,6 +26,18 @@ class Acorn {
             this.size
         );
         this.bounds = new Rectangle(this.position.x, this.position.y, this.size.x, this.size.y);
+
+        this.newAcornSoundID = `acorn-new-${random(10000, 90000)}`;
+        SOUND_MANAGER.AddEffect(this.newAcornSoundID, new Sound(`sounds/effects/ACORN_NEW_${random(1, 3)}.ogg`, 'SFX', true, CANVAS_WIDTH, false, 0.2, false));
+        SOUND_MANAGER.PlayEffect(this.newAcornSoundID, this.position);
+
+        this.hitAcornSoundID = `acorn-hit-${random(10000, 90000)}`;
+        SOUND_MANAGER.AddEffect(this.hitAcornSoundID, new Sound(`sounds/effects/ACORN_HIT.ogg`, 'SFX', false, null, false, 0.2, false));
+    }
+
+    UnloadContent() {
+        SOUND_MANAGER.RemoveEffect(this.newAcornSoundID, true);
+        SOUND_MANAGER.RemoveEffect(this.hitAcornSoundID, true);
     }
     
     GetPosition() {
@@ -31,6 +46,14 @@ class Acorn {
 
     GetHasHitPlayer() {
         return this.hasHitPlayer;
+    }
+
+    GetHasHitGround() {
+        return this.hasHitGround;
+    }
+
+    GetHasHit() {
+        return this.hasHitGround || this.hasHitPlayer;
     }
 
     GetBounds() {
@@ -45,7 +68,10 @@ class Acorn {
     }
 
     SetHasHitPlayer(hasHit) {
-        this.hasHitPlayer = hasHit;
+        if (!this.hasHitPlayer) {
+            SOUND_MANAGER.PlayEffect(this.hitAcornSoundID);
+            this.hasHitPlayer = hasHit;
+        }
     }
 
     Update() {
@@ -61,11 +87,17 @@ class Acorn {
         this.position.y = Math.round(this.position.y);
 
         this.sprite.Update(this.position);
-        this.bounds.Update(this.position, this.size);
+        this.bounds.Update(this.position);
+
+        if (this.position.y > CANVAS_HEIGHT) {
+            this.hasHitGround = true;
+        }
     }
 
     Draw() {
-        this.sprite.Draw();
+        if (!this.hasHitPlayer && !this.hasHitGround) {
+            this.sprite.Draw();
+        }
     }
 
 }

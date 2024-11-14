@@ -19,14 +19,6 @@ class Camera {
 			scale: [1.0, 1.0]
 		};
 
-		// this.velocity = new Vector2(0, 0);
-		// this.movementX = 0;
-		// this.movementY = 0;
-		// this.friction = 0.2;
-		// this.moveAcceleration = 2000;
-		// this.maxMoveSpeed = 1500;
-
-
 		this.isShaking = false;
 		this.shakeStart = 0;
 		this.shakeMaxTime = 0.5;

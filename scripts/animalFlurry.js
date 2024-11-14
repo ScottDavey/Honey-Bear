@@ -93,7 +93,7 @@ class AnimalFlurry {
         this.sprite.Update(this.position);
         
         const boundsOffset = this.GetBoundsOffset();
-        this.bounds.Update(boundsOffset.position, boundsOffset.size);
+        this.bounds.Update(boundsOffset.position);
     }
 
     Draw() {

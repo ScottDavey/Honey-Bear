@@ -13,8 +13,8 @@ class Character {
         this.bounds = new Rectangle(this.position.x, this.position.y, this.size.x, this.size.y);
 
         // VITALITY
-        this.health = 50000;
-        this.maxHealth = 50000;
+        this.maxHealth = HEALTH.BEAR;
+        this.health = this.maxHealth;
         this.isDead = false;
         this.deathStartTime = 0;
         this.deathMaxTime = 3;
@@ -263,6 +263,10 @@ class Character {
         this.position.x = Math.round(this.position.x);
         this.position.y += this.velocity.y * elapsed;
         this.position.y = Math.round(this.position.y);
+
+        if (this.isPlayer) {
+            DEBUG.Update('PLAYDEAD', `Y VEL: ${(this.velocity.y).toFixed(2)}`);
+        }
     }
 
     Jump(velY) {
@@ -352,7 +356,7 @@ class Character {
 
         this.ApplyPhysics();
 
-        this.bounds.Update(this.position, this.size);
+        this.bounds.Update(this.position);
 
         // Start some movement variables
         this.movement = 0;

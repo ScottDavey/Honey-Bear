@@ -54,10 +54,10 @@ const BEE_STATE = {
 };
 
 const BOSS_STATE = {
-    PREINTO: 0,
+    PREINTRO: 0,
     INTRO: 1,
     IDLE: 2,
-    ATTACKINTRO: 3,
+    ATTACK_INTRO: 3,
     ATTACKING: 4,
     CHASING: 5,
     STUNNED: 6,

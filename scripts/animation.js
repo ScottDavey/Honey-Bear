@@ -20,12 +20,20 @@ class Nimation {
         this.offset = offset;
     }
 
+    GetPosition() {
+        return this.pos;
+    }
+
     SetSpeed(speed) {
         this.speed = speed;
     }
 
     SetImageOpacity(opacity) {
         this.sprite.SetImageOpacity(opacity);
+    }
+
+    SetPosition(pos) {
+        this.position = new Vector2(pos.x, pos.y);
     }
 
     Animate(frameTime) {
@@ -51,6 +59,10 @@ class Nimation {
             // Set the new previous frame time
             this.previousFrameTime = frameTime;
         }
+    }
+
+    GetIsDone() {
+        return this.isDone;
     }
 
     Reset() {

@@ -78,6 +78,13 @@ class Sound {
         this.maxVolume = vol;
     }
 
+    ToggleMute(isOn) {
+        const newVol = isOn ? this.GetDefaultVolume() : 0;
+        
+        this.SetMaxVolume(newVol);
+        this.SetVolume(newVol);
+    }
+
     IsPlaying() {
         return !this.audEl.paused;
     }

@@ -28,16 +28,17 @@ body {
     position:relative;
     top: 25%;
     left: 45%;
-    border: 1px solid #000000;
-    border-radius: 5px;
-    background-color: #563f0a;
-    color: #222222;
-    font-size: 24px;
+    border: none;
+    /* border: 1px solid #000000; */
+    /* border-radius: 5px; */
+    background-color: #00000000;
+    color: #563f0a;
+    font-size: 46px;
     font-family: 'Raleway', "Century Gothic", sans-serif;
 }
 
 #startOverlay #startButton:hover {
-    background-color: #997112;
+    /* background-color: #997112; */
     color: #5831a0;
     cursor:pointer;
 }

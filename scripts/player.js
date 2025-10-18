@@ -33,12 +33,13 @@ class Player extends Character {
             idleBlastLeftSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 3, 15, 0.04, false, new Vector2(0, 0)),
             runBlastRightSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 16, this.defaultRunAnimationSpeed, false, new Vector2(0, 0)),
             runBlastLeftSprite: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 6, 17, this.defaultRunAnimationSpeed, false, new Vector2(0, 0)),
+            rummageRight: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 3, 18, 0.1, true, new Vector2(0, 0)),
+            rummageLeft: new Nimation(spritesheet, new Vector2(this.position.x, this.position.y), 65, 45, 3, 19, 0.1, true, new Vector2(0, 0)),
         };
         this.sprite = this.animations.idleSprite;
 
         this.throwStartTime = 0;
         this.throwSoundID = 0;
-        // this.globAnimationMaxTime = 0.12;
         this.globAnimationMaxTime = 0.5;
         this.globs = [];
         this.globCooldown = undefined;
@@ -142,7 +143,7 @@ class Player extends Character {
         // Abilities
         if (INPUT.GetInput(KEY_BINDINGS.SHOOT)) {
 
-            if (!this.globCooldown || this.globCooldown.IsComplete()) {
+            if (!this.isGlobLocked && (!this.globCooldown || this.globCooldown.IsComplete())) {
                 this.throwStartTime = currentGameTime;
                 this.isThrowing = true;
                 this.isGlobLocked = true;
@@ -158,7 +159,7 @@ class Player extends Character {
         
         if (INPUT.GetInput(KEY_BINDINGS.SPECIAL)) {
 
-            if (!this.blastCooldown || this.blastCooldown.IsComplete()) {
+            if (!this.isBlastLocked && (!this.blastCooldown || this.blastCooldown.IsComplete())) {
                 this.blastStartTime = currentGameTime;
                 this.isBlasting = true;
                 this.blast = new HoneyBlast(this.GetBounds());
@@ -219,8 +220,6 @@ class Player extends Character {
 
         if (this.GetIsDead()) {
             this.SetSprite((this.dir === 1) ? this.animations.deadRightSprite : this.animations.deadLeftSprite);
-        } else if (this.isKnockingBack) {
-            this.SetSprite((this.dir === 1) ? this.animations.hurtRightSprite : this.animations.hurtLeftSprite);
         } else if (this.velocity.y < 0) {
             if (this.isThrowing) {
                 this.SetSprite((this.dir === 1) ? this.animations.idleThrowRightSprite : this.animations.idleThrowLeftSprite);
@@ -248,7 +247,11 @@ class Player extends Character {
             } else if (this.isBlasting) {
                 this.SetSprite((this.dir === 1) ? this.animations.idleBlastRightSprite : this.animations.idleBlastLeftSprite);
             } else {
-                this.SetSprite((this.dir === 1) ? this.animations.idleRightSprite : this.animations.idleLeftSprite);
+                if (INPUT.GetInput(KEY_BINDINGS.INTERACT)) {
+                    this.SetSprite((this.dir === 1) ? this.animations.rummageRight : this.animations.rummageLeft);
+                } else {
+                    this.SetSprite((this.dir === 1) ? this.animations.idleRightSprite : this.animations.idleLeftSprite);
+                }
             }
         }
 

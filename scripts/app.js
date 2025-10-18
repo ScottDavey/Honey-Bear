@@ -22,6 +22,7 @@ function main() {
 
     const WRAPPER_DIV = document.getElementById('wrapper');
     WRAPPER_DIV.style.width = `${CANVAS_WIDTH + 4}px`;
+    // WRAPPER_DIV.style.marginTop = '669px';
 
     // Event Listeners (Keyboad / Mouse / Gamepad )
     window.addEventListener('keyup', e => { INPUT.OnInputEvent(e, 'keyup'); }, false);

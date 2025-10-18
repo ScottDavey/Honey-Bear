@@ -82,6 +82,15 @@ class TreeMonster {
                 attackSprite: this.animations.acornDrop
             },
             {
+                name: 'ACORN_DROP',
+                fn: this.AcornDrop,
+                isProximityBased: true,
+                introDuration: 1,
+                duration: 5,
+                introSprite: this.animations.acornDrop,
+                attackSprite: this.animations.acornDrop
+            },
+            {
                 name: 'CANNON',
                 fn: this.Cannon,
                 isProximityBased: false,
@@ -90,16 +99,6 @@ class TreeMonster {
                 introSprite: this.animations.cannonIntro,
                 attackSprite: this.animations.cannon
             },
-            {
-                name: 'BRANCH_SMASH',
-                fn: this.BranchSmash,
-                isProximityBased: true,
-                introDuration: 0.55,
-                duration: 2,
-                introSprite: this.animations.branchSmashIntro,
-                attackSprite: this.animations.branchSmash
-            },
-            // Double up the branch smash to make it more likely to get chosen if the player is close by
             {
                 name: 'BRANCH_SMASH',
                 fn: this.BranchSmash,

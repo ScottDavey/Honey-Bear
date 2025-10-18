@@ -54,6 +54,80 @@ class Collision {
 
     }
 
+    CheckLOS(ray) {
+        const rayPos = ray.GetPos();
+        const segmentSize = 5;
+        const segmentHalfSize = segmentSize / 2;
+        const xLen = Math.abs(rayPos.start.x - rayPos.end.x);
+		const yLen = Math.abs(rayPos.start.y - rayPos.end.y);
+		const greaterLength = xLen > yLen ? xLen : yLen;
+		const isGreaterLengthX = xLen > yLen;
+		const segments = greaterLength / segmentSize;
+		const lineDirX = rayPos.start.x > rayPos.end.x ? -1 : 1;
+		const lineDirY = rayPos.start.y > rayPos.end.y ? -1 : 1;
+
+        let isColliding = false;
+
+        /*
+            In this function, we're going to take in a ray (line) that's
+            shooting from the enemy to the player.
+
+            Every frame, make a series of rectangles that go from the line's
+            start to it's end and check to see if any of those collide with
+            an environment collision line. If so, the enemy does not see the
+            player.
+
+                                   WALL
+            rect:    [ ][ ][ ][ ][x]|
+            ray:   E --------------------- P
+                                   |
+
+            Note that 3 scenarios are handled:
+                1.  If it's a vertical line - the x will be fixed
+                2.  If X start/end has a greater width than Y start/end,
+                    use mx+b to find y on the sloping line
+                3.  If Y is longer, use y-b / m to find x on the sloping line
+        
+        */
+
+        for (let i = 0; i <= segments; i++) {
+
+			let x, y;
+
+            // 1: Handle vertical lines
+			if (rayPos.start.x === rayPos.end.x) {
+				x = rayPos.start.x; // x is constant for vertical lines
+				y = rayPos.start.y + (segmentSize * i * lineDirY);
+			} else {
+                const slope = (rayPos.end.y - rayPos.start.y) / (rayPos.end.x - rayPos.start.x);
+		        const b = rayPos.start.y - (slope * rayPos.start.x);
+
+                // 2: X length is greater (line is closer to horizontal)
+                if (isGreaterLengthX) {
+                    
+                    x = (rayPos.start.x + (segmentSize * i * lineDirX));
+                    y = (slope * x) + b;
+
+                /// 3: Y is greater (line is closer to vertical)
+                } else {
+                    y = (rayPos.start.y + (segmentSize * i * lineDirY));
+                    x = (y - b) / slope;
+                }
+            }
+
+			const segmentBounds = new Rectangle(x - segmentHalfSize, y - segmentHalfSize, segmentSize, segmentSize);
+
+            if (this.CheckLineCollisionRect(segmentBounds)) {
+                isColliding = true;
+                break;
+            }
+
+		}
+
+        return isColliding;
+
+    }
+
     CheckLineCollisionEntity(entity) {
         const isMovingUp = entity.velocity.y < 0;
         const bounds = entity.GetBounds();

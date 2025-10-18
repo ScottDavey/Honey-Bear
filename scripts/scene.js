@@ -23,8 +23,14 @@ class Scene {
         this.isBossSequence = false;
         this.bossSequenceIntro = undefined;
         this.bossSequenceIntroComplete = false;
-        this.bossAreaBounds = undefined;
         this.isBossDefeated = false;
+        this.hasBossStarted = false;
+        this.bossBoundary = new Rectangle(
+            this.eventCollision.boss.pos[0],
+            this.eventCollision.boss.pos[1],
+            this.eventCollision.boss.size[0],
+            this.eventCollision.boss.size[1]
+        );
 
         this.exit = new Rectangle(
             this.eventCollision.exit.pos[0],
@@ -52,18 +58,11 @@ class Scene {
             '#FFC436'
         );
 
-        this.pitFallData = this.eventCollision.pitfalls;
         this.pitfalls = [];
-
-        this.genericEventData = this.eventCollision.generic;
         this.genericEvents = [];
-
-        this.checkpointEventData = this.eventCollision.checkpoints;
         this.checkpoints = [];
         this.checkpointReached = undefined;
-
-        this.enemyJumpData = this.eventCollision.enemyjump;
-        this.enemyJumps = [];
+        this.enemyAI = [];
 
         this.camera = new Camera();
         this.parallax = new Parallax(this.level.backgrounds, this.worldWidth);
@@ -147,9 +146,12 @@ class Scene {
         }
 
         if (this.boss) {
-            this.isBossSequence = false;
-            SOUND_MANAGER.SetBossSequence(false);
-            this.boss.Reset();
+            // Only reset the boss if we've already engaged but died
+            if (this.hasBossStarted) {
+                this.isBossSequence = false;
+                SOUND_MANAGER.SetBossSequence(false);
+                this.boss.Reset();
+            }
         }
 
         this.player.Reset(this.checkpointReached);
@@ -200,18 +202,14 @@ class Scene {
         });
 
         // PITFALLS
-        this.pitfalls = this.pitFallData.map(pitfall => {
+        this.pitfalls = this.eventCollision.pitfalls.map(pitfall => {
             return new Rectangle(pitfall.pos[0], pitfall.pos[1], pitfall.size[0], pitfall.size[1]);
         });
 
         // GENERIC EVENTS
-        this.genericEvents = this.genericEventData.map(gen => {
+        this.genericEvents = this.eventCollision.generic.map(gen => {
 
             const bounds = new Rectangle(gen.pos[0], gen.pos[1], gen.size[0], gen.size[1]);
-
-            if (gen.name === 'BOSS') {
-                this.bossAreaBounds = bounds;
-            }
 
             return {
                 bounds,
@@ -219,14 +217,17 @@ class Scene {
             };
         });
 
-        // ENEMY JUMPS
-        this.enemyJumps = this.enemyJumpData.map(jump => {
-            return new Rectangle(jump.pos[0], jump.pos[1], jump.size[0], jump.size[1]);
+        // CHECKPOINTS
+        this.checkpoints = this.eventCollision.checkpoints.map(checkpoint => {
+            return new Rectangle(checkpoint.pos[0], checkpoint.pos[1], checkpoint.size[0], checkpoint.size[1]);
         });
 
-        // CHECKPOINTS
-        this.checkpoints = this.checkpointEventData.map(checkpoint => {
-            return new Rectangle(checkpoint.pos[0], checkpoint.pos[1], checkpoint.size[0], checkpoint.size[1]);
+        // ENEMY AI
+        this.enemyAI = this.eventCollision.enemyai.map(ai => {
+            return new EnemyAI(
+                new Rectangle(ai.pos[0], ai.pos[1], ai.size[0], ai.size[1]),
+                ai.json
+            );
         });
 
         // BOSS
@@ -401,48 +402,133 @@ class Scene {
         }
     }
 
-    CheckEntityPitfallCollision() {
+    CheckEntityPitfallCollision(entity) {
+        const bounds = entity.GetBounds();
 
-        // Loop over Pitfalls
-        for (const pitfall of this.pitfalls) {
+        // Loop over pitfalls
+        for (const pit of this.pitfalls) {
+            if (this.collision.CheckBoxCollision(bounds, pit) && !entity.GetIsDead()) {
+                // If this entity has fallen, take all damage
+                entity.DoDamage({ amount: entity.GetCurrentHealth(), isCrit: true });
+            }
+        }
 
-            // Check Bears
-            for (const bear of this.bears) {
-                const bearBounds = bear.GetBounds();
+    }
 
-                if (this.collision.CheckBoxCollision(bearBounds, pitfall)) {
+    CheckLineCollisionLOS(enemy) {
 
-                    if (!bear.GetIsTracking()) {
-                        bear.SwitchDirections();
-                    }
+        const losRay = enemy.GetLOS();
+        let hasLOS = false;
+
+        if (this.collision.CheckLOS(losRay)) {
+            hasLOS = false;
+        } else {
+            hasLOS = true;
+        }
+
+        enemy.SetHasLOS(hasLOS, this.player.GetPosition());
+
+    }
+
+    HandleEnemyAICollision(enemy) {
+
+        if (enemy.GetIsDead()) {
+            return;
+        }
+
+        const bounds = enemy.GetBounds();
+        const isTracking = enemy.GetIsTracking();
+        const enemyDirection = enemy.GetDirection();
+
+        // Loop over enemyAI to see if there's a collision
+        for (const ai of this.enemyAI) {
+
+            const aiBounds = ai.GetBounds();
+
+            if (this.collision.CheckBoxCollision(bounds, aiBounds)) {
+
+                // Based on the type of collision that happens (could be multiple, decide what to do)
+
+                const jump = ai.GetJump();
+                if (isTracking && jump.enabled && (+enemyDirection === +jump.direction || +jump.direction === ENEMY_AI_DIRECTIONS.BOTH)) {
+                    enemy.SetIsJumping();
                 }
+
+                const patrol = ai.GetPatrol();
+                if (!isTracking && +patrol.enabled) {
+                    enemy.SwitchDirections();
+                }
+
+                const noChase = ai.GetNoChase();                
+                if (isTracking && noChase.enabled && (enemyDirection === noChase.direction || noChase.direction === ENEMY_AI_DIRECTIONS.BOTH)) {
+                    enemy.SetNoChase(true);
+                }
+
+                break;
+
+            } else {
+                enemy.SetNoChase(false);
             }
 
         }
 
     }
 
-    CheckEnemyJumpCollision() {
+    CheckBossBoundary() {
+        const playerBounds = this.player.GetBounds();
+        const playerIsDead = this.player.GetIsDead();
 
-        for (const bear of this.bears) {
-            // Only proceed if the bear is tracking the player
-            if (!bear.GetIsTracking()) {
-                continue;
+        if (!playerIsDead
+            && this.collision.CheckBoxCollision(playerBounds, this.bossBoundary)
+            && !this.isBossDefeated
+            && !this.isBossSequence
+        ) {
+
+            this.hasBossStarted = true;
+            this.isBossSequence = true;
+            SOUND_MANAGER.SetBossSequence(true);
+
+            // Set enemies to stop tracking player
+            for (const bear of this.bears) {
+                bear.TrackPlayer(false);
+
+                // Send bears the other way if they're in the boss area
+                if (bear.GetPosition().x >= this.bossBoundary.left) {
+                    bear.SwitchDirections();
+                }
             }
 
-            for (const jump of this.enemyJumps) {
+            for (const hive of this.beeHives) {
+                for (const bee of hive.GetBees()) {
+                    const isAggressive = bee.GetState() === BEE_STATE.AGGRESSIVE;
 
-                const bearBounds = bear.GetBounds();
-
-                // If the bear is colliding with a jump box: Jump
-                if (this.collision.CheckBoxCollision(bearBounds, jump)) {
-                    bear.SetIsJumping();
+                    if (isAggressive) {
+                        bee.Reset();
+                    }
                 }
-
             }
 
         }
 
+        // Keep player within the boss area until the fight is over
+        //  If the player dies, they'll be returned to the checkpoint
+        if (!playerIsDead && this.isBossSequence && !this.isBossDefeated) {
+            const playerPosition = this.player.GetPosition();
+            const playerVelocity = this.player.GetVelocity();
+            let newPosX = playerPosition.x;
+            let newVelX = playerVelocity.x;
+
+            if (playerPosition.x <= this.bossBoundary.left) {
+                newPosX = this.bossBoundary.left;
+                newVelX = 0;
+            } else if (playerPosition.x >= (this.bossBoundary.left + CANVAS_WIDTH) - this.player.GetSize().x) {
+                newPosX = (this.bossBoundary.left + CANVAS_WIDTH) - this.player.GetSize().x;
+                newVelX = 0;
+            }
+
+            this.player.SetPosition(new Vector2(newPosX, playerPosition.y));
+            this.player.SetVelocity(new Vector2(newVelX, playerVelocity.y));
+        }
     }
 
     CheckGenericEventCollision() {
@@ -451,60 +537,11 @@ class Scene {
         for (const gen of this.genericEvents) {
 
             if (this.collision.CheckBoxCollision(playerBounds, gen.bounds)) {
-
-                if (gen.name === 'BOSS' && !this.isBossDefeated && !this.isBossSequence) {
-                    this.isBossSequence = true;
-                    SOUND_MANAGER.SetBossSequence(true);
-
-                    // Set enemies to stop tracking player
-                    for (const bear of this.bears) {
-                        bear.TrackPlayer(false);
-
-                        // Send bears the other way if they're in the boss area
-                        if (bear.GetPosition().x >= gen.bounds.left) {
-                            bear.SetDirection(-1);
-                        }
-                    }
-
-                    for (const hive of this.beeHives) {
-                        for (const bee of hive.GetBees()) {
-                            const isAggressive = bee.GetState() === BEE_STATE.AGGRESSIVE;
-
-                            if (isAggressive) {
-                                bee.Reset();
-                            }
-                        }
-                    }
-                } else if (gen.name === 'PIT') {
-
-                    // If the player fell into a pit, take full damage
-                    this.player.DoDamage({ amount: this.player.GetCurrentHealth(), isCrit: true });
-
-                }
-
+                // ADD CUSTOM EVENTS HERE
             }
 
         }
 
-        // Keep player within the boss area until the fight is over
-        //  If the player dies, they'll be returned to the checkpoint
-        if (!this.player.GetIsDead() && this.isBossSequence && !this.isBossDefeated) {
-            const playerPosition = this.player.GetPosition();
-            const playerVelocity = this.player.GetVelocity();
-            let newPosX = playerPosition.x;
-            let newVelX = playerVelocity.x;
-
-            if (playerPosition.x <= this.bossAreaBounds.left) {
-                newPosX = this.bossAreaBounds.left;
-                newVelX = 0;
-            } else if (playerPosition.x >= (this.bossAreaBounds.left + CANVAS_WIDTH) - this.player.GetSize().x) {
-                newPosX = (this.bossAreaBounds.left + CANVAS_WIDTH) - this.player.GetSize().x;
-                newVelX = 0;
-            }
-
-            this.player.SetPosition(new Vector2(newPosX, playerPosition.y));
-            this.player.SetVelocity(new Vector2(newVelX, playerVelocity.y));
-        }
     }
 
     CheckCheckpointCollision() {
@@ -547,7 +584,7 @@ class Scene {
         if (this.isBossSequence) {
 
             // Keep camera within specified bounds. This can be either canvas or boss area
-            this.camera.moveTo(this.bossAreaBounds.left, this.worldHeight - CANVAS_HEIGHT);
+            this.camera.moveTo(this.bossBoundary.left, this.worldHeight - CANVAS_HEIGHT);
 
             return;
         }
@@ -622,12 +659,10 @@ class Scene {
         // Check player projectiles (Honey Globs)
         this.CheckHoneyGlobCollisions();
         this.CheckHoneyBlastCollision();
-        // Check for Pitfalls
-        this.CheckEntityPitfallCollision();
-        // Check for enemy jumping
-        this.CheckEnemyJumpCollision();
         // Check for Generic Events
         this.CheckGenericEventCollision();
+        // Check for BOSS Events
+        this.CheckBossBoundary();
         // Check for Checkpoints
         this.CheckCheckpointCollision();
 
@@ -635,6 +670,7 @@ class Scene {
         this.player.Update();
         this.playerHealthBar.Update(this.player.GetCurrentHealth());
         this.collision.CheckLineCollisionEntity(this.player);
+        this.CheckEntityPitfallCollision(this.player);
 
         // Update Cooldown Text
         this.globAbilityCooldown.SetString(`${this.player.GetHoneyGlobCooldown() || ''}`);
@@ -690,15 +726,18 @@ class Scene {
                     continue;
                 }
 
-                bear.Update(this.player.GetPosition());
+                bear.Update(this.player.GetBounds().center);
                 this.collision.CheckLineCollisionEntity(bear);
+                this.CheckLineCollisionLOS(bear);
+                this.CheckEntityPitfallCollision(bear);
+                this.HandleEnemyAICollision(bear);
 
                 if (bear.IsAttacking() && !this.player.GetIsDead()) {
                     this.player.DoDamage({ amount: bear.GetMeleeAttackDamage(), isCrit: false });
                 }
 
-                // If the Bear falls, throw it back up
-                if (bear.GetPosition().y > (this.worldHeight + 100)) {
+                // If the Bear falls through the ground, throw it back up
+                if (!bear.GetIsDead() && bear.GetPosition().y > (this.worldHeight + 100)) {
                     bear.SetPosition(new Vector2(bear.GetPosition().x, -300));
                 }
             }
@@ -717,7 +756,7 @@ class Scene {
                 }
 
                 beeHive.Interact(INPUT.GetInput(KEY_BINDINGS.INTERACT));
-
+                
                 if (beeHive.IsCollecting()) {
                     this.player.Heal(beeHive.GetHoneyPrize(this.player.GetMaxHealth()));
                     SOUND_MANAGER.PlayEffect(this.healSoundID);

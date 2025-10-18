@@ -10,6 +10,8 @@ class HoneyGlob {
         this.damage = random(DAMAGE.HONEY_GLOB[0], DAMAGE.HONEY_GLOB[1]);
         this.critPercent = 30;
         this.critDamagePercent = 2;
+        this.isCrit = (random(0, 100) <= this.critPercent);
+        this.finalDamage = this.damage * (this.isCrit ? this.critDamagePercent : 1);
 
         this.velocity = new Vector2(0, -100);
         this.movementAcceleration = 9000.0;
@@ -25,15 +27,17 @@ class HoneyGlob {
         this.hasHit = false;
         this.hitLocation = new Vector2(0, 0);
         this.isDone = false;
-        this.hitAnimation = new Nimation('images/spritesheets/HoneyGlob_Splat_Spritesheet.png', this.position, 20, 20, 5, 0, 0.01, false, new Vector2(0, 0));
 
         this.sprite = new Circle(pos, 4, '#ebaf4c', '#ebaf4c');
 
         this.rect = new Rectangle(this.position.x + 2, this.position.y + 2, this.size.x - 2, this.size.y - 2);
 
+        const hitAnimationSpritesheetRow = this.dir > 0 ? 0 : 1;
+        this.hitAnimation = new Nimation('images/spritesheets/HoneyGlob_Splat_Spritesheet.png', this.position, 20, 20, 5, hitAnimationSpritesheetRow, 0.01, false, new Vector2(0, 0));
+
         // SOUNDS
         this.honeyGlobSoundID = `glob-${random(10000, 90000)}`;
-        SOUND_MANAGER.AddEffect(this.honeyGlobSoundID, new Sound(`sounds/effects/SPLAT_${random(1, 3)}.ogg`, 'SFX', true, CANVAS_WIDTH, false, 0.2, true));
+        SOUND_MANAGER.AddEffect(this.honeyGlobSoundID, new Sound(`sounds/effects/SPLAT_${this.isCrit ? 2 : 1}.ogg`, 'SFX', true, CANVAS_WIDTH, false, 0.2, true));
         
     }
 
@@ -46,10 +50,7 @@ class HoneyGlob {
     }
 
     GetDamage() {
-        const isCrit = (random(0, 100) <= this.critPercent);
-        const critPercent = isCrit ? this.critDamagePercent : 1;
-        const amount = this.damage * critPercent;
-        return { amount, isCrit };
+        return { amount: this.finalDamage, isCrit: this.isCrit };
     }
 
     GetCritDamage() {
@@ -111,7 +112,9 @@ class HoneyGlob {
             this.sprite.SetCenter(this.position);
             this.rect.Update(this.position);
 
-            this.hitAnimation.SetPosition(this.position);
+            if (this.dir > 0) {
+                this.hitAnimation.SetPosition(this.position);
+            }
 
         } else if (!this.isDone && !this.hitAnimation.GetIsDone()) {
             this.hitAnimation.Update(new Vector2(this.hitLocation.x - 10, this.hitLocation.y - 10));

@@ -11,6 +11,24 @@ class Line {
         this.sound = sound;
         this.slope = slope;
         this.b = b;
+
+        this.textures = [];
+    }
+
+    SetStartPos(start) {
+        this.startPos = new Vector2(start.x, start.y);
+    }
+    
+    SetEndPos(end) {
+        this.endPos = new Vector2(end.x, end.y);
+    }
+
+    SetColor(color) {
+        this.color = color;
+    }
+
+    SetTextures(textures) {
+        this.texture = textures;
     }
 
     GetPos() {
@@ -18,6 +36,11 @@ class Line {
     }
 
     Draw() {
+
+        for (const tex of this.textures) {
+            tex.Draw();
+        }
+
         CONTEXT.save();
         CONTEXT.lineWidth = 1;
         CONTEXT.strokeStyle = this.color;
@@ -27,6 +50,7 @@ class Line {
         CONTEXT.stroke();
         CONTEXT.closePath();
         CONTEXT.restore();
+
     };
 
 }

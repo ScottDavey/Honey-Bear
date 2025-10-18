@@ -245,7 +245,8 @@ class Character {
             -dynamicMaxMoveSpeed,
             dynamicMaxMoveSpeed
         );
-        // Check if being knocked back
+        
+        // If velocity is under a threshold, set to 0
         this.velocity.x = (this.velocity.x < 5 && this.velocity.x > -5) ? 0 : this.velocity.x;
 
         // Vertical Movement
@@ -333,7 +334,7 @@ class Character {
 
             if (walkTimerElapsed - this.previousStepTime >= this.stepSpeed) {
                 
-                if (this.isOnGround && Math.abs(this.velocity.x) > 0) {
+                if (this.isOnGround && !this.isHittingWall && Math.abs(this.velocity.x) > 0) {
 
                     // Get a random step, but make sure it's not the same as the previous one
                     const stepsExcludingPrevious = stepsArray.filter(step => step.id !== this.previousStepID || this.walkSounds[0].id);

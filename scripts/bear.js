@@ -6,17 +6,34 @@ class Bear extends Character {
     constructor(position, size) {
         super(position, size, false);
 
+        this.aggroDistance = 300;
+        this.losLostDuration = 10;
+        this.losLostTimer = undefined;
+        this.losRay = new Line(
+            this.GetBounds().center,
+            this.GetBounds().center,
+            '#00000066',
+            null,
+            null,
+            null,
+            null,
+            null
+        );
+        this.hasLOSOnPlayer = false;
+        this.playerLastLocation = new Vector2(0, 0);
         this.isTrackingPlayer = false;
         this.isAttacking = false;
+        this.attackRange = 75;
         this.attackTimer = undefined;
         this.meleeAttackDamage = DAMAGE.BEAR_MELEE;
         this.meleeCooldown = undefined;
         this.meleeCooldownDuration = 5;
 
-        this.maxMoveSpeed = 75;
         this.maxRunSpeed = 215;
         this.maxWalkSpeed = 75;
+        this.maxMoveSpeed = this.maxWalkSpeed;
         this.isMoving = true;
+        this.isNoChase = false;
 
         // Sprites        
         const spritesheet = 'images/spritesheets/Bear.png';
@@ -63,6 +80,23 @@ class Bear extends Character {
 
     SetIsJumping() {
         this.isJumping = true;
+    }
+
+    SetNoChase(shouldNotChase) {
+        this.isNoChase = shouldNotChase;
+    }
+
+    SetHasLOS(hasLOS, playerLocation) {
+        // If we had LOS, but just lost it, set the player's last known location
+        // if (this.hasLOSOnPlayer && !hasLOS) {
+        //     this.playerLastLocation = new Vector2(playerLocation.x, playerLocation.y);
+        // }
+        
+        this.hasLOSOnPlayer = hasLOS;
+    }
+
+    GetLOS() {
+        return this.losRay;
     }
 
     GetIsTracking() {
@@ -149,49 +183,98 @@ class Bear extends Character {
         }
     }
 
+    UpdateLOSRay(playerPos) {
+        const bounds = this.GetBounds();
+
+        this.losRay.SetStartPos(bounds.center);
+        this.losRay.SetEndPos(playerPos);
+    }
+
+    UpdateLastPlayerPosition(playerPos) {
+        // Always update the last player location if we have LOS.
+        if (this.hasLOSOnPlayer) {
+            this.playerLastLocation = new Vector2(playerPos.x, playerPos.y);
+        }
+
+        if (this.isTrackingPlayer) {
+            console.log(playerPos.x, this.playerLastLocation.x);
+        }
+    }
+
     Update(playerPosition) {
         this.movement = 0;
 
         if (!this.isDead) {
 
             const playerPos = new Vector2(playerPosition.x, playerPosition.y);
-            const posDiff = new Vector2(Math.abs(this.position.x - playerPos.x), Math.abs(this.position.y - playerPos.y));
+            const bounds = this.GetBounds();
+            const xDelta = Math.pow((bounds.center.x - playerPos.x), 2);
+            const yDelta = Math.pow((bounds.center.y - playerPos.y), 2);
+            const distanceFromPlayer = Math.sqrt(xDelta + yDelta);
+
+            this.UpdateLOSRay(playerPos);
+            this.UpdateLastPlayerPosition(playerPos);
+
+            this.isMoving = true;
 
             // Is tracking the player
             if (this.isTrackingPlayer) {
 
-                const isCloseToPlayer = (posDiff.x < 75 && posDiff.y < 75);
+                // If we still have line of sight, track the player's current movement.
+                //  Else track to the last known location
+                const trackingPosition = this.hasLOSOnPlayer ? playerPos : this.playerLastLocation;
 
-                if ((this.position.x - playerPos.x) < 0 && this.dir === -1 || (this.position.x - playerPos.x) > 0 && this.dir === 1) {
+                // Make sure the bear is running towards the player
+                if (
+                    (bounds.center.x < trackingPosition.x && this.dir === -1) ||
+                    (bounds.center.x > trackingPosition.x && this.dir === 1)
+                ) {
                     this.SwitchDirections();
                 }
 
-                this.isMoving = true;
-
-                // If the enemy is right on top of the player, stop moving
-                if (posDiff.x < 75 && this.isMoving) {
+                if (this.isMoving &&
+                    this.isOnGround &&
+                    (this.isNoChase || Math.abs(bounds.center.x - trackingPosition.x) <= this.attackRange)
+                ) {
                     this.isMoving = false;
                 }
 
                 // Attack if tracking and in striking distance
-                if (isCloseToPlayer) {
+                if (distanceFromPlayer <= this.attackRange) {
                     this.MeleeAttack();
                 } else {
                     this.isAttacking = false;
                 }
 
                 // If we've outrun the enemy, tell them to stop tracking
-                if (posDiff.x < -1500 || posDiff.x > 1500) {
+                if (distanceFromPlayer > 1500) {
                     this.TrackPlayer(false);
                 }
 
+                // If the enemy lost line of sight, start a timer and set
+                //  tracking to false when it runs out
+                if (!this.hasLOSOnPlayer) {
+
+                    if (!this.losLostTimer) {
+                        this.losLostTimer = new Timer(GameTime.getCurrentGameTime(), this.losLostDuration);
+                    }
+
+                    if (this.losLostTimer.IsComplete()) {
+                        this.TrackPlayer(false);
+                        this.losLostTimer = undefined;
+                    }
+
+                }
+
             } else {
+
+                this.losLostTimer = undefined;
 
                 // We could see if the enemy is outside of their region and, if so, send them back.
                 // Obviously this depends on how far they travelled and whether or not it's even possible to get back.
 
                 // If the player gets too close, go after them
-                if (Math.abs(posDiff.x < 300 && Math.abs(posDiff.y < 300))) {
+                if (this.hasLOSOnPlayer && distanceFromPlayer <= this.aggroDistance) {
                     this.TrackPlayer(true);
                 }
 
@@ -204,8 +287,7 @@ class Bear extends Character {
                 this.SetIsStunned(true);
             }
 
-            if (this.GetIsStunned()) {
-                
+            if (this.GetIsStunned()) {                
                 this.isMoving = false;
             }
 

@@ -69,9 +69,9 @@ class Camera {
 		const elapsed = GameTime.getElapsed();
 		const currentGameTime = GameTime.getCurrentGameTime();
 
-		this.lookat.x += (x - this.lookat.x) * 2 * elapsed;
+		this.lookat.x += (x - this.lookat.x) * 3 * elapsed;
 		this.lookat.x = (this.lookat.x < 0.5) ? 0 : this.lookat.x;
-		this.lookat.y += (y - this.lookat.y) * 2 * elapsed;
+		this.lookat.y += (y - this.lookat.y) * 3 * elapsed;
 		this.lookat.y = (this.lookat.y < 0.5) ? 0 : this.lookat.y;
 
 		if (this.isShaking) {

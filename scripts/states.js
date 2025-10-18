@@ -34,6 +34,14 @@ const MAIN_MENU = {
     OPTIONS: 1,
 };
 
+const BEAR_STATE = {
+    WANDERING: 0,
+    TRACKING: 2,
+    SEARCHING: 3,
+    DYING: 4,
+    DEAD: 5
+}
+
 const HIVE_STATE = {
     NEW: 0,
     PARTIALLY_RUMMAGED: 1,

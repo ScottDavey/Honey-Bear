@@ -47,7 +47,7 @@ const KEY_BINDINGS = {
     },
     RANDOM_POSITION: {
         KEYBOARD: { name: 'M', value: 77, path: 'images/icons/KEYBOARD-M.png' },
-        GAMEPAD: { name: 'LEFT TRIGGER', value: 6, path: 'images/icons/GAMEPAD-Left-Bumper.png' },
+        GAMEPAD: { name: 'N.A', value: -1, path: '' },
     },
     INTERACT: {
         KEYBOARD: { name: 'F', value: 70, path: 'images/icons/KEYBOARD-F.png' },
